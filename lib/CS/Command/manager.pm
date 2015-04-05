@@ -46,7 +46,12 @@ sub start_round {
         id   => join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3),
         data => random_regex('[A-Z0-9]{31}') . '='
       };
-      my $id = $app->minion->enqueue(check => [$round, $team, $service, $flag]);
+      my $old_flag = $app->pg->db->query(
+        "select id, data from flags
+        where team_id = ? and service_id = ? and ts >= (now() - (interval '1 second' * ?))
+        order by random() limit 1" => ($team->{id}, $service->{id}, $app->config->{cs}{flag_expire_interval})
+      )->hash;
+      my $id = $app->minion->enqueue(check => [$round, $team, $service, $flag, $old_flag]);
       push @$ids, $id;
       $app->log->debug("Enqueue new job for $team->{name}/$service->{name}: $id");
     }
