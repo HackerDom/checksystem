@@ -18,7 +18,10 @@ sub run {
   $app->pg->pubsub->listen(
     job_finish => sub {
       my ($pubsub, $job_id) = @_;
-      $self->finalize_check($app->minion->job($job_id));
+      my $job = $app->minion->job($job_id);
+      return if $job->args->[0] != $self->round;
+
+      $self->finalize_check($job);
     }
   );
 
@@ -38,7 +41,7 @@ sub start_round {
   for my $team (values %{$self->teams}) {
     for my $service (values %{$self->services}) {
       my $flag = {id => rand, data => rand};
-      my $id = $app->minion->enqueue(check => [$team, $service, $flag]);
+      my $id = $app->minion->enqueue(check => [$round, $team, $service, $flag]);
       $app->log->debug("Enqueue new job for $team->{name} and $service->{name}: $id");
     }
   }
@@ -49,7 +52,7 @@ sub finalize_check {
   my $app = $self->app;
 
   my $result = $job->info->{result};
-  my ($team, $service, $flag) = @{$job->args};
+  my ($round, $team, $service, $flag) = @{$job->args};
 
   # Save result
   my $status = first { defined $result->{$_}{exit_code} } (qw/get_2 get_1 put check/);
