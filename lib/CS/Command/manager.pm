@@ -33,6 +33,7 @@ sub run {
 sub start_round {
   my $self = shift;
   my $app  = $self->app;
+  my $ids;
 
   my $round = $app->pg->db->query('insert into rounds default values returning n')->hash->{n};
   $self->round($round);
@@ -42,9 +43,12 @@ sub start_round {
     for my $service (values %{$self->services}) {
       my $flag = {id => rand, data => rand};
       my $id = $app->minion->enqueue(check => [$round, $team, $service, $flag]);
-      $app->log->debug("Enqueue new job for $team->{name} and $service->{name}: $id");
+      push @$ids, $id;
+      $app->log->debug("Enqueue new job for $team->{name}/$service->{name}: $id");
     }
   }
+
+  return $ids;
 }
 
 sub finalize_check {
@@ -89,6 +93,8 @@ sub init {
     my $service = $services->{$_->{name}};
     $self->services->{$service->{id}} = {id => $service->{id}, %$_};
   }
+
+  return $self;
 }
 
 1;

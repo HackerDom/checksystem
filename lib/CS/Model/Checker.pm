@@ -5,7 +5,7 @@ use IPC::Run qw/run timeout/;
 use List::Util 'all';
 
 sub check {
-  my ($self, $round, $job, $team, $service, $flag, $old_flag) = @_;
+  my ($self, $job, $round, $team, $service, $flag, $old_flag) = @_;
   my $result;
 
   # Check
@@ -42,6 +42,7 @@ sub _run {
   my ($self, $cmd, $timeout) = @_;
   my ($stdout, $stderr);
 
+  $self->app->log->debug("Run '@$cmd' with timeout $timeout");
   eval { run $cmd, \undef, \$stdout, \$stderr, timeout($timeout) };
   my $code = ($@ || all { $? >> 8 != $_ } (101, 102, 103, 104)) ? 110 : $? >> 8;
   return {

@@ -8,7 +8,7 @@ sub startup {
 
   push @{$app->commands->namespaces}, 'CS::Command';
 
-  $app->plugin('Config' => {default => {path => ''}});
+  $app->plugin('Config');
   $app->plugin('Model');
   $app->plugin(Minion => {Pg => $app->config->{pg}{uri}});
 
