@@ -5,3 +5,4 @@ requires 'Minion'                     => '1.13';
 requires 'Mojo::Pg'                   => '2.03';
 requires 'Mojolicious'                => '6.05';
 requires 'Mojolicious::Plugin::Model' => '0.04';
+requires 'String::Random'             => '0.28';

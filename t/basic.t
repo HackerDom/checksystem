@@ -66,4 +66,14 @@ $pg->db->query('select * from runs where service_id = 4')->expand->hashes->map(
   }
 );
 
+# Flags
+is $pg->db->query('select count(*) from flags')->array->[0], 2, 'right numbers of flags';
+$pg->db->query('select * from flags')->hashes->map(
+  sub {
+    is $_->{round},  1,                                    'right round';
+    like $_->{id},   qr/[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{4}/, 'right id';
+    like $_->{data}, qr/[A-Z\d]{31}=/,                     'right flag';
+  }
+);
+
 done_testing;

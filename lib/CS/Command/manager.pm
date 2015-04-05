@@ -2,6 +2,7 @@ package CS::Command::manager;
 use Mojo::Base 'Mojolicious::Command';
 
 use List::Util 'first';
+use String::Random 'random_regex';
 
 has description => 'Run CTF game.';
 
@@ -41,7 +42,10 @@ sub start_round {
 
   for my $team (values %{$self->teams}) {
     for my $service (values %{$self->services}) {
-      my $flag = {id => rand, data => rand};
+      my $flag = {
+        id   => join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3),
+        data => random_regex('[A-Z0-9]{31}') . '='
+      };
       my $id = $app->minion->enqueue(check => [$round, $team, $service, $flag]);
       push @$ids, $id;
       $app->log->debug("Enqueue new job for $team->{name}/$service->{name}: $id");
