@@ -16,6 +16,8 @@ sub check {
   # Put
   $cmd = [$service->{path}, 'put', $team->{host}, $flag->{id}, $flag->{data}];
   $result->{put} = $self->_run($cmd, $service->{timeout});
+  (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
+  $flag->{id} = $result->{put}{fid} = $id if $id;
   return $self->_finish($job, $result) unless $result->{put}{exit_code} == 101;
 
   # Get 1

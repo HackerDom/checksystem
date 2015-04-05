@@ -77,8 +77,11 @@ sub finalize_check {
   # Check, put and get was ok, save flag
   if (($result->{get_1}{exit_code} // 0) == 101) {
     eval {
-      $app->pg->db->query('insert into flags (data, id, round, team_id, service_id) values (?, ?, ?, ?, ?)',
-        $flag->{data}, $flag->{id}, $self->round, $team->{id}, $service->{id});
+      $app->pg->db->query(
+        'insert into flags (data, id, round, team_id, service_id) values (?, ?, ?, ?, ?)',
+        $flag->{data}, $result->{put}{fid} // $flag->{id},
+        $self->round, $team->{id}, $service->{id}
+      );
     };
     $app->log->error("Error while insert flag: $@") if $@;
   }
