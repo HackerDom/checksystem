@@ -3,6 +3,9 @@ use Mojo::Base 'Mojolicious';
 
 use Mojo::Pg;
 
+has teams    => sub { {} };
+has services => sub { {} };
+
 sub startup {
   my $app = shift;
 
@@ -20,6 +23,22 @@ sub startup {
   # Migrations
   $app->pg->migrations->name('cs')->from_file($app->home->rel_file('cs.sql'));
   $app->pg->migrations->migrate;
+
+  $app->init;
+}
+
+sub init {
+  my $app = shift;
+
+  $app->teams(
+    $app->pg->db->query('select * from teams')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
+
+  my $services =
+    $app->pg->db->query('select * from services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
+  for (@{$app->config->{services}}) {
+    my $service = $services->{$_->{name}};
+    $app->services->{$service->{id}} = {id => $service->{id}, %$_};
+  }
 }
 
 1;

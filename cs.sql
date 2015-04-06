@@ -25,6 +25,14 @@ create table flags (
   service_id integer not null references services(id)
 );
 
+create table stolen_flags (
+  data              char(32) not null references flags(data),
+  ts                timestamp not null default now(),
+  team_id           integer not null references teams(id),
+  victim_team_id    integer not null references teams(id),
+  victim_service_id integer not null references services(id)
+);
+
 create table runs (
   round      integer not null references rounds(n),
   ts         timestamp not null default now(),

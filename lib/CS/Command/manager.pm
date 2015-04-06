@@ -5,15 +5,11 @@ use List::Util 'first';
 
 has description => 'Run CTF game.';
 
-has teams    => sub { {} };
-has services => sub { {} };
-has round    => 0;
+has round => 0;
 
 sub run {
   my $self = shift;
   my $app  = $self->app;
-
-  $self->init;
 
   $app->pg->pubsub->listen(
     job_finish => sub {
@@ -39,8 +35,8 @@ sub start_round {
   $self->round($round);
   $app->log->debug("Start new round #$round");
 
-  for my $team (values %{$self->teams}) {
-    for my $service (values %{$self->services}) {
+  for my $team (values %{$app->teams}) {
+    for my $service (values %{$app->services}) {
       my $flag     = $app->model('flag')->create;
       my $old_flag = $app->pg->db->query(
         "select id, data from flags
@@ -86,23 +82,6 @@ sub finalize_check {
     };
     $app->log->error("Error while insert flag: $@") if $@;
   }
-}
-
-sub init {
-  my $self = shift;
-  my $app  = $self->app;
-
-  $self->teams(
-    $app->pg->db->query('select * from teams')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
-
-  my $services =
-    $app->pg->db->query('select * from services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
-  for (@{$app->config->{services}}) {
-    my $service = $services->{$_->{name}};
-    $self->services->{$service->{id}} = {id => $service->{id}, %$_};
-  }
-
-  return $self;
 }
 
 1;

@@ -17,8 +17,9 @@ $app->commands->run('ensure_db');
 is $app->model('team')->id_by_address('127.0.2.213'),  2,     'right id';
 is $app->model('team')->id_by_address('127.0.23.127'), undef, 'right id';
 
-my $manager = CS::Command::manager->new(app => $app)->init;
+my $manager = CS::Command::manager->new(app => $app);
 my $ids = $manager->start_round;
+is $manager->round, 1, 'right round';
 $app->minion->perform_jobs;
 $manager->finalize_check($app->minion->job($_)) for @$ids;
 
@@ -79,5 +80,10 @@ $pg->db->query('select * from flags')->hashes->map(
     like $_->{data}, qr/[A-Z\d]{31}=/, 'right flag';
   }
 );
+
+my $flag_data = $pg->db->query('select data from flags where team_id = 1 limit 1')->hash->{data};
+my $r = $app->model('flag')->accept(2, $flag_data);
+is $pg->db->query('select data from stolen_flags where team_id = 2 and victim_team_id = 1 limit 1')
+  ->hash->{data}, $flag_data, 'right flag';
 
 done_testing;
