@@ -22,7 +22,7 @@ sub accept {
   return {ok => 0, error => 'Denied: no such flag'} unless $flag;
   return {ok => 0, error => 'Denied: flag is your own'} if $flag->{team_id} == $team_id;
   return {ok => 0, error => 'Denied: you already submitted this flag'}
-    if $db->query('select * from stolen_flags where data =? and team_id = ?', $flag_data, $team_id)->rows;
+    if $db->query('select * from stolen_flags where data = ? and team_id = ?', $flag_data, $team_id)->rows;
   return {ok => 0, error => 'Denied: flag is too old'}
     if $flag->{age} >= $app->config->{cs}{flag_expire_interval};
 

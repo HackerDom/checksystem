@@ -81,9 +81,24 @@ $pg->db->query('select * from flags')->hashes->map(
   }
 );
 
-my $flag_data = $pg->db->query('select data from flags where team_id = 1 limit 1')->hash->{data};
-my $r = $app->model('flag')->accept(2, $flag_data);
+my ($data, $flag_data);
+$data = $app->model('flag')->accept(2, 'flag');
+is $data->{ok}, 0, 'right status';
+like $data->{error}, qr/no such flag/, 'right error';
+
+$flag_data = $pg->db->query('select data from flags where team_id = 2 limit 1')->hash->{data};
+$data = $app->model('flag')->accept(2, $flag_data);
+is $data->{ok}, 0, 'right status';
+like $data->{error}, qr/flag is your own/, 'right error';
+
+$flag_data = $pg->db->query('select data from flags where team_id = 1 limit 1')->hash->{data};
+$data = $app->model('flag')->accept(2, $flag_data);
+is $data->{ok}, 1, 'right status';
 is $pg->db->query('select data from stolen_flags where team_id = 2 and victim_team_id = 1 limit 1')
   ->hash->{data}, $flag_data, 'right flag';
+
+$data = $app->model('flag')->accept(2, $flag_data);
+is $data->{ok}, 0, 'right status';
+like $data->{error}, qr/you already submitted this flag/, 'right error';
 
 done_testing;
