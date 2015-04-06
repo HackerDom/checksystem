@@ -9,4 +9,5 @@ sub create {
     data => random_regex('[A-Z0-9]{31}') . '='
   };
 }
+
 1;

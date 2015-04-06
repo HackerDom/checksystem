@@ -14,6 +14,9 @@ my $pg  = $app->pg;
 $app->commands->run('reset_db');
 $app->commands->run('ensure_db');
 
+is $app->model('team')->id_by_address('127.0.2.213'),  2,     'right id';
+is $app->model('team')->id_by_address('127.0.23.127'), undef, 'right id';
+
 my $manager = CS::Command::manager->new(app => $app)->init;
 my $ids = $manager->start_round;
 $app->minion->perform_jobs;
