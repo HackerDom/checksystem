@@ -2,7 +2,6 @@ package CS::Command::manager;
 use Mojo::Base 'Mojolicious::Command';
 
 use List::Util 'first';
-use String::Random 'random_regex';
 
 has description => 'Run CTF game.';
 
@@ -42,10 +41,7 @@ sub start_round {
 
   for my $team (values %{$self->teams}) {
     for my $service (values %{$self->services}) {
-      my $flag = {
-        id   => join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3),
-        data => random_regex('[A-Z0-9]{31}') . '='
-      };
+      my $flag     = $app->model('flag')->create;
       my $old_flag = $app->pg->db->query(
         "select id, data from flags
         where team_id = ? and service_id = ? and ts >= (now() - (interval '1 second' * ?))
