@@ -118,5 +118,34 @@ $manager->finalize_check($app->minion->job($_)) for @$ids;
 $app->minion->enqueue('sla');
 $app->minion->perform_jobs;
 is $db->query('select count(*) from sla')->array->[0], 8, 'right sla';
+for my $team_id (1, 2) {
+  $data = $db->query("select * from sla where team_id = $team_id and service_id = 2 and round = 1")->hash;
+  is $data->{successed}, 1, 'right sla';
+  is $data->{failed},    0, 'right sla';
+  $data = $db->query("select * from sla where team_id = $team_id and service_id = 1 and round = 1")->hash;
+  is $data->{successed}, 0, 'right sla';
+  is $data->{failed},    1, 'right sla';
+}
+
+# New round (#3)
+$ids = $manager->start_round;
+is $manager->round, 3, 'right round';
+$app->minion->perform_jobs;
+$manager->finalize_check($app->minion->job($_)) for @$ids;
+
+# SLA
+$app->minion->enqueue('sla');
+$app->minion->perform_jobs;
+is $db->query('select count(*) from sla')->array->[0], 16, 'right sla';
+for my $team_id (1, 2) {
+  $data = $db->query("select * from sla where team_id = $team_id and service_id = 2 and round = 2")->hash;
+  is $data->{successed}, 2, 'right sla';
+  is $data->{failed},    0, 'right sla';
+  $data = $db->query("select * from sla where team_id = $team_id and service_id = 1 and round = 2")->hash;
+  is $data->{successed}, 0, 'right sla';
+  is $data->{failed},    2, 'right sla';
+  $data = $db->query("select * from sla where team_id = $team_id and service_id = 3 and round = 2")->hash;
+  is $data->{successed} + $data->{failed}, 2, 'right sla';
+}
 
 done_testing;

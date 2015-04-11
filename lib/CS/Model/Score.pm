@@ -15,9 +15,11 @@ sub sla {
   my $state = $db->query('select * from sla where round = ?', $r - 1)->hashes->reduce(
     sub {
       $a->{$b->{team_id}}{$b->{service_id}} = $b;
+      $a;
     },
     {}
   );
+
   $db->query('
     with r as (
       select team_id, service_id, status from runs where round = ?
