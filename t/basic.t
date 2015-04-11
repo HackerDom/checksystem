@@ -9,7 +9,7 @@ BEGIN { $ENV{MOJO_CONFIG} = 'c_s_test.conf' }
 
 my $t   = Test::Mojo->new('CS');
 my $app = $t->app;
-my $pg  = $app->pg;
+my $db  = $app->pg->db;
 
 $app->commands->run('reset_db');
 $app->commands->run('ensure_db');
@@ -18,16 +18,18 @@ is $app->model('team')->id_by_address('127.0.2.213'),  2,     'right id';
 is $app->model('team')->id_by_address('127.0.23.127'), undef, 'right id';
 
 my $manager = CS::Command::manager->new(app => $app);
+
+# New round (#1)
 my $ids = $manager->start_round;
 is $manager->round, 1, 'right round';
 $app->minion->perform_jobs;
 $manager->finalize_check($app->minion->job($_)) for @$ids;
 
 # Runs
-is $pg->db->query('select count(*) from runs')->array->[0], 8, 'right numbers of runs';
+is $db->query('select count(*) from runs')->array->[0], 8, 'right numbers of runs';
 
 # Down
-$pg->db->query('select * from runs where service_id = 1')->expand->hashes->map(
+$db->query('select * from runs where service_id = 1')->expand->hashes->map(
   sub {
     is $_->{round},  1,   'right round';
     is $_->{status}, 110, 'right status';
@@ -42,7 +44,7 @@ $pg->db->query('select * from runs where service_id = 1')->expand->hashes->map(
 );
 
 # Up
-$pg->db->query('select * from runs where service_id = 2')->expand->hashes->map(
+$db->query('select * from runs where service_id = 2')->expand->hashes->map(
   sub {
     is $_->{round},  1,   'right round';
     is $_->{status}, 101, 'right status';
@@ -57,7 +59,7 @@ $pg->db->query('select * from runs where service_id = 2')->expand->hashes->map(
 );
 
 # Timeout
-$pg->db->query('select * from runs where service_id = 4')->expand->hashes->map(
+$db->query('select * from runs where service_id = 4')->expand->hashes->map(
   sub {
     is $_->{round},  1,   'right round';
     is $_->{status}, 110, 'right status';
@@ -71,9 +73,14 @@ $pg->db->query('select * from runs where service_id = 4')->expand->hashes->map(
   }
 );
 
+# SLA (1 round, empty table)
+$app->minion->enqueue('sla');
+$app->minion->perform_jobs;
+is $db->query('select count(*) from sla')->array->[0], 0, 'right sla';
+
 # Flags
-is $pg->db->query('select count(*) from flags')->array->[0], 2, 'right numbers of flags';
-$pg->db->query('select * from flags')->hashes->map(
+is $db->query('select count(*) from flags')->array->[0], 2, 'right numbers of flags';
+$db->query('select * from flags')->hashes->map(
   sub {
     is $_->{round},  1,                'right round';
     is $_->{id},     911,              'right id';
@@ -86,19 +93,30 @@ $data = $app->model('flag')->accept(2, 'flag');
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/no such flag/, 'right error';
 
-$flag_data = $pg->db->query('select data from flags where team_id = 2 limit 1')->hash->{data};
+$flag_data = $db->query('select data from flags where team_id = 2 limit 1')->hash->{data};
 $data = $app->model('flag')->accept(2, $flag_data);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/flag is your own/, 'right error';
 
-$flag_data = $pg->db->query('select data from flags where team_id = 1 limit 1')->hash->{data};
+$flag_data = $db->query('select data from flags where team_id = 1 limit 1')->hash->{data};
 $data = $app->model('flag')->accept(2, $flag_data);
 is $data->{ok}, 1, 'right status';
-is $pg->db->query('select data from stolen_flags where team_id = 2 and victim_team_id = 1 limit 1')
-  ->hash->{data}, $flag_data, 'right flag';
+is $db->query('select data from stolen_flags where team_id = 2 and victim_team_id = 1 limit 1')->hash->{data},
+  $flag_data, 'right flag';
 
 $data = $app->model('flag')->accept(2, $flag_data);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/you already submitted this flag/, 'right error';
+
+# New round (#2)
+$ids = $manager->start_round;
+is $manager->round, 2, 'right round';
+$app->minion->perform_jobs;
+$manager->finalize_check($app->minion->job($_)) for @$ids;
+
+# SLA
+$app->minion->enqueue('sla');
+$app->minion->perform_jobs;
+is $db->query('select count(*) from sla')->array->[0], 8, 'right sla';
 
 done_testing;

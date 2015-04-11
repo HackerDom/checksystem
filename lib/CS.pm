@@ -18,7 +18,9 @@ sub startup {
   $app->helper(pg => sub { state $pg = Mojo::Pg->new($app->config->{pg}{uri}) });
 
   # Tasks
-  $app->minion->add_task(check => sub { $_[0]->app->model('checker')->check(@_) });
+  $app->minion->add_task(check       => sub { $_[0]->app->model('checker')->check(@_) });
+  $app->minion->add_task(sla         => sub { $_[0]->app->model('score')->sla });
+  $app->minion->add_task(flag_points => sub { $_[0]->app->model('score')->flag_points });
 
   # Migrations
   $app->pg->migrations->name('cs')->from_file($app->home->rel_file('cs.sql'));

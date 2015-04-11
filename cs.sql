@@ -41,3 +41,11 @@ create table runs (
   status     integer not null,
   result     json
 );
+
+create table sla (
+  round      integer not null references rounds(n),
+  team_id    integer not null references teams(id),
+  service_id integer not null references services(id),
+  successed  integer not null,
+  failed     integer not null
+);
