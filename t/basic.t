@@ -73,9 +73,21 @@ $db->query('select * from runs where service_id = 4')->expand->hashes->map(
   }
 );
 
+my ($data, $flag_data);
+
 # SLA (1 round, empty table)
 $app->model('score')->sla;
 is $db->query('select count(*) from sla')->array->[0], 0, 'right sla';
+
+# FP
+$app->model('score')->flag_points;
+is $db->query('select count(*) from score')->array->[0], 8, 'right score';
+for my $team_id (1, 2) {
+  $data = $db->query("select * from score where team_id = $team_id and service_id = 2 and round = 0")->hash;
+  is $data->{score}, 200, 'right score';
+  $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 0")->hash;
+  is $data->{score}, 200, 'right score';
+}
 
 # Flags
 is $db->query('select count(*) from flags')->array->[0], 2, 'right numbers of flags';
@@ -87,7 +99,6 @@ $db->query('select * from flags')->hashes->map(
   }
 );
 
-my ($data, $flag_data);
 $data = $app->model('flag')->accept(2, 'flag');
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/no such flag/, 'right error';
@@ -123,6 +134,18 @@ for my $team_id (1, 2) {
   $data = $db->query("select * from sla where team_id = $team_id and service_id = 1 and round = 1")->hash;
   is $data->{successed}, 0, 'right sla';
   is $data->{failed},    1, 'right sla';
+}
+
+# FP
+$app->model('score')->flag_points;
+is $db->query('select count(*) from score')->array->[0], 16, 'right score';
+is $db->query("select score from score where team_id = 2 and service_id = 2 and round = 1")->array->[0], 202,
+  'right score';
+is $db->query("select score from score where team_id = 1 and service_id = 2 and round = 1")->array->[0], 198,
+  'right score';
+for my $team_id (1, 2) {
+  $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 1")->hash;
+  is $data->{score}, 200, 'right score';
 }
 
 # New round (#3)

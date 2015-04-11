@@ -2,7 +2,7 @@
 create table teams (
   id      serial not null primary key,
   name    text not null unique,
-  network cidr,
+  network cidr not null,
   host    inet not null
 );
 
@@ -48,4 +48,11 @@ create table sla (
   service_id integer not null references services(id),
   successed  integer not null,
   failed     integer not null
+);
+
+create table score (
+  round      integer not null references rounds(n),
+  team_id    integer not null references teams(id),
+  service_id integer not null references services(id),
+  score      double precision not null
 );
