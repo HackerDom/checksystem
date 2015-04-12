@@ -72,14 +72,23 @@ create materialized view scoreboard as (
     from stolen_flags as sf join flags as f using (data)
     group by sf.team_id, f.service_id
   ),
+  r as (
+    select distinct on (team_id, service_id) team_id, service_id, status
+    from runs order by team_id, service_id, round desc
+  ),
   sc as (
     select
       fp.team_id, round(sum(sla * score)::numeric, 2) as score,
       json_agg(json_build_object(
-        'id', fp.service_id, 'flags', coalesce(f.flags, 0), 'fp', round(fp.score::numeric, 2), 'sla', round(s.sla::numeric, 2)
+        'id', fp.service_id,
+        'flags', coalesce(f.flags, 0),
+        'fp', round(fp.score::numeric, 2),
+        'sla', round(s.sla::numeric, 2),
+        'status', status
       ) order by id) as services
   from fp join s using (team_id, service_id)
     left join f using (team_id, service_id)
+    left join r using (team_id, service_id)
     join services on fp.service_id = services.id
   group by team_id
   )
