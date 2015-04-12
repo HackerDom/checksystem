@@ -1,6 +1,10 @@
 % layout 'default';
 % title app->config->{cs}{ctf}{name};
 
+% content_for r => begin
+  Round <%= $round %>
+% end
+
 <table class="table table-bordered">
   <tr>
     <td><b>#</b></td>

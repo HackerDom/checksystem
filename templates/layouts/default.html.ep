@@ -15,9 +15,7 @@
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#">
-              <%= content_for 'r' %>
-            </a></li>
+            <li><a href="#"><%= content_for 'r' %></a></li>
           </ul>
         </div>
       </div>
