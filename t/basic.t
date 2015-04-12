@@ -75,9 +75,9 @@ $db->query('select * from runs where service_id = 4')->expand->hashes->map(
 
 my ($data, $flag_data);
 
-# SLA (1 round, empty table)
+# SLA
 $app->model('score')->sla;
-is $db->query('select count(*) from sla')->array->[0], 0, 'right sla';
+is $db->query('select count(*) from sla')->array->[0], 8, 'right sla';
 
 # FP
 $app->model('score')->flag_points;
@@ -126,7 +126,7 @@ $manager->finalize_check($app->minion->job($_)) for @$ids;
 
 # SLA
 $app->model('score')->sla;
-is $db->query('select count(*) from sla')->array->[0], 8, 'right sla';
+is $db->query('select count(*) from sla')->array->[0], 16, 'right sla';
 for my $team_id (1, 2) {
   $data = $db->query("select * from sla where team_id = $team_id and service_id = 2 and round = 1")->hash;
   is $data->{successed}, 1, 'right sla';
@@ -154,7 +154,7 @@ $manager->finalize_check($app->minion->job($_)) for @$ids;
 
 # SLA
 $app->model('score')->sla;
-is $db->query('select count(*) from sla')->array->[0], 16, 'right sla';
+is $db->query('select count(*) from sla')->array->[0], 24, 'right sla';
 for my $team_id (1, 2) {
   $data = $db->query("select * from sla where team_id = $team_id and service_id = 2 and round = 2")->hash;
   is $data->{successed}, 2, 'right sla';
