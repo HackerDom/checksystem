@@ -29,6 +29,10 @@ sub startup {
   $app->pg->migrations->migrate;
 
   $app->init;
+
+  # Routes
+  my $r = $app->routes;
+  $r->get('/')->to('main#index')->name('index');
 }
 
 sub init {

@@ -1,0 +1,29 @@
+% layout 'default';
+% title 'X';
+
+<table>
+  <tr>
+    <td><b>#</b></td>
+    <td><b>Logo</b></td>
+    <td><b>Team</b></td>
+    <td><b>Score</b></td>
+    % for my $sid (sort { $a <=> $b } keys %{app->services}) {
+      <td><b><%= app->services->{$sid}{name} %></b></td>
+    % }
+  </tr>
+  % for my $team (@$scoreboard) {
+  <tr>
+    <td>23</td>
+    <td>-</td>
+    <td><%= $team->{name} %></td>
+    <td><%= sprintf '%.2f', $team->{score} %></td>
+
+    % for my $service (@{$team->{services}}) {
+    <td>
+      <div>SLA: <%= $service->{sla} %></div>
+      <div>FP: <%= $service->{fp} %></div>
+    </td>
+    % }
+  </tr>
+  % }
+</table>
