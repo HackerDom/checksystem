@@ -3,9 +3,12 @@ use Mojo::Base 'MojoX::Model';
 
 use List::Util 'min';
 
+has dimension => sub { keys(%{$_[0]->app->teams}) * keys(%{$_[0]->app->services}) };
+
 sub sla {
-  my $app = shift->app;
-  my $db  = $app->pg->db;
+  my $self = shift;
+  my $app  = $self->app;
+  my $db   = $app->pg->db;
 
   my $r = 1 + ($db->query('select max(round) as n from sla')->hash->{n} // 0);
   $app->log->debug("Attempt calc SLA for round #$r");
@@ -42,7 +45,7 @@ sub sla {
   );
 
   my $sql = sprintf('insert into sla (round, team_id, service_id, successed, failed) values %s',
-    join(', ', ('(?, ?, ?, ?, ?)') x (keys(%{$app->teams}) * keys(%{$app->services}))));
+    join(', ', ('(?, ?, ?, ?, ?)') x $self->dimension));
   my @bind;
   for my $team_id (keys %$state) {
     for my $service_id (keys %{$state->{$team_id}}) {
@@ -55,8 +58,9 @@ sub sla {
 }
 
 sub flag_points {
-  my $app = shift->app;
-  my $db  = $app->pg->db;
+  my $self = shift;
+  my $app  = $self->app;
+  my $db   = $app->pg->db;
 
   my $r = 1 + $db->query('select max(round) as n from score')->hash->{n};
   $app->log->debug("Attempt calc FP for round #$r");
@@ -93,7 +97,7 @@ sub flag_points {
   );
 
   my $sql = sprintf('insert into score (round, team_id, service_id, score) values %s',
-    join(', ', ('(?, ?, ?, ?)') x (keys(%{$app->teams}) * keys(%{$app->services}))));
+    join(', ', ('(?, ?, ?, ?)') x $self->dimension));
   my @bind;
   for my $team_id (keys %$state) {
     for my $service_id (keys %{$state->{$team_id}}) {
