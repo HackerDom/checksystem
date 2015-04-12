@@ -8,9 +8,9 @@
 <table class="table table-bordered">
   <tr>
     <td><b>#</b></td>
-    <td><b>Logo</b></td>
-    <td><b>Team</b></td>
-    <td><b>Score</b></td>
+    <td><b>logo</b></td>
+    <td><b>team</b></td>
+    <td><b>score</b></td>
     % for my $sid (sort { $a <=> $b } keys %{app->services}) {
       <td><b><%= app->services->{$sid}{name} %></b></td>
     % }
@@ -23,7 +23,7 @@
     <td><%= $team->{score} %></td>
 
     % for my $service (@{$team->{services}}) {
-    <td>
+    <td bgcolor="<%= $service->{bgcolor} %>">
       <div>SLA: <%= $service->{sla} %></div>
       <div>FP: <%= $service->{fp} %></div>
       <div>Flags: <%= $service->{flags} %></div>

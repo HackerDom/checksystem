@@ -1,3 +1,3 @@
 #!/usr/bin/perl
 
-die 'Oops';
+exit 104;

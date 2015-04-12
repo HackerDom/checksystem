@@ -32,11 +32,11 @@ is $db->query('select count(*) from runs')->array->[0], 8, 'right numbers of run
 $db->query('select * from runs where service_id = 1')->expand->hashes->map(
   sub {
     is $_->{round},  1,   'right round';
-    is $_->{status}, 110, 'right status';
-    like $_->{result}{check}{stderr},  qr/Oops/, 'right stderr';
-    is $_->{result}{check}{stdout},    '',       'right stdout';
-    is $_->{result}{check}{exception}, '',       'right exception';
-    is $_->{result}{check}{timeout},   0,        'right timeout';
+    is $_->{status}, 104, 'right status';
+    is $_->{result}{check}{stderr},    '', 'right stderr';
+    is $_->{result}{check}{stdout},    '', 'right stdout';
+    is $_->{result}{check}{exception}, '', 'right exception';
+    is $_->{result}{check}{timeout},   0,  'right timeout';
     is keys %{$_->{result}{put}},   0, 'right put';
     is keys %{$_->{result}{get_1}}, 0, 'right get_1';
     is keys %{$_->{result}{get_2}}, 0, 'right get_2';

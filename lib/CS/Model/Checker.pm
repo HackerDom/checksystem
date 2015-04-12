@@ -3,6 +3,17 @@ use Mojo::Base 'MojoX::Model';
 
 use IPC::Run qw/run timeout/;
 use List::Util 'all';
+use Graphics::Color::RGB;
+
+sub status2color {
+  my ($self, $code) = @_;
+
+  if ($code == 101) { return Graphics::Color::RGB->from_hex_string('#00DC00') }
+  if ($code == 102) { return Graphics::Color::RGB->from_hex_string('#FFFF00') }
+  if ($code == 103) { return Graphics::Color::RGB->from_hex_string('#FFA600') }
+  if ($code == 104) { return Graphics::Color::RGB->from_hex_string('#E60000') }
+  return Graphics::Color::RGB->from_hex_string('#452300');
+}
 
 sub check {
   my ($self, $job, $round, $team, $service, $flag, $old_flag) = @_;
