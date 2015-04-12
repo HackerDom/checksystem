@@ -26,35 +26,19 @@ sub sla {
   );
 
   $db->query('
-    with r as (
-      select team_id, service_id, status from runs where round = ?
-    ),
+    with r as (select team_id, service_id, status from runs where round = ?),
     teams_x_services as (
       select teams.id as team_id, services.id as service_id
       from teams cross join services
     )
-    select * from teams_x_services left join r using (team_id, service_id)
-    ', $r)->hashes->map(
+    select * from teams_x_services left join r using (team_id, service_id)', $r)->hashes->map(
     sub {
-      if (($_->{status} // 110) == 101) {
-        ++$state->{$_->{team_id}}{$_->{service_id}}{successed};
-      } else {
-        ++$state->{$_->{team_id}}{$_->{service_id}}{failed};
-      }
+      my $field = ($_->{status} // 110) == 101 ? 'successed' : 'failed';
+      ++$state->{$_->{team_id}}{$_->{service_id}}{$field};
     }
   );
 
-  my $sql = sprintf('insert into sla (round, team_id, service_id, successed, failed) values %s',
-    join(', ', ('(?, ?, ?, ?, ?)') x $self->dimension));
-  my @bind;
-  for my $team_id (keys %$state) {
-    for my $service_id (keys %{$state->{$team_id}}) {
-      my $s = $state->{$team_id}{$service_id};
-      push @bind, $r, $team_id, $service_id, $s->{successed} // 0, $s->{failed} // 0;
-    }
-  }
-
-  $db->query($sql, @bind);
+  $self->_update_sla_state($r, $state);
 }
 
 sub flag_points {
@@ -96,16 +80,40 @@ sub flag_points {
     }
   );
 
-  my $sql = sprintf('insert into score (round, team_id, service_id, score) values %s',
-    join(', ', ('(?, ?, ?, ?)') x $self->dimension));
-  my @bind;
+  $self->_update_score_state($r, $state);
+}
+
+sub _update_sla_state {
+  my ($self, $r, $state) = @_;
+
+  my @params;
   for my $team_id (keys %$state) {
     for my $service_id (keys %{$state->{$team_id}}) {
-      push @bind, $r, $team_id, $service_id, $state->{$team_id}{$service_id};
+      my $s = $state->{$team_id}{$service_id};
+      push @params, $r, $team_id, $service_id, $s->{successed} // 0, $s->{failed} // 0;
     }
   }
+  $self->app->pg->db->query(
+    sprintf('insert into sla (round, team_id, service_id, successed, failed) values %s',
+      join(', ', ('(?, ?, ?, ?, ?)') x $self->dimension)),
+    @params
+  );
+}
 
-  $db->query($sql, @bind);
+sub _update_score_state {
+  my ($self, $r, $state) = @_;
+
+  my @params;
+  for my $team_id (keys %$state) {
+    for my $service_id (keys %{$state->{$team_id}}) {
+      push @params, $r, $team_id, $service_id, $state->{$team_id}{$service_id};
+    }
+  }
+  $self->app->pg->db->query(
+    sprintf('insert into score (round, team_id, service_id, score) values %s',
+      join(', ', ('(?, ?, ?, ?)') x $self->dimension)),
+    @params
+  );
 }
 
 1;
