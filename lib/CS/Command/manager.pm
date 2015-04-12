@@ -41,9 +41,9 @@ sub start_round {
     for my $service (values %{$app->services}) {
       my $flag     = $app->model('flag')->create;
       my $old_flag = $app->pg->db->query(
-        "select id, data from flags
-        where team_id = ? and service_id = ? and ts >= (now() - (interval '1 second' * ?))
-        order by random() limit 1" => ($team->{id}, $service->{id}, $app->config->{cs}{flag_expire_interval})
+        'select id, data from flags
+        where team_id = ? and service_id = ? and round >= ? order by random() limit 1',
+        ($team->{id}, $service->{id}, $round - $app->config->{cs}{flag_life_time})
       )->hash;
       my $id = $app->minion->enqueue(check => [$round, $team, $service, $flag, $old_flag]);
       push @$ids, $id;

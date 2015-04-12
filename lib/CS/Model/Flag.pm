@@ -15,16 +15,15 @@ sub accept {
   my $app = $self->app;
   my $db  = $app->pg->db;
 
-  my $flag =
-    $db->query('select team_id, service_id, extract(epoch from now()-ts) as age from flags where data = ?',
-    $flag_data)->hash;
+  my $round = $db->query('select max(n) from rounds')->array->[0] // 0;
+  my $flag = $db->query('select team_id, service_id, round from flags where data = ?', $flag_data)->hash;
 
   return {ok => 0, error => 'Denied: no such flag'} unless $flag;
   return {ok => 0, error => 'Denied: flag is your own'} if $flag->{team_id} == $team_id;
   return {ok => 0, error => 'Denied: you already submitted this flag'}
     if $db->query('select * from stolen_flags where data = ? and team_id = ?', $flag_data, $team_id)->rows;
   return {ok => 0, error => 'Denied: flag is too old'}
-    if $flag->{age} >= $app->config->{cs}{flag_expire_interval};
+    if $flag->{round} <= $round - $app->config->{cs}{flag_life_time};
 
   my $row =
     $db->query('select status from runs where team_id = ? and service_id = ? order by ts desc limit 1',

@@ -47,14 +47,14 @@ sub flag_points {
   my $db   = $app->pg->db;
 
   my $r = 1 + $db->query('select max(round) as n from score')->hash->{n};
+  my $round = $db->query('select max(n) from rounds')->array->[0] // 0;
   $app->log->debug("Attempt calc FP for round #$r");
 
   # Check for new round
   return unless $db->query('select * from rounds where n > ?', $r)->rows;
 
   # There is non-rotten flags
-  my $res = $db->query('select extract(epoch from now()-ts) from flags where round = ? order by ts desc', $r);
-  return if $res->rows && $res->array->[0] < $app->config->{cs}{flag_expire_interval};
+  return unless $r < $round - $app->config->{cs}{flag_life_time};
   $app->log->debug("Calc FP for round #$r");
 
   my $state = $db->query('select * from score where round = ?', $r - 1)->hashes->reduce(

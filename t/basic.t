@@ -138,13 +138,11 @@ for my $team_id (1, 2) {
 
 # FP
 $app->model('score')->flag_points;
-is $db->query('select count(*) from score')->array->[0], 16, 'right score';
-is $db->query("select score from score where team_id = 2 and service_id = 2 and round = 1")->array->[0], 202,
-  'right score';
-is $db->query("select score from score where team_id = 1 and service_id = 2 and round = 1")->array->[0], 198,
-  'right score';
+is $db->query('select count(*) from score')->array->[0], 8, 'right score';
 for my $team_id (1, 2) {
-  $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 1")->hash;
+  $data = $db->query("select * from score where team_id = $team_id and service_id = 2 and round = 0")->hash;
+  is $data->{score}, 200, 'right score';
+  $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 0")->hash;
   is $data->{score}, 200, 'right score';
 }
 
@@ -166,6 +164,18 @@ for my $team_id (1, 2) {
   is $data->{failed},    2, 'right sla';
   $data = $db->query("select * from sla where team_id = $team_id and service_id = 3 and round = 2")->hash;
   is $data->{successed} + $data->{failed}, 2, 'right sla';
+}
+
+# FP
+$app->model('score')->flag_points;
+is $db->query('select count(*) from score')->array->[0], 16, 'right score';
+is $db->query("select score from score where team_id = 2 and service_id = 2 and round = 1")->array->[0], 202,
+  'right score';
+is $db->query("select score from score where team_id = 1 and service_id = 2 and round = 1")->array->[0], 198,
+  'right score';
+for my $team_id (1, 2) {
+  $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 1")->hash;
+  is $data->{score}, 200, 'right score';
 }
 
 done_testing;
