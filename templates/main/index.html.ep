@@ -1,7 +1,7 @@
 % layout 'default';
-% title 'X';
+% title app->config->{cs}{ctf}{name};
 
-<table>
+<table class="table table-bordered">
   <tr>
     <td><b>#</b></td>
     <td><b>Logo</b></td>
@@ -13,15 +13,16 @@
   </tr>
   % for my $team (@$scoreboard) {
   <tr>
-    <td>23</td>
-    <td>-</td>
+    <td><%= $team->{n} %></td>
+    <td></td>
     <td><%= $team->{name} %></td>
-    <td><%= sprintf '%.2f', $team->{score} %></td>
+    <td><%= $team->{score} %></td>
 
     % for my $service (@{$team->{services}}) {
     <td>
       <div>SLA: <%= $service->{sla} %></div>
       <div>FP: <%= $service->{fp} %></div>
+      <div>Flags: <%= $service->{flags} %></div>
     </td>
     % }
   </tr>

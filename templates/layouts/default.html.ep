@@ -2,11 +2,28 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="initial-scale=1" />
+    <link rel="stylesheet" href="/css/bootstrap.css">
     <title><%= title %></title>
   </head>
 
   <body>
-    <%= content %>
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#"><%= app->config->{cs}{ctf}{name} %></a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">
+              <%= content_for 'r' %>
+            </a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <%= content %>
+    </div>
   </body>
 </html>
