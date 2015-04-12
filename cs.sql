@@ -56,3 +56,28 @@ create table score (
   service_id integer not null references services(id),
   score      double precision not null
 );
+
+create materialized view scoreboard as (
+  with fp as (
+    select distinct on (team_id, service_id) team_id, service_id, score
+    from score order by team_id, service_id, round desc
+  ),
+  s as (
+    select distinct on (team_id, service_id) team_id, service_id,
+    case when successed + failed = 0 then 1 else (successed::double precision / (successed + failed)) end as sla
+    from sla order by team_id, service_id, round desc
+  ),
+  sc as (
+    select
+      fp.team_id, sum(sla * score) as score,
+      json_agg(json_build_object(
+        'id', fp.service_id, 'name', services.name, 'fp', fp.score, 'sla', s.sla
+      ) order by id) as services
+  from fp join s using (team_id, service_id)
+    join services on fp.service_id = services.id
+  group by team_id
+  )
+  select teams.name as name, teams.host, sc.* from sc
+  join teams on sc.team_id = teams.id
+  order by score desc
+);

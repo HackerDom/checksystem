@@ -23,6 +23,8 @@ sub run {
 
   Mojo::IOLoop->next_tick(sub { $self->start_round });
   Mojo::IOLoop->recurring($app->config->{cs}{round_length} => sub { $self->start_round });
+
+  Mojo::IOLoop->recurring(15 => sub { $app->minion->enqueue('scoreboard') });
   Mojo::IOLoop->start;
 }
 
