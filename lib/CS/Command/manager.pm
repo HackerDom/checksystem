@@ -31,6 +31,8 @@ sub start_round {
   my $app  = $self->app;
   my $ids;
 
+  $app->minion->enqueue($_) for (qw/sla flag_points/);
+
   my $round = $app->pg->db->query('insert into rounds default values returning n')->hash->{n};
   $self->round($round);
   $app->log->debug("Start new round #$round");
