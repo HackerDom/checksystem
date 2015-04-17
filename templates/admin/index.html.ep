@@ -1,0 +1,40 @@
+% layout 'default';
+% title '[admin] ' . app->config->{cs}{ctf}{name};
+
+% content_for r => begin
+  Round <%= $round %>
+% end
+
+<table class="table table-bordered">
+  <tr>
+    <td><b>#</b></td>
+    <td><b>logo</b></td>
+    <td><b>team</b></td>
+    <td><b>score</b></td>
+    % for my $sid (sort { $a <=> $b } keys %{app->services}) {
+      <td><b><%= app->services->{$sid}{name} %></b></td>
+    % }
+  </tr>
+  % for my $team (@$scoreboard) {
+  <tr>
+    <td><%= $team->{n} %></td>
+    <td></td>
+    <td><%= $team->{name} %></td>
+    <td><%= $team->{score} %></td>
+
+    % for my $service (@{$team->{services}}) {
+    <td bgcolor="<%= $service->{bgcolor} %>">
+       <div class="pull-right">
+        <a class="btn btn-default" role="button"
+          href="<%= url_for('admin_view', team_id => $team->{team_id}, service_id => $service->{id} ) %>">
+          <span class="glyphicon glyphicon-asterisk"></span>
+        </a>
+      </div>
+      <div>SLA: <%= $service->{sla} %></div>
+      <div>FP: <%= $service->{fp} %></div>
+      <div>Flags: <%= $service->{flags} %></div>
+    </td>
+    % }
+  </tr>
+  % }
+</table>

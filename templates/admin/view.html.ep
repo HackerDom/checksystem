@@ -1,0 +1,39 @@
+% layout 'default';
+% title '[admin] ' . app->config->{cs}{ctf}{name};
+
+<% my $view_line = begin %>
+  % my ($name, $data) = @_;
+  % if ($data) {
+    <dt><%= $name %></dt><dd><%= $data %></dd>
+  % }
+<% end %>
+
+<h2><%= app->services->{param('service_id')}{name} %> on <%= app->teams->{param('team_id')}{name} %></h2>
+
+<table class="table table-bordered">
+  <tr>
+    <td><b>round</b></td>
+    <td><b>status</b></td>
+    <td><b>result</b></td>
+  </tr>
+  % for my $r (@$view) {
+  <tr>
+    <td><%= $r->{round} %></td>
+    <td><%= $r->{status} %></td>
+    <td>
+      % for my $state (qw/check put get_1 get_2/) {
+        % next unless defined $r->{result}{$state}{command};
+        <strong><%= $state %></strong>
+        <dl class="dl-horizontal">
+          <%= $view_line->('Command',   $r->{result}{$state}{command}) %>
+          <%= $view_line->('Exit code', $r->{result}{$state}{exit_code}) %>
+          <%= $view_line->('Timeout',   $r->{result}{$state}{timeout}) %>
+          <%= $view_line->('STDOUT',    $r->{result}{$state}{stdout}) %>
+          <%= $view_line->('STDERR',    $r->{result}{$state}{stderr}) %>
+          <%= $view_line->('Exception', $r->{result}{$state}{exception}) %>
+        </dl>
+      % }
+    </td>
+  </tr>
+  % }
+</table>
