@@ -62,7 +62,7 @@ $db->query('select * from runs where service_id = 2')->expand->hashes->map(
 $db->query('select * from runs where service_id = 4')->expand->hashes->map(
   sub {
     is $_->{round},  1,   'right round';
-    is $_->{status}, 110, 'right status';
+    is $_->{status}, 104, 'right status';
     is $_->{result}{check}{stderr},      '',           'right stderr';
     is $_->{result}{check}{stdout},      '',           'right stdout';
     like $_->{result}{check}{exception}, qr/timeout/i, 'right exception';
@@ -177,5 +177,7 @@ for my $team_id (1, 2) {
   $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 1")->hash;
   is $data->{score}, 200, 'right score';
 }
+
+$db->query('refresh materialized view scoreboard');
 
 done_testing;

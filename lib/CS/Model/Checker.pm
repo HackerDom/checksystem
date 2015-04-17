@@ -57,10 +57,14 @@ sub _run {
 
   $self->app->log->debug("Run '@$cmd' with timeout $timeout");
   eval { run $cmd, \undef, \$stdout, \$stderr, timeout($timeout) };
+
+  $timeout = ($@ && $@ =~ /timeout/i) ? 1 : 0;
   my $code = ($@ || all { $? >> 8 != $_ } (101, 102, 103, 104)) ? 110 : $? >> 8;
+  $code = 104 if $timeout;
+
   return {
     exception => $@,
-    timeout   => ($@ && $@ =~ /timeout/i) ? 1 : 0,
+    timeout   => $timeout,
     stderr    => $stderr,
     stdout    => $stdout,
     exit_code => $code,
