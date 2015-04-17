@@ -63,7 +63,8 @@ sub _run {
     timeout   => ($@ && $@ =~ /timeout/i) ? 1 : 0,
     stderr    => $stderr,
     stdout    => $stdout,
-    exit_code => $code
+    exit_code => $code,
+    command   => "@$cmd"
   };
 }
 
