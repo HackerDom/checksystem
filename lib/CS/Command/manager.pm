@@ -7,7 +7,7 @@ use Time::Seconds;
 
 has description => 'Run CTF game.';
 
-has round => 0;
+has round => sub { $_[0]->app->db->query('select max(n) from rounds')->array->[0] };
 
 sub run {
   my $self = shift;
