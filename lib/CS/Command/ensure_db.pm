@@ -25,7 +25,7 @@ sub run {
   $db->query(
     'insert into score (round, team_id, service_id, score)
       select 0, teams.id, services.id, (select 100 * ?)
-      from teams cross join services', 0 + keys %{$app->teams}
+      from teams cross join services', 0 + @{$app->config->{teams}}
   );
   $db->query(
     'insert into sla (round, team_id, service_id, successed, failed)
