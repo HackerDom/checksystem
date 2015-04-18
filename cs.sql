@@ -83,7 +83,7 @@ create materialized view scoreboard as (
         'id', fp.service_id,
         'flags', coalesce(f.flags, 0),
         'fp', round(fp.score::numeric, 2),
-        'sla', round(s.sla::numeric, 2),
+        'sla', round(100 * s.sla::numeric, 2),
         'status', status
       ) order by id) as services
   from fp join s using (team_id, service_id)
