@@ -14,8 +14,8 @@ my $db  = $app->pg->db;
 $app->commands->run('reset_db');
 $app->commands->run('ensure_db');
 
-is $app->model('team')->id_by_address('127.0.2.213'),  2,     'right id';
-is $app->model('team')->id_by_address('127.0.23.127'), undef, 'right id';
+is $app->model('util')->team_id_by_address('127.0.2.213'),  2,     'right id';
+is $app->model('util')->team_id_by_address('127.0.23.127'), undef, 'right id';
 
 my $manager = CS::Command::manager->new(app => $app);
 

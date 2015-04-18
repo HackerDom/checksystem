@@ -1,7 +1,7 @@
-package CS::Model::Team;
+package CS::Model::Util;
 use Mojo::Base 'MojoX::Model';
 
-sub id_by_address {
+sub team_id_by_address {
   my ($self, $address) = @_;
 
   my $team = $self->app->pg->db->query("select id from teams where ? <<= network", $address)->hash;
