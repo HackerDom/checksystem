@@ -39,6 +39,7 @@ sub run {
 sub start_round {
   my $self = shift;
   my ($app, $ids) = ($self->app);
+  return unless $app->model('util')->game_status == 1;
 
   $app->minion->enqueue($_) for (qw/sla flag_points/);
 
