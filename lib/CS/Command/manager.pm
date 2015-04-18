@@ -42,7 +42,7 @@ sub start_round {
 
   # Check end of game
   if ($app->model('util')->game_status == -1) {
-    $app->minion->enqueue($_ => $self->round) for (qw/sla flag_points/);
+    $app->minion->enqueue($_ => [$self->round]) for (qw/sla flag_points/);
   }
   return unless $app->model('util')->game_status == 1;
 
