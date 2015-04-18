@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1" />
     <link rel="stylesheet" href="/css/bootstrap.css">
+    <script src="/mojo/jquery/jquery.js"></script>
     <title><%= title %></title>
   </head>
-
   <body>
     <div class="navbar navbar-default navbar-static-top" role="navigation">
       <div class="container">
@@ -15,7 +15,7 @@
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#"><%= content_for 'r' %></a></li>
+            <li><a href="#"><div id="round"><%= content_for 'r' %></div></a></li>
           </ul>
         </div>
       </div>

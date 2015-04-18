@@ -33,6 +33,7 @@ sub startup {
   # Routes
   my $r = $app->routes;
   $r->get('/')->to('main#index')->name('index');
+  $r->websocket('/update')->to('main#update')->name('update');
   my $admin = $r->under('/admin');
   $admin->get('/')->to('admin#index')->name('admin_index');
   $admin->get('/view/:team_id/:service_id')->to('admin#view')->name('admin_view');

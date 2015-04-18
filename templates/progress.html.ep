@@ -1,0 +1,3 @@
+<div class="progress-bar progress-bar-success" style="width: <%= $progress->[0] %>"></div>
+<div class="progress-bar progress-bar-warning" style="width: <%= $progress->[1] %>"></div>
+<div class="progress-bar progress-bar-success" style="width: <%= $progress->[2] %>"></div>
