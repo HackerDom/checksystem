@@ -16,14 +16,15 @@ $app->commands->run('reset_db');
 $app->commands->run('ensure_db');
 
 my $u = $app->model('util');
-is $u->game_status(Time::Piece->strptime('2012-10-24 13:00:00', $u->format)), 0,  'right status';
-is $u->game_status(Time::Piece->strptime('2013-01-01 00:00:00', $u->format)), 1,  'right status';
-is $u->game_status(Time::Piece->strptime('2013-01-01 00:00:01', $u->format)), 1,  'right status';
-is $u->game_status(Time::Piece->strptime('2014-01-01 00:00:00', $u->format)), 0,  'right status';
-is $u->game_status(Time::Piece->strptime('2014-12-31 23:59:59', $u->format)), 0,  'right status';
-is $u->game_status(Time::Piece->strptime('2015-01-01 00:00:00', $u->format)), 1,  'right status';
-is $u->game_status(Time::Piece->strptime('2016-01-01 00:00:00', $u->format)), 1,  'right status';
-is $u->game_status(Time::Piece->strptime('2019-01-01 00:00:00', $u->format)), -1, 'right status';
+my $f = $u->format;
+is $u->game_status(0 + localtime(Time::Piece->strptime('2012-10-24 13:00:00', $f))), 0,  'right status';
+is $u->game_status(0 + localtime(Time::Piece->strptime('2013-01-01 00:00:00', $f))), 1,  'right status';
+is $u->game_status(0 + localtime(Time::Piece->strptime('2013-01-01 00:00:01', $f))), 1,  'right status';
+is $u->game_status(0 + localtime(Time::Piece->strptime('2014-01-01 00:00:00', $f))), 0,  'right status';
+is $u->game_status(0 + localtime(Time::Piece->strptime('2014-12-31 23:59:59', $f))), 0,  'right status';
+is $u->game_status(0 + localtime(Time::Piece->strptime('2015-01-01 00:00:00', $f))), 1,  'right status';
+is $u->game_status(0 + localtime(Time::Piece->strptime('2016-01-01 00:00:00', $f))), 1,  'right status';
+is $u->game_status(0 + localtime(Time::Piece->strptime('2019-01-01 00:00:00', $f))), -1, 'right status';
 
 is $u->team_id_by_address('127.0.2.213'),  2,     'right id';
 is $u->team_id_by_address('127.0.23.127'), undef, 'right id';

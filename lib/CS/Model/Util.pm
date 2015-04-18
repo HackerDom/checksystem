@@ -18,8 +18,8 @@ sub game_status {
   $now //= localtime;
   my $time = $self->app->config->{cs}{time};
 
-  my ($start, $end) = map { localtime(Time::Piece->strptime($time->{$_}, $self->format)) } (qw/start end/);
-  my @break = map { localtime(Time::Piece->strptime($time->{break}[$_], $self->format)) } 0 .. 1;
+  my ($start, $end) = map { 0 + localtime(Time::Piece->strptime($time->{$_}, $self->format)) } qw/start end/;
+  my @break = map { 0 + localtime(Time::Piece->strptime($time->{break}[$_], $self->format)) } 0 .. 1;
 
   return 0 if $now < $start;
   return 1 if $now >= $start && $now < $break[0];
