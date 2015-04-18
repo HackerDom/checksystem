@@ -3,6 +3,8 @@ use Mojo::Base 'MojoX::Model';
 
 use Time::Piece;
 
+has format => '%Y-%m-%d %H:%M:%S';
+
 sub team_id_by_address {
   my ($self, $address) = @_;
 
@@ -16,8 +18,8 @@ sub game_status {
   $now //= localtime;
   my $time = $self->app->config->{cs}{time};
 
-  my ($start, $end) = map { Time::Piece->strptime($time->{$_}, '%Y-%m-%d %H:%M:%S') } ('start', 'end');
-  my @break = map { Time::Piece->strptime($time->{break}[$_], '%Y-%m-%d %H:%M:%S') } 0 .. 1;
+  my ($start, $end) = map { localtime(Time::Piece->strptime($time->{$_}, $self->format)) } (qw/start end/);
+  my @break = map { localtime(Time::Piece->strptime($time->{break}[$_], $self->format)) } 0 .. 1;
 
   return 0 if $now < $start;
   return 1 if $now >= $start && $now < $break[0];

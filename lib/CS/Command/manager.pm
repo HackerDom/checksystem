@@ -2,6 +2,8 @@ package CS::Command::manager;
 use Mojo::Base 'Mojolicious::Command';
 
 use List::Util 'first';
+use Time::Piece;
+use Time::Seconds;
 
 has description => 'Run CTF game.';
 
@@ -21,8 +23,14 @@ sub run {
     }
   );
 
-  Mojo::IOLoop->next_tick(sub { $self->start_round });
-  Mojo::IOLoop->recurring($app->config->{cs}{round_length} => sub { $self->start_round });
+  my $now = localtime;
+  my $start = localtime(Time::Piece->strptime($app->config->{cs}{time}{start}, $app->model('util')->format));
+  Mojo::IOLoop->timer(
+    ($now < $start ? ($start - $now)->seconds : 0) => sub {
+      Mojo::IOLoop->recurring($app->config->{cs}{round_length} => sub { $self->start_round });
+      $self->start_round;
+    }
+  );
 
   Mojo::IOLoop->recurring(15 => sub { $app->minion->enqueue('scoreboard') });
   Mojo::IOLoop->start;
@@ -30,8 +38,7 @@ sub run {
 
 sub start_round {
   my $self = shift;
-  my $app  = $self->app;
-  my $ids;
+  my ($app, $ids) = ($self->app);
 
   $app->minion->enqueue($_) for (qw/sla flag_points/);
 
