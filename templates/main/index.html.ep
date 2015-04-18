@@ -5,6 +5,14 @@
   Round <%= $round %>
 % end
 
+% content_for progress => begin
+<div class="progress">
+  <div class="progress-bar progress-bar-success" style="width: <%= $progress->[0] %>"></div>
+  <div class="progress-bar progress-bar-warning" style="width: <%= $progress->[1] %>"></div>
+  <div class="progress-bar progress-bar-success" style="width: <%= $progress->[2] %>"></div>
+</div>
+% end
+
 <table class="table table-bordered">
   <tr class="text-center">
     <td><b>#</b></td>

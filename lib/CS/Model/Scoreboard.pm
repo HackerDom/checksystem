@@ -32,7 +32,7 @@ sub generate {
     }
   );
 
-  return ($round, $scoreboard);
+  return ($round, $scoreboard, $self->app->model('util')->progress);
 }
 
 1;

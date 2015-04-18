@@ -21,6 +21,7 @@
       </div>
     </div>
     <div class="container">
+      <%= content_for 'progress' %>
       <%= content %>
     </div>
   </body>
