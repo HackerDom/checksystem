@@ -8,6 +8,8 @@ use Graphics::Color::RGB;
 sub status2color {
   my ($self, $code) = @_;
 
+  return Graphics::Color::RGB->from_hex_string('#FFFFFF') unless $code;
+
   if ($code == 101) { return Graphics::Color::RGB->from_hex_string('#00DC00') }
   if ($code == 102) { return Graphics::Color::RGB->from_hex_string('#FFFF00') }
   if ($code == 103) { return Graphics::Color::RGB->from_hex_string('#FFA600') }
