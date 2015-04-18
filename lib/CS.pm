@@ -48,7 +48,7 @@ sub init {
   my $services =
     $app->pg->db->query('select * from services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
   for (@{$app->config->{services}}) {
-    my $service = $services->{$_->{name}};
+    next unless my $service = $services->{$_->{name}};
     $app->services->{$service->{id}} = {id => $service->{id}, %$_};
   }
 }
