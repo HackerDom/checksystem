@@ -6,24 +6,28 @@ use List::Util 'min';
 has dimension => sub { keys(%{$_[0]->app->teams}) * keys(%{$_[0]->app->services}) };
 
 sub sla {
-  my $self = shift;
-  my $app  = $self->app;
-  my $db   = $app->pg->db;
+  my ($self, $round) = @_;
+  my $app = $self->app;
+  my $db  = $app->pg->db;
 
-  my $r = 1 + ($db->query('select max(round) as n from sla')->hash->{n} // 0);
+  my $r = 1 + $db->query('select max(round) as n from sla')->hash->{n};
+  if ($round) {
+    $self->_sla($_) for $r .. $round;
+    return;
+  }
+
   $app->log->debug("Attempt calc SLA for round #$r");
-
-  # Check for new round
   return unless $db->query('select * from rounds where n > ?', $r)->rows;
-  $app->log->debug("Calc SLA for round #$r");
+  $self->_sla($r);
+}
 
-  my $state = $db->query('select * from sla where round = ?', $r - 1)->hashes->reduce(
-    sub {
-      $a->{$b->{team_id}}{$b->{service_id}} = $b;
-      $a;
-    },
-    {}
-  );
+sub _sla {
+  my ($self, $r) = @_;
+  $self->app->log->debug("Calc SLA for round #$r");
+
+  my $db = $self->app->pg->db;
+  my $state = $db->query('select * from sla where round = ?', $r - 1)
+    ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b; $a; }, {});
 
   $db->query('
     with r as (select team_id, service_id, status from runs where round = ?),
@@ -42,28 +46,31 @@ sub sla {
 }
 
 sub flag_points {
-  my $self = shift;
-  my $app  = $self->app;
-  my $db   = $app->pg->db;
+  my ($self, $round) = @_;
+  my $app = $self->app;
+  my $db  = $app->pg->db;
 
   my $r = 1 + $db->query('select max(round) as n from score')->hash->{n};
-  my $round = $db->query('select max(n) from rounds')->array->[0] // 0;
+  if ($round) {
+    $self->_flag_points($_) for $r .. $round;
+    return;
+  }
+
+  $round = $db->query('select max(n) from rounds')->array->[0];
   $app->log->debug("Attempt calc FP for round #$r");
-
-  # Check for new round
   return unless $db->query('select * from rounds where n > ?', $r)->rows;
-
-  # There is non-rotten flags
   return unless $r < $round - $app->config->{cs}{flag_life_time};
-  $app->log->debug("Calc FP for round #$r");
 
-  my $state = $db->query('select * from score where round = ?', $r - 1)->hashes->reduce(
-    sub {
-      $a->{$b->{team_id}}{$b->{service_id}} = $b->{score};
-      $a;
-    },
-    {}
-  );
+  $self->_flag_points($r);
+}
+
+sub _flag_points {
+  my ($self, $r) = @_;
+  $self->app->log->debug("Calc FP for round #$r");
+
+  my $db = $self->app->pg->db;
+  my $state = $db->query('select * from score where round = ?', $r - 1)
+    ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b->{score}; $a; }, {});
 
   $db->query('
     select flags.data, array_agg(stolen_flags.team_id) as teams, flags.service_id, flags.team_id
@@ -71,10 +78,10 @@ sub flag_points {
     where round = ? group by data order by flags.ts
     ', $r)->hashes->map(
     sub {
-      my $jackpot = min $state->{$_->{team_id}}{$_->{service_id}}, 0 + keys %{$app->teams};
-      my $part = $jackpot / @{$_->{teams}};
+      my $jackpot = min $state->{$_->{team_id}}{$_->{service_id}}, 0 + keys %{$self->app->teams};
+      my $amount = $jackpot / @{$_->{teams}};
       for my $team_id (@{$_->{teams}}) {
-        $state->{$team_id}{$_->{service_id}} += $part;
+        $state->{$team_id}{$_->{service_id}} += $amount;
       }
       $state->{$_->{team_id}}{$_->{service_id}} -= $jackpot;
     }
