@@ -12,6 +12,8 @@ sub update {
   my $c = shift->render_later;
   $c->inactivity_timeout(300);
 
+  return $c->finish if $c->model('util')->game_status == -1;
+
   my $id = Mojo::IOLoop->recurring(
     15 => sub {
       my ($round, $scoreboard, $progress) = $c->model('scoreboard')->generate;
