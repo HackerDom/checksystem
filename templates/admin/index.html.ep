@@ -5,7 +5,7 @@
   Round <%= $round %>
 % end
 
-<table class="table table-bordered">
+<table class="table table-bordered table-condensed">
   <tr class="text-center">
     <td><b>#</b></td>
     <td><b>logo</b></td>
@@ -19,7 +19,10 @@
   <tr class="text-center">
     <td><%= $team->{n} %></td>
     <td></td>
-    <td><%= $team->{name} %></td>
+    <td>
+      <div><%= $team->{name} %></div>
+      <div><%= $team->{host} %></div>
+    </td>
     <td><%= $team->{score} %></td>
 
     % for my $service (@{$team->{services}}) {

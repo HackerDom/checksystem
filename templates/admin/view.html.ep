@@ -10,7 +10,7 @@
 
 <h2><%= app->services->{param('service_id')}{name} %> on <%= app->teams->{param('team_id')}{name} %></h2>
 
-<table class="table table-bordered">
+<table class="table table-bordered table-condensed">
   <tr>
     <td><b>round</b></td>
     <td><b>status</b></td>
