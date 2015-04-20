@@ -42,8 +42,12 @@ sub startup {
 sub init {
   my $app = shift;
 
-  $app->teams(
-    $app->pg->db->query('select * from teams')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
+  my $teams =
+    $app->pg->db->query('select * from teams')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
+  for (@{$app->config->{teams}}) {
+    next unless my $team = $teams->{$_->{name}};
+    $app->teams->{$team->{id}} = {id => $team->{id}, %$_};
+  }
 
   my $services =
     $app->pg->db->query('select * from services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
