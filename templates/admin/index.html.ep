@@ -18,7 +18,7 @@
   % for my $team (@$scoreboard) {
   <tr class="text-center">
     <td><%= $team->{n} %></td>
-    <td></td>
+    <td><img class="img-rounded" src="<%= $team->{logo} // 'logo.png' %>"></td>
     <td>
       <div><%= $team->{name} %></div>
       <div><%= $team->{host} %></div>
