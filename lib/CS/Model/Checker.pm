@@ -1,9 +1,10 @@
 package CS::Model::Checker;
 use Mojo::Base 'MojoX::Model';
 
+use Graphics::Color::RGB;
 use IPC::Run qw/run timeout/;
 use List::Util 'all';
-use Graphics::Color::RGB;
+use Time::HiRes qw/gettimeofday tv_interval/;
 
 sub status2color {
   my ($self, $code) = @_;
@@ -58,7 +59,9 @@ sub _run {
   my ($stdout, $stderr);
 
   $self->app->log->debug("Run '@$cmd' with timeout $timeout");
+  my $start = [gettimeofday];
   eval { run $cmd, \undef, \$stdout, \$stderr, timeout($timeout) };
+  my $elapsed = tv_interval($start);
 
   $timeout = ($@ && $@ =~ /timeout/i) ? 1 : 0;
   my $code = ($@ || all { $? >> 8 != $_ } (101, 102, 103, 104)) ? 110 : $? >> 8;
@@ -70,6 +73,7 @@ sub _run {
     stderr    => $stderr,
     stdout    => $stdout,
     exit_code => $code,
+    elapsed   => $elapsed,
     command   => "@$cmd"
   };
 }

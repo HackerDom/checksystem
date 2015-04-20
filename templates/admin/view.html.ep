@@ -26,6 +26,7 @@
         <strong><%= $state %></strong>
         <dl class="dl-horizontal">
           <%= $view_line->('Command',   $r->{result}{$state}{command}) %>
+          <%= $view_line->('Elapsed',   $r->{result}{$state}{elapsed}) %>
           <%= $view_line->('Exit code', $r->{result}{$state}{exit_code}) %>
           <%= $view_line->('Timeout',   $r->{result}{$state}{timeout}) %>
           <%= $view_line->('STDOUT',    $r->{result}{$state}{stdout}) %>
