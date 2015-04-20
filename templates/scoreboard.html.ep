@@ -12,7 +12,7 @@
     % for my $team (@$scoreboard) {
     <tr class="text-center">
       <td><%= $team->{n} %></td>
-      <td><img class="img-rounded" src="<%= $team->{logo} // '/logo.png' %>"></td>
+      <td><img class="img-rounded" src="<%= app->teams->{$team->{team_id}}{logo} // '/logo.png' %>"></td>
       <td>
         <div><%= $team->{name} %></div>
         <div><%= $team->{host} %></div>
