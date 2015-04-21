@@ -35,12 +35,7 @@ sub accept {
     }
     unless $status == 101;
 
-  if (
-    $db->query(
-      'insert into stolen_flags (data, team_id, victim_team_id, victim_service_id)
-      values (?, ?, ?, ?)', $flag_data, $team_id, $flag->{team_id}, $flag->{service_id}
-    )->rows
-    ) {
+  if ($db->query('insert into stolen_flags (data, team_id) values (?, ?)', $flag_data, $team_id)->rows) {
     return {ok => 1};
   } else {
     return {ok => 0, error => 'Please try again later'};
