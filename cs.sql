@@ -39,6 +39,7 @@ create table runs (
   status     integer not null,
   result     json
 );
+create index on runs (round);
 
 create table sla (
   round      integer not null references rounds(n),
@@ -47,6 +48,7 @@ create table sla (
   successed  integer not null,
   failed     integer not null
 );
+create index on sla (round);
 
 create table score (
   round      integer not null references rounds(n),
@@ -54,16 +56,17 @@ create table score (
   service_id integer not null references services(id),
   score      double precision not null
 );
+create index on score (round);
 
 create materialized view scoreboard as (
   with fp as (
-    select distinct on (team_id, service_id) team_id, service_id, score
-    from score order by team_id, service_id, round desc
+    select team_id, service_id, score
+    from score where round = (select max(round) from score)
   ),
   s as (
-    select distinct on (team_id, service_id) team_id, service_id,
+    select team_id, service_id,
     case when successed + failed = 0 then 1 else (successed::double precision / (successed + failed)) end as sla
-    from sla order by team_id, service_id, round desc
+    from sla where round = (select max(round) from sla)
   ),
   f as (
     select sf.team_id, f.service_id, count(sf.data) as flags
@@ -71,8 +74,8 @@ create materialized view scoreboard as (
     group by sf.team_id, f.service_id
   ),
   r as (
-    select distinct on (team_id, service_id) team_id, service_id, status
-    from runs order by team_id, service_id, round desc
+    select team_id, service_id, status
+    from runs where round = (select max(round) from runs)
   ),
   sc as (
     select
