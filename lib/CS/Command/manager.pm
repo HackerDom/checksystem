@@ -80,7 +80,7 @@ sub finalize_check {
   eval {
     $app->pg->db->query(
       'insert into runs (round, team_id, service_id, status, result) values (?, ?, ?, ?, ?)',
-      $self->round, $team->{id}, $service->{id}, $status, {json => $result});
+      $round, $team->{id}, $service->{id}, $status, {json => $result});
   };
   $app->log->error("Error while insert check result: $@") if $@;
 
