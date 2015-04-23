@@ -13,27 +13,27 @@ create table services (
 
 create table rounds (
   n  serial not null primary key,
-  ts timestamp not null default now()
+  ts timestamp with time zone not null default now()
 );
 
 create table flags (
   data       char(32) primary key,
   id         text not null,
   round      integer not null references rounds(n),
-  ts         timestamp not null default now(),
+  ts         timestamp with time zone not null default now(),
   team_id    integer not null references teams(id),
   service_id integer not null references services(id)
 );
 
 create table stolen_flags (
   data              char(32) not null references flags(data),
-  ts                timestamp not null default now(),
+  ts                timestamp with time zone not null default now(),
   team_id           integer not null references teams(id)
 );
 
 create table runs (
   round      integer not null references rounds(n),
-  ts         timestamp not null default now(),
+  ts         timestamp with time zone not null default now(),
   team_id    integer not null references teams(id),
   service_id integer not null references services(id),
   status     integer not null,
@@ -61,7 +61,7 @@ create index on score (round);
 create table achievement (
   team_id    integer not null references teams(id),
   service_id integer not null references services(id),
-  ts         timestamp not null default now(),
+  ts         timestamp with time zone not null default now(),
   data       text
 );
 
