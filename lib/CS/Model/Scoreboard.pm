@@ -25,8 +25,8 @@ sub generate {
     sub {
       for my $s (@{$_->{services}}) {
         my $c = $self->app->model('checker')->status2color($s->{status})->to_hsv;
-        if ($s->{status} == 110) {
-          $s->{bgcolor} = '#ffffff';
+        if ($c->to_rgb->equal_to(Graphics::Color::RGB->from_hex_string('#FFFFFF'))) {
+          $s->{bgcolor} = $c->to_rgb->as_css_hex;
           next;
         }
         my $rate = $services->{$s->{id}}{max} == 0 ? 1 : ($s->{sla} * $s->{fp} / $services->{$s->{id}}{max});
