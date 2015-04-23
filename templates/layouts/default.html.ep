@@ -6,6 +6,18 @@
     <link rel="stylesheet" href="/css/bootstrap.css">
     <script src="/mojo/jquery/jquery.js"></script>
     <title><%= title %></title>
+    <style type="text/css">
+html { position: relative; min-height: 100%; }
+body { margin-bottom: 160px; }
+.footer {
+  overflow: scroll;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  height: 160px;
+  background-color: #f5f5f5;
+}
+    </style>
   </head>
   <body>
     <div class="navbar navbar-default navbar-static-top" role="navigation">
@@ -24,5 +36,8 @@
       <%= content_for 'progress' %>
       <%= content %>
     </div>
+    <footer class="footer">
+      <div class="container"><%= content_for 'footer' %></div>
+    </footer>
   </body>
 </html>

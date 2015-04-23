@@ -13,6 +13,9 @@
 
 %= include 'scoreboard';
 
+% content_for footer => begin
+% end
+
 <script>
   var ws = new WebSocket('<%= url_for('update')->to_abs %>');
   ws.onmessage = function(event) {
