@@ -1,7 +1,7 @@
 package CS::Command::reset_db;
 use Mojo::Base 'Mojolicious::Command';
 
-has description => 'Clean db.';
+has description => 'Clean db';
 
 sub run {
   my $app = shift->app;

@@ -1,7 +1,7 @@
 package CS::Command::ensure_db;
 use Mojo::Base 'Mojolicious::Command';
 
-has description => 'Ensure db schema.';
+has description => 'Ensure db schema';
 
 sub run {
   my $app = shift->app;
