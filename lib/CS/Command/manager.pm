@@ -63,17 +63,20 @@ sub start_round {
 }
 
 sub finalize_check {
-  my ($self, $job) = @_;
+  my ($self, $job, $status) = @_;
   my $app = $self->app;
 
   my $result = $job->info->{result};
   my ($round, $team, $service, $flag) = @{$job->args};
 
+  if (!$result->{check} || $round != $self->round) {
+    $result->{error} = 'Job is too old!';
+    $status = 110;
+  } else {
+    $status = $result->{first { defined $result->{$_}{exit_code} } (qw/get_2 get_1 put check/)}{exit_code};
+  }
+
   # Save result
-  my $status =
-    $result->{_error}
-    ? 110
-    : $result->{first { defined $result->{$_}{exit_code} } (qw/get_2 get_1 put check/)}{exit_code};
   eval {
     $app->pg->db->query(
       'insert into runs (round, team_id, service_id, status, result) values (?, ?, ?, ?, ?)',

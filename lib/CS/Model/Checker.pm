@@ -20,11 +20,10 @@ sub status2color {
 
 sub check {
   my ($self, $job, $round, $team, $service, $flag, $old_flag) = @_;
-  my $result;
+  my $result = {};
 
-  unless ($round == $job->app->pg->db->query('select max(n) from rounds')->array->[0]) {
-    return $self->_finish($job, {_error => 'Job is too old!'});
-  }
+  return $self->_finish($job, $result)
+    unless $round == $job->app->pg->db->query('select max(n) from rounds')->array->[0];
 
   # Check
   my $cmd = [$service->{path}, 'check', $team->{host}];
