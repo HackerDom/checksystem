@@ -21,6 +21,7 @@
     <td><%= $r->{round} %></td>
     <td><%= $r->{status} %></td>
     <td>
+      <%= $view_line->('Error', $r->{error}) %>
       % for my $state (qw/check put get_1 get_2/) {
         % next unless defined $r->{result}{$state}{command};
         <strong><%= $state %></strong>
