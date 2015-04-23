@@ -25,9 +25,10 @@ sub run {
 
   my $now = localtime;
   my $start = localtime(Time::Piece->strptime($app->config->{cs}{time}{start}, $app->model('util')->format));
+  my $round_length = $app->config->{cs}{round_length};
   Mojo::IOLoop->timer(
-    ($now < $start ? ($start - $now)->seconds : 0) => sub {
-      Mojo::IOLoop->recurring($app->config->{cs}{round_length} => sub { $self->start_round });
+    ($now < $start ? ($start - $now)->seconds : $round_length) => sub {
+      Mojo::IOLoop->recurring($round_length => sub { $self->start_round });
       $self->start_round;
     }
   );
