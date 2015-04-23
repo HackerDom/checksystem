@@ -13,15 +13,7 @@ sub run {
   my $self = shift;
   my $app  = $self->app;
 
-  $app->pg->pubsub->listen(
-    job_finish => sub {
-      my ($pubsub, $job_id) = @_;
-      my $job = $app->minion->job($job_id);
-      return if $job->args->[0] != $self->round;
-
-      $self->finalize_check($job);
-    }
-  );
+  $app->pg->pubsub->listen(job_finish => sub { $self->finalize_check($app->minion->job($_[1])) });
 
   my $now = localtime;
   my $start = localtime(Time::Piece->strptime($app->config->{cs}{time}{start}, $app->model('util')->format));
@@ -78,14 +70,14 @@ sub finalize_check {
   my ($round, $team, $service, $flag) = @{$job->args};
 
   # Save result
-  my $status = first { defined $result->{$_}{exit_code} } (qw/get_2 get_1 put check/);
+  my $status =
+    $result->{_error}
+    ? 110
+    : $result->{first { defined $result->{$_}{exit_code} } (qw/get_2 get_1 put check/)}{exit_code};
   eval {
     $app->pg->db->query(
       'insert into runs (round, team_id, service_id, status, result) values (?, ?, ?, ?, ?)',
-      $self->round, $team->{id}, $service->{id},
-      $result->{$status}{exit_code},
-      {json => $result}
-    );
+      $self->round, $team->{id}, $service->{id}, $status, {json => $result});
   };
   $app->log->error("Error while insert check result: $@") if $@;
 
