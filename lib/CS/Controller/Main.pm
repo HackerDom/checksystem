@@ -1,12 +1,7 @@
 package CS::Controller::Main;
 use Mojo::Base 'Mojolicious::Controller';
 
-sub index {
-  my $c = shift;
-
-  my ($round, $scoreboard, $progress) = $c->model('scoreboard')->generate;
-  $c->render(scoreboard => $scoreboard, round => $round, progress => $progress);
-}
+sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
 
 sub update {
   my $c = shift->render_later;
@@ -16,8 +11,8 @@ sub update {
 
   my $id = Mojo::IOLoop->recurring(
     15 => sub {
-      my ($round, $scoreboard, $progress) = $c->model('scoreboard')->generate;
-      $c->stash(scoreboard => $scoreboard, round => $round, progress => $progress);
+      $c->stash(%{$c->model('scoreboard')->generate});
+      my $round = $c->stash('round');
       $c->send({
           json => {
             round      => "Round $round",

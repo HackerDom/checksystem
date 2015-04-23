@@ -3,16 +3,15 @@ use Mojo::Base 'MojoX::Model';
 
 use Graphics::Color::HSV;
 use List::Util 'max';
+use Time::Piece;
 
 sub generate {
   my $self = shift;
   my $db   = $self->app->pg->db;
 
-  my $scoreboard = $db->query('select * from scoreboard')->expand->hashes;
-  my $round = $db->query('select max(n) from rounds')->array->[0] // 0;
-
   # Calculate score for each service
   my $services;
+  my $scoreboard = $db->query('select * from scoreboard')->expand->hashes;
   $scoreboard->map(
     sub {
       for my $s (@{$_->{services}}) {
@@ -36,7 +35,15 @@ sub generate {
     }
   );
 
-  return ($round, $scoreboard, $self->app->model('util')->progress);
+  return (
+    { scoreboard => $scoreboard,
+      round      => $db->query('select max(n) from rounds')->array->[0],
+      progress   => $self->app->model('util')->progress,
+      achievement =>
+        $db->query("select *, extract(epoch from ts)::int as time from achievement order by ts desc")
+        ->hashes->map(sub { $_->{time} = (gmtime() - gmtime($_->{time}))->pretty; $_ })
+    }
+  );
 }
 
 1;

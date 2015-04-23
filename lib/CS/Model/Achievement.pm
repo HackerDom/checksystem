@@ -17,7 +17,7 @@ sub verify {
   )->array->[0];
   if ($n == 0) {
     $db->query('insert into achievement (team_id, service_id, data) values (?, ?, ?)',
-      $flag->{team_id}, $flag->{service_id}, 'First blood');
+      $flag->{team_id}, $flag->{service_id}, 'first blood');
   }
 
   # First flag (team/service)
@@ -28,7 +28,7 @@ sub verify {
   )->array->[0];
   if ($n == 0) {
     $db->query('insert into achievement (team_id, service_id, data) values (?, ?, ?)',
-      $flag->{team_id}, $flag->{service_id}, 'First flag');
+      $flag->{team_id}, $flag->{service_id}, 'first flag');
   }
 
   # N flags (team/service)
@@ -39,7 +39,7 @@ sub verify {
   )->array->[0];
   if ($n > 0 && $n % 10 == 0) {
     $db->query('insert into achievement (team_id, service_id, data) values (?, ?, ?)',
-      $flag->{team_id}, $flag->{service_id}, "First $n flags");
+      $flag->{team_id}, $flag->{service_id}, "first $n flags");
   }
 }
 

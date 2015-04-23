@@ -1,12 +1,7 @@
 package CS::Controller::Admin;
 use Mojo::Base 'Mojolicious::Controller';
 
-sub index {
-  my $c = shift;
-
-  my ($round, $scoreboard) = $c->model('scoreboard')->generate;
-  $c->render(scoreboard => $scoreboard, round => $round);
-}
+sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
 
 sub view {
   my $c = shift;
