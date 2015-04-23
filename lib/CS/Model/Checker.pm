@@ -15,7 +15,7 @@ sub status2color {
   if ($code == 102) { return Graphics::Color::RGB->from_hex_string('#FFFF00') }
   if ($code == 103) { return Graphics::Color::RGB->from_hex_string('#FFA600') }
   if ($code == 104) { return Graphics::Color::RGB->from_hex_string('#E60000') }
-  return Graphics::Color::RGB->from_hex_string('#452300');
+  return Graphics::Color::RGB->from_hex_string('#FFFFFF');
 }
 
 sub check {

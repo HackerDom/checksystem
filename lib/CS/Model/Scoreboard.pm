@@ -25,8 +25,9 @@ sub generate {
     sub {
       for my $s (@{$_->{services}}) {
         my $c = $self->app->model('checker')->status2color($s->{status})->to_hsv;
+        return $s->{bgcolor} = '#ffffff' if $status = 110;
         my $rate = $services->{$s->{id}}{max} == 0 ? 1 : ($s->{sla} * $s->{fp} / $services->{$s->{id}}{max});
-        my $nc = Graphics::Color::HSV->new({h => $c->h, s => $c->s * 0.5 * $rate, v => $c->v})->to_rgb;
+        my $nc = Graphics::Color::HSV->new({h => $c->h, s => 0.5 + $c->s * 0.5 * $rate, v => $c->v})->to_rgb;
         $s->{bgcolor} = $nc->as_css_hex;
       }
     }
