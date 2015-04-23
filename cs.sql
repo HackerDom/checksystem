@@ -60,13 +60,13 @@ create index on score (round);
 
 create materialized view scoreboard as (
   with fp as (
-    select team_id, service_id, score
-    from score where round = (select max(round) from score)
+    select distinct on (team_id, service_id) team_id, service_id, score
+    from score order by team_id, service_id, round desc
   ),
   s as (
-    select team_id, service_id,
+    select distinct on (team_id, service_id) team_id, service_id,
     case when successed + failed = 0 then 1 else (successed::double precision / (successed + failed)) end as sla
-    from sla where round = (select max(round) from sla)
+    from sla order by team_id, service_id, round desc
   ),
   f as (
     select sf.team_id, f.service_id, count(sf.data) as flags
@@ -74,8 +74,8 @@ create materialized view scoreboard as (
     group by sf.team_id, f.service_id
   ),
   r as (
-    select team_id, service_id, status
-    from runs where round = (select max(round) from runs)
+    select distinct on (team_id, service_id) team_id, service_id, status
+    from runs order by team_id, service_id, round desc
   ),
   sc as (
     select
