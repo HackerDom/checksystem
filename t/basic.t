@@ -130,6 +130,10 @@ $data = $app->model('flag')->accept(2, $flag_data);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/you already submitted this flag/, 'right error';
 
+# Achievement
+$app->minion->perform_jobs;
+is $db->query('select count(*) from achievement')->array->[0], 2, 'right achievement';
+
 # New round (#2)
 $ids = $manager->start_round;
 is $manager->round, 2, 'right round';

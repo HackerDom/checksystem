@@ -9,7 +9,8 @@ sub run {
 
   # Clean
   $pg->db->query('drop materialized view if exists scoreboard');
-  $pg->db->query('drop table if exists rounds, teams, services, flags, stolen_flags, runs, sla, score');
+  $pg->db->query(
+    'drop table if exists rounds, teams, services, flags, stolen_flags, runs, sla, score, achievement');
 
   # Jobs
   $app->minion->reset;

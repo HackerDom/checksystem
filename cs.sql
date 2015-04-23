@@ -58,6 +58,13 @@ create table score (
 );
 create index on score (round);
 
+create table achievement (
+  team_id    integer not null references teams(id),
+  service_id integer not null references services(id),
+  ts         timestamp not null default now(),
+  data       text
+);
+
 create materialized view scoreboard as (
   with fp as (
     select distinct on (team_id, service_id) team_id, service_id, score
