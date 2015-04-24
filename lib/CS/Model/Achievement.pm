@@ -35,7 +35,7 @@ sub verify {
   $n = $db->query(
     'select count(*)
     from stolen_flags as sf join flags as f using(data)
-    where sf.ts < ? and service_id = ? and sf.team_id = ?', $flag->{ts}, $flag->{service_id}, $flag->{team_id}
+    where sf.ts <= ? and service_id = ? and sf.team_id = ?', $flag->{ts}, $flag->{service_id}, $flag->{team_id}
   )->array->[0];
   if ($n > 0 && $n % 10 == 0) {
     $db->query('insert into achievement (team_id, service_id, data) values (?, ?, ?)',
