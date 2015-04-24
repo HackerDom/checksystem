@@ -11,6 +11,7 @@ html { position: relative; min-height: 100%; }
 body { margin-bottom: 190px; }
 .footer {
   padding-top: 5px;
+  margin-top: 5px;
   overflow: scroll;
   position: fixed;
   width: 100%;
