@@ -17,7 +17,7 @@ sub generate {
     sub {
       for my $s (@{$_->{services}}) {
         my $c = $self->app->model('checker')->status2color($s->{status});
-        $s->{bgcolor} = '#ffffff' and next if $c->as_rgb8->hex eq 'ffffff';
+        if ($c->as_rgb8->hex eq 'ffffff') { $s->{bgcolor} = '#ffffff'; next }
 
         my $rate = $services->{$s->{id}}{max} == 0 ? 1 : ($s->{sla} * $s->{fp} / $services->{$s->{id}}{max});
         $c = $c->as_hsv;
