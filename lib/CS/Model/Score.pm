@@ -10,15 +10,9 @@ sub sla {
   my $app = $self->app;
   my $db  = $app->pg->db;
 
-  my $r = 1 + $db->query('select max(round) as n from sla')->hash->{n};
-  if ($round) {
-    $self->_sla($_) for $r .. $round;
-    return;
-  }
-
-  $app->log->debug("Attempt calc SLA for round #$r");
-  return unless $db->query('select * from rounds where n > ?', $r)->rows;
-  $self->_sla($r);
+  my $r = $db->query('select max(round) + 1 from sla')->array->[0];
+  $round //= $db->query('select max(n) - 1 from rounds')->array->[0];
+  $self->_sla($_) for $r .. $round;
 }
 
 sub _sla {
@@ -50,18 +44,9 @@ sub flag_points {
   my $app = $self->app;
   my $db  = $app->pg->db;
 
-  my $r = 1 + $db->query('select max(round) as n from score')->hash->{n};
-  if ($round) {
-    $self->_flag_points($_) for $r .. $round;
-    return;
-  }
-
-  $round = $db->query('select max(n) from rounds')->array->[0];
-  $app->log->debug("Attempt calc FP for round #$r");
-  return unless $db->query('select * from rounds where n > ?', $r)->rows;
-  return unless $r < $round - $app->config->{cs}{flag_life_time};
-
-  $self->_flag_points($r);
+  my $r = $db->query('select max(round) + 1 from score')->array->[0];
+  $round //= $db->query('select max(n) - 1 - ? from rounds', $app->config->{cs}{flag_life_time})->array->[0];
+  $self->_flag_points($_) for $r .. $round;
 }
 
 sub _flag_points {
