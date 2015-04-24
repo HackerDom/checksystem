@@ -77,7 +77,8 @@ sub _run {
     stdout    => $stdout,
     exit_code => $code,
     elapsed   => $elapsed,
-    command   => "@$cmd"
+    command   => "@$cmd",
+    ts        => scalar localtime
   };
 }
 
