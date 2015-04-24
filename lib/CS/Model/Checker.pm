@@ -1,7 +1,7 @@
 package CS::Model::Checker;
 use Mojo::Base 'MojoX::Model';
 
-use Graphics::Color::RGB;
+use Convert::Color;
 use IPC::Run qw/run timeout/;
 use List::Util 'all';
 use Time::HiRes qw/gettimeofday tv_interval/;
@@ -9,13 +9,13 @@ use Time::HiRes qw/gettimeofday tv_interval/;
 sub status2color {
   my ($self, $code) = @_;
 
-  return Graphics::Color::RGB->from_hex_string('#FFFFFF') unless $code;
+  return Convert::Color->new('rgb8:ffffff') unless $code;
 
-  if ($code == 101) { return Graphics::Color::RGB->from_hex_string('#00DC00') }
-  if ($code == 102) { return Graphics::Color::RGB->from_hex_string('#FFFF00') }
-  if ($code == 103) { return Graphics::Color::RGB->from_hex_string('#FFA600') }
-  if ($code == 104) { return Graphics::Color::RGB->from_hex_string('#E60000') }
-  return Graphics::Color::RGB->from_hex_string('#FFFFFF');
+  if ($code == 101) { return Convert::Color->new('rgb8:00dc00') }
+  if ($code == 102) { return Convert::Color->new('rgb8:ffff00') }
+  if ($code == 103) { return Convert::Color->new('rgb8:ffa600') }
+  if ($code == 104) { return Convert::Color->new('rgb8:e60000') }
+  return Convert::Color->new('rgb8:ffffff');
 }
 
 sub check {

@@ -1,5 +1,5 @@
+requires 'Convert::Color'             => '0.11';
 requires 'EV'                         => '4.18';
-requires 'Graphics::Color::HSV'       => '0.31';
 requires 'IO::Socket::SSL'            => '2.012';
 requires 'IPC::Run'                   => '0.94';
 requires 'Minion'                     => '1.14';

@@ -1,7 +1,7 @@
 package CS::Model::Scoreboard;
 use Mojo::Base 'MojoX::Model';
 
-use Graphics::Color::HSV;
+use Convert::Color;
 use List::Util 'max';
 use Time::Piece;
 
@@ -23,14 +23,15 @@ sub generate {
   $scoreboard->map(
     sub {
       for my $s (@{$_->{services}}) {
-        my $c = $self->app->model('checker')->status2color($s->{status})->to_hsv;
-        if ($c->to_rgb->equal_to(Graphics::Color::RGB->from_hex_string('#FFFFFF'))) {
-          $s->{bgcolor} = $c->to_rgb->as_css_hex;
+        my $c = $self->app->model('checker')->status2color($s->{status});
+        if ($c->as_rgb8->hex eq 'ffffff') {
+          $s->{bgcolor} = '#ffffff';
           next;
         }
+        $c = $c->as_hsv;
         my $rate = $services->{$s->{id}}{max} == 0 ? 1 : ($s->{sla} * $s->{fp} / $services->{$s->{id}}{max});
-        my $nc = Graphics::Color::HSV->new({h => $c->h, s => 0.5 + $c->s * 0.5 * $rate, v => $c->v})->to_rgb;
-        $s->{bgcolor} = $nc->as_css_hex;
+        my $nc = Convert::Color::HSV->new($c->hue, 0.5 + $c->saturation * 0.5 * $rate, $c->value);
+        $s->{bgcolor} = '#' . $nc->as_rgb8->hex;
       }
     }
   );
