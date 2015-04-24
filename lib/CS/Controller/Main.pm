@@ -15,9 +15,10 @@ sub update {
       my $round = $c->stash('round');
       $c->send({
           json => {
-            round      => "Round $round",
-            scoreboard => $c->render_to_string('scoreboard'),
-            progress   => $c->render_to_string('progress')
+            round       => "Round $round",
+            scoreboard  => $c->render_to_string('scoreboard'),
+            progress    => $c->render_to_string('progress'),
+            achievement => $c->render_to_string('achievement')
           }
         }
       );

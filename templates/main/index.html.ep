@@ -14,16 +14,7 @@
 %= include 'scoreboard';
 
 % content_for footer => begin
-% for my $a (@{$achievement->to_array}) {
-  <blockquote>
-    <p>
-      [<%= $a->{time} %> ago]
-      <strong><%= app->teams->{$a->{team_id}}{name} %></strong> on
-      <strong><%= app->services->{$a->{service_id}}{name} %></strong> get
-      <%= $a->{data} %>
-    </p>
-  </blockquote>
-% }
+%= include 'achievement';
 % end
 
 <script>
@@ -33,5 +24,6 @@
     $('div#round').html(data.round);
     $('div.progress').html(data.progress);
     $('div#scoreboard').html(data.scoreboard);
+    $('footer > div.container').html(data.achievement);
   };
 </script>

@@ -1,0 +1,10 @@
+% for my $a (@{$achievement->to_array}) {
+  <blockquote>
+    <p>
+      [<%= $a->{time} %>]
+      <strong><%= app->teams->{$a->{team_id}}{name} %></strong> on
+      <strong><%= app->services->{$a->{service_id}}{name} %></strong> get
+      <%= $a->{data} %>
+    </p>
+  </blockquote>
+% }
