@@ -12,24 +12,16 @@ sub generate {
   # Calculate score for each service
   my $services;
   my $scoreboard = $db->query('select * from scoreboard')->expand->hashes;
-  $scoreboard->map(
-    sub {
-      for my $s (@{$_->{services}}) {
-        push @{$services->{$s->{id}}{all}}, $s->{sla} * $s->{fp};
-      }
-    }
-  );
+  $scoreboard->map(sub { push @{$services->{$_->{id}}{all}}, $_->{sla} * $_->{fp} for @{$_->{services}} });
   $services->{$_}{max} = max @{$services->{$_}{all}} for keys %$services;
   $scoreboard->map(
     sub {
       for my $s (@{$_->{services}}) {
         my $c = $self->app->model('checker')->status2color($s->{status});
-        if ($c->as_rgb8->hex eq 'ffffff') {
-          $s->{bgcolor} = '#ffffff';
-          next;
-        }
-        $c = $c->as_hsv;
+        $s->{bgcolor} = '#ffffff' and next if $c->as_rgb8->hex eq 'ffffff';
+
         my $rate = $services->{$s->{id}}{max} == 0 ? 1 : ($s->{sla} * $s->{fp} / $services->{$s->{id}}{max});
+        $c = $c->as_hsv;
         my $nc = Convert::Color::HSV->new($c->hue, 0.5 + $c->saturation * 0.5 * $rate, $c->value);
         $s->{bgcolor} = '#' . $nc->as_rgb8->hex;
       }
