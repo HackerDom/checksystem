@@ -34,7 +34,7 @@ sub generate {
       achievement => $db->query(
         'select *, extract(epoch from ts)::int as time
           from achievement order by ts desc'
-      )->hashes->map(sub { $_->{time} = localtime(time); $_ })
+      )->hashes->map(sub { $_->{time} = localtime($_->{time}); $_ })
     }
   );
 }
