@@ -44,7 +44,7 @@ sub verify {
   )->arrays->map(sub { $services->{$_->[0]} = undef });
   if (!exists $services->{$service_id}) {
     $n = 1 + keys %$services;
-    $self->_create(sprintf('%s hack %d service(s)', $team, $n));
+    $self->_create(sprintf('%s hack %d services', $team, $n)) if $n > 1;
   }
 }
 
