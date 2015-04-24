@@ -56,6 +56,8 @@ sub init {
     next unless my $service = $services->{$_->{name}};
     $app->services->{$service->{id}} = {id => $service->{id}, %$_};
   }
+
+  $app->minion->enqueue('scoreboard');
 }
 
 1;
