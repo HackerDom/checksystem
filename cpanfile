@@ -2,6 +2,7 @@ requires 'Convert::Color'             => '0.11';
 requires 'EV'                         => '4.18';
 requires 'IO::Socket::SSL'            => '2.012';
 requires 'IPC::Run'                   => '0.94';
+requires 'List::Util'                 => '1.42';
 requires 'Minion'                     => '1.14';
 requires 'Mojo::Pg'                   => '2.03';
 requires 'Mojolicious'                => '6.05';
