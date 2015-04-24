@@ -132,7 +132,7 @@ like $data->{error}, qr/you already submitted this flag/, 'right error';
 
 # Achievement
 $app->minion->perform_jobs;
-is $db->query('select count(*) from achievement')->array->[0], 2, 'right achievement';
+is $db->query('select count(*) from achievement')->array->[0], 3, 'right achievement';
 
 # New round (#2)
 $ids = $manager->start_round;
