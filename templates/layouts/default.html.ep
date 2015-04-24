@@ -8,7 +8,7 @@
     <title><%= title %></title>
     <style type="text/css">
 html { position: relative; min-height: 100%; }
-body { margin-bottom: 190px; }
+body { margin-bottom: 170px; }
 .footer {
   padding-top: 5px;
   margin-top: 5px;
@@ -16,7 +16,7 @@ body { margin-bottom: 190px; }
   position: fixed;
   width: 100%;
   bottom: 0;
-  height: 190px;
+  height: 170px;
   background-color: #f5f5f5;
 }
     </style>
@@ -29,7 +29,7 @@ body { margin-bottom: 190px; }
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#"><div id="round"><%= content_for 'r' %></div></a></li>
+            <li><div id="round" class="navbar-text"><%= content_for 'r' %></div></li>
           </ul>
         </div>
       </div>

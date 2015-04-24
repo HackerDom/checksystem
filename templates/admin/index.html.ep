@@ -41,3 +41,7 @@
   </tr>
   % }
 </table>
+
+% content_for footer => begin
+%= include 'achievement';
+% end
