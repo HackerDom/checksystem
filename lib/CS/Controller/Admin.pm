@@ -9,8 +9,9 @@ sub view {
   my $db   = $c->pg->db;
   my $view = $db->query(
     'select round, status, result
-    from runs where team_id = ? and service_id = ? order by round desc limit 30', $c->param('team_id'),
-    $c->param('service_id')
+    from runs where
+    team_id = $1 and service_id = $2 and (status = $3 or $3 is null)
+    order by round desc limit 30', $c->param('team_id'), $c->param('service_id'), $c->param('status')
   )->expand->hashes->to_array;
   $c->render(view => $view);
 }
