@@ -26,7 +26,7 @@ sub verify {
     from stolen_flags as sf join flags as f using(data)
     where sf.ts < ? and service_id = ? and sf.team_id = ?', $flag->{ts}, $service_id, $team_id
   )->array->[0];
-  $self->_create(sprintf('%s on %s get first flags', $team, $service)) if $n == 0;
+  $self->_create(sprintf('%s on %s get first flag', $team, $service)) if $n == 0;
 
   # N flags (team/service)
   $n = $db->query(

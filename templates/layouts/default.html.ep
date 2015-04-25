@@ -8,15 +8,16 @@
     <title><%= title %></title>
     <style type="text/css">
 html { position: relative; min-height: 100%; }
-body { margin-bottom: 145px; }
+body { margin-bottom: 165px; }
 .footer {
   padding-top: 5px;
   margin-top: 5px;
   overflow: scroll;
+  overflow-x: hidden;
   position: fixed;
   width: 100%;
   bottom: 0;
-  height: 145px;
+  height: 165px;
   background-color: #f5f5f5;
 }
     </style>

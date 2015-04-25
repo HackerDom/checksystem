@@ -15,7 +15,7 @@ sub accept {
   my $app = $self->app;
   my $db  = $app->pg->db;
 
-  my $round = $db->query('select max(n) from rounds')->array->[0] // 0;
+  my $round = $db->query('select max(n) from rounds')->array->[0];
   my $flag = $db->query('select team_id, service_id, round from flags where data = ?', $flag_data)->hash;
 
   return {ok => 0, error => 'Denied: no such flag'} unless $flag;

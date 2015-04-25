@@ -1,5 +1,9 @@
-<ul class="list-unstyled">
+<div class="row">
 % for my $a (@{$achievement->to_array}) {
-  <li>[<%= $a->{time} %>] <%= $a->{data} %></li>
+  <div class="col-sm-4">
+  <blockquote class="bg-info">
+    <%= $a->{data} %><footer><%= $a->{time} %></footer>
+  </blockquote>
+  </div>
 % }
-</ul>
+</div>
