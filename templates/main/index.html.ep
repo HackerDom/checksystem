@@ -22,7 +22,7 @@
   function create_ws() {
     var ws = new WebSocket('<%= url_for('update')->to_abs %>');
 
-    ws.onopen = function () {
+    ws.onopen = function(event) {
       attempts = 1;
       ws.onmessage = function(event) {
         data = JSON.parse(event.data);
@@ -33,8 +33,10 @@
       };
     }
 
-    ws.onclose = function () {
-      setTimeout(function () { attempts++; create_ws() }, gen_interval(attempts))
+    ws.onclose = function(event) {
+      if (event.code != 1005) {
+        setTimeout(function() { attempts++; create_ws() }, gen_interval(attempts))
+      }
     }
   }
 
