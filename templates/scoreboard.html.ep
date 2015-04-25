@@ -20,7 +20,7 @@
       <td><%= $team->{score} %></td>
 
       % for my $service (@{$team->{services}}) {
-      <td bgcolor="<%= $service->{bgcolor} %>">
+      <td title="<%= $service->{title} // '' %>" bgcolor="<%= $service->{bgcolor} %>">
         <div>SLA: <%= $service->{sla} %></div>
         <div>FP: <%= $service->{fp} %></div>
         <div>Flags: <%= $service->{flags} %></div>

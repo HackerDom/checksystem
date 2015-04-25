@@ -79,7 +79,7 @@ create materialized view scoreboard as (
     group by sf.team_id, f.service_id
   ),
   r as (
-    select distinct on (team_id, service_id) team_id, service_id, status
+    select distinct on (team_id, service_id) team_id, service_id, status, result
     from runs order by team_id, service_id, round desc
   ),
   sc as (
@@ -90,7 +90,8 @@ create materialized view scoreboard as (
         'flags', coalesce(f.flags, 0),
         'fp', round(fp.score::numeric, 2),
         'sla', round(100 * s.sla::numeric, 2),
-        'status', status
+        'status', status,
+        'result', result
       ) order by id) as services
   from fp join s using (team_id, service_id)
     left join f using (team_id, service_id)

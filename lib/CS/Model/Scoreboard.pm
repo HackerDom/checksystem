@@ -2,7 +2,7 @@ package CS::Model::Scoreboard;
 use Mojo::Base 'MojoX::Model';
 
 use Convert::Color;
-use List::Util 'max';
+use List::Util qw/first max/;
 
 sub generate {
   my $self = shift;
@@ -16,6 +16,10 @@ sub generate {
   $scoreboard->map(
     sub {
       for my $s (@{$_->{services}}) {
+        if (($s->{status} // 0) != 101) {
+          my $state = first { defined $s->{result}{$_}{exit_code} } (qw/get_2 get_1 put check/);
+          $s->{title} = $s->{result}{$state}{stdout} // '' if $state;
+        }
         my $c = $self->app->model('checker')->status2color($s->{status});
         if ($c->as_rgb8->hex eq 'ffffff') { $s->{bgcolor} = '#ffffff'; next }
 
