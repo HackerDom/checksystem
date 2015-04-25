@@ -34,7 +34,7 @@ sub verify {
     from stolen_flags as sf join flags as f using(data)
     where sf.ts <= ? and service_id = ? and sf.team_id = ?', $flag->{ts}, $service_id, $team_id
   )->array->[0];
-  $self->_create(sprintf('%s on %s get %d flags', $team, $service, $n)) if $n > 0 && $n % 10 == 0;
+  $self->_create(sprintf('%s on %s get %d flags', $team, $service, $n)) if $n =~ /^10+$/;
 
   # N services
   my $services;

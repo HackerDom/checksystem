@@ -12,6 +12,8 @@ sub run {
       my ($loop, $stream) = @_;
       $stream->timeout($app->config->{cs}{flags}{timeout});
 
+      return $stream->close unless $app->model('util')->game_status == 1;
+
       my $ip      = $stream->handle->peerhost;
       my $team_id = $app->model('util')->team_id_by_address($ip);
       return $stream->write("Your IP address $ip is unknown\n" => sub { $stream->close }) unless $team_id;

@@ -42,8 +42,9 @@ sub progress {
   my $p3  = min(($now - $break[1])->seconds, ($end - $break[1])->seconds) / $all;
   for ($p1, $p2, $p3) {
     $_ = 0 if $_ < 0;
-    $_ = sprintf '%.2f%%', $_ * 100;
+    $_ = sprintf '%.2f', $_ * 100;
   }
+  $p3 -= $_ if ($_ = $p1 + $p2 + $p3 - 100) > 0;
   return [$p1, $p2, $p3];
 }
 

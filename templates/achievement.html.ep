@@ -1,3 +1,5 @@
+<ul class="list-unstyled">
 % for my $a (@{$achievement->to_array}) {
-  <p>[<%= $a->{time} %>] <%= $a->{data} %></p>
+  <li>[<%= $a->{time} %>] <%= $a->{data} %></li>
 % }
+</ul>
