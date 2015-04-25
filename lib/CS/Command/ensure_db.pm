@@ -32,6 +32,8 @@ sub run {
       select 0, teams.id, services.id, 0, 0
       from teams cross join services'
   );
+
+  $app->minion->enqueue('scoreboard');
 }
 
 1;
