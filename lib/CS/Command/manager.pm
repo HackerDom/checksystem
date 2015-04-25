@@ -13,6 +13,9 @@ sub run {
   my $self = shift;
   my $app  = $self->app;
 
+  local $SIG{INT} = local $SIG{TERM} =
+    sub { $app->log->info('Gracefully stopping manager. Wait for new round...'); $self->{finished}++ };
+
   $app->pg->pubsub->listen(job_finish => sub { $self->finalize_check($app->minion->job($_[1])) });
 
   my $now = localtime;
@@ -32,6 +35,8 @@ sub run {
 sub start_round {
   my $self = shift;
   my ($app, $ids) = ($self->app);
+
+  exit if $self->{finished};
 
   # Check end of game
   if ($app->model('util')->game_status == -1) {
