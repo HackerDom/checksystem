@@ -27,7 +27,9 @@ body { margin-bottom: 165px; }
     <div class="navbar navbar-default navbar-static-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand" href="<%= url_for 'index' %>"><%= app->config->{cs}{ctf}{name} %></a>
+          <a class="navbar-brand" href="<%= url_for(current_route =~ /admin/ ? 'admin_index' : 'index') %>">
+            <%= app->config->{cs}{ctf}{name} %>
+          </a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
