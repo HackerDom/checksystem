@@ -6,6 +6,14 @@ use IPC::Run qw/run timeout/;
 use List::Util 'all';
 use Time::HiRes qw/gettimeofday tv_interval/;
 
+has statuses => sub {
+  [ [UP      => $_[0]->status2color(101)->hex],
+    [CORRUPT => $_[0]->status2color(102)->hex],
+    [MUMBLE  => $_[0]->status2color(103)->hex],
+    [DOWN    => $_[0]->status2color(104)->hex]
+  ];
+};
+
 sub status2color {
   my ($self, $code) = @_;
 

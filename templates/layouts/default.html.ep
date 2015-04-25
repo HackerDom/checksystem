@@ -20,6 +20,7 @@ body { margin-bottom: 165px; }
   height: 165px;
   background-color: #f5f5f5;
 }
+.table-condensed>tbody>tr>td { padding: 4px; }
     </style>
   </head>
   <body>
@@ -37,6 +38,13 @@ body { margin-bottom: 165px; }
     </div>
     <div class="container">
       <%= content_for 'progress' %>
+      <table class="table table-condensed">
+        <tr class="text-center">
+          % for my $status (@{app->model('checker')->statuses}) {
+            <td class="col-md-3" bgcolor="#<%= $status->[1] %>"><%= $status->[0] %></td>
+          % }
+        </tr>
+      </table>
       <%= content %>
     </div>
     <footer class="footer">
