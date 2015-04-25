@@ -1,6 +1,15 @@
 package CS::Controller::Admin;
 use Mojo::Base 'Mojolicious::Controller';
 
+sub auth {
+  my $c = shift;
+
+  return 1 if ($c->req->url->to_abs->userinfo // '') eq $c->config->{cs}{admin}{auth};
+  $c->res->headers->www_authenticate('Basic');
+  $c->render(text => 'Authentication required!', status => 401);
+  return undef;
+}
+
 sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
 
 sub view {
