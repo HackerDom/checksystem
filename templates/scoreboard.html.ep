@@ -12,19 +12,26 @@
     % for my $team (@$scoreboard) {
     <tr class="text-center">
       <td><%= $team->{n} %></td>
-      <td><img class="img-rounded" src="<%= app->teams->{$team->{team_id}}{logo} // '/logo.png' %>"></td>
+      <td><img width="64px" class="img-rounded" src="<%= app->teams->{$team->{team_id}}{logo} // '/logo.png' %>"></td>
       <td>
         <div><%= $team->{name} %></div>
         <div><%= $team->{host} %></div>
       </td>
       <td><%= $team->{score} %></td>
-
       % for my $service (@{$team->{services}}) {
-      <td title="<%= $service->{title} // '' %>" bgcolor="<%= $service->{bgcolor} %>">
-        <div>SLA: <%= $service->{sla} %></div>
-        <div>FP: <%= $service->{fp} %></div>
-        <div>Flags: <%= $service->{flags} %></div>
-      </td>
+        <td title="<%= $service->{title} // '' %>" bgcolor="<%= $service->{bgcolor} %>">
+          % if (current_route eq 'admin_index') {
+            <div class="pull-right">
+              <a class="btn btn-default" role="button"
+                href="<%= url_for('admin_view', team_id => $team->{team_id}, service_id => $service->{id} ) %>">
+                <span class="glyphicon glyphicon-asterisk"></span>
+              </a>
+            </div>
+          % }
+          <div>SLA: <%= $service->{sla} %></div>
+          <div>FP: <%= $service->{fp} %></div>
+          <div>Flags: <%= $service->{flags} %></div>
+        </td>
       % }
     </tr>
     % }
