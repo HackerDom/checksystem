@@ -1,7 +1,7 @@
 <div class="row">
 % for my $a (@{$achievement->to_array}) {
   <div class="col-sm-4">
-  <blockquote class="bg-info">
+  <blockquote class="<%= $a->{new} ? 'bg-info' : '' %>">
     <%= $a->{data} %><footer><%= $a->{time} %></footer>
   </blockquote>
   </div>
