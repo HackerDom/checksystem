@@ -47,9 +47,11 @@ body { margin-bottom: 165px; }
       </table>
       <%= content %>
     </div>
-    <footer class="footer">
-      <div class="container"><%= content_for 'footer' %></div>
-    </footer>
+    % if (current_route =~ /index/) {
+      <footer class="footer">
+        <div class="container"><%= content_for 'footer' %></div>
+      </footer>
+    % }
     <script>
       $('img').error(function() { $(this).attr('src', '/logo.png'); });
     </script>
