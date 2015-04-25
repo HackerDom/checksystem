@@ -41,5 +41,8 @@ body { margin-bottom: 170px; }
     <footer class="footer">
       <div class="container"><%= content_for 'footer' %></div>
     </footer>
+    <script>
+      $('img').error(function() { $(this).attr('src', '/logo.png'); });
+    </script>
   </body>
 </html>
