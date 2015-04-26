@@ -31,7 +31,7 @@ sub accept {
   my $status = $row ? $row->{status} : 110;
   return {
     ok    => 0,
-    error => spritnf('Denied: your appropriate service %s is not UP', $app->services->{service_id}{name})
+    error => sprintf('Denied: your appropriate service %s is not UP', $app->services->{service_id}{name})
     }
     unless $status == 101;
 
