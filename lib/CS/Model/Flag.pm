@@ -30,8 +30,9 @@ sub accept {
     $team_id, $flag->{service_id})->hash;
   my $status = $row ? $row->{status} : 110;
   return {
-    ok    => 0,
-    error => sprintf('Denied: your appropriate service %s is not UP', $app->services->{service_id}{name})
+    ok => 0,
+    error =>
+      sprintf('Denied: your appropriate service %s is not UP', $app->services->{$flag->{service_id}}{name})
     }
     unless $status == 101;
 
