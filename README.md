@@ -1,4 +1,4 @@
-# checksystem
+# checksystem [![Build Status](https://travis-ci.org/HackerDom/checksystem.svg?branch=master)](https://travis-ci.org/HackerDom/checksystem)
 Checksystem for attack-defense CTF
 
 # install
