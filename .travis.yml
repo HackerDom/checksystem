@@ -9,6 +9,8 @@ install:
   - "cpanm -n --installdeps ."
 before_script:
   - psql -c 'create database cs_test;' -U postgres
+script:
+  - "prove -lv"
 sudo: false
 notifications:
   email: false
