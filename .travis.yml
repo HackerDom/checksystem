@@ -1,0 +1,14 @@
+language: perl
+perl:
+  - "5.20"
+addons:
+  postgresql: "9.4"
+env:
+  - "TEST_ONLINE=postgresql://postgres@/cs_test"
+install:
+  - "cpanm -n --installdeps ."
+before_script:
+  - psql -c 'create database cs_test;' -U postgres
+sudo: false
+notifications:
+  email: false

@@ -13,9 +13,10 @@ sub startup {
 
   $app->plugin('Config');
   $app->plugin('Model');
-  $app->plugin(Minion => {Pg => $app->config->{pg}{uri}});
 
-  $app->helper(pg => sub { state $pg = Mojo::Pg->new($app->config->{pg}{uri}) });
+  my $pg_uri = $ENV{TEST_ONLINE} // $app->config->{pg}{uri};
+  $app->plugin(Minion => {Pg => $pg_uri});
+  $app->helper(pg => sub { state $pg = Mojo::Pg->new($pg_uri) });
 
   # Tasks
   $app->minion->add_task(check       => sub { $_[0]->app->model('checker')->check(@_) });
