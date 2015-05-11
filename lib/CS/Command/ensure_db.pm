@@ -21,6 +21,7 @@ sub run {
   }
 
   # Init
+  $app->init;
   $db->query('insert into rounds (n) values (0)');
   $db->query(
     'insert into score (round, team_id, service_id, score)
@@ -33,7 +34,7 @@ sub run {
       from teams cross join services'
   );
 
-  $app->minion->enqueue('scoreboard');
+  $db->query('refresh materialized view scoreboard');
 }
 
 1;
