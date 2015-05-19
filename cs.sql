@@ -93,11 +93,11 @@ create materialized view scoreboard as (
         'status', status,
         'result', result
       ) order by id) as services
-  from fp join s using (team_id, service_id)
-    left join f using (team_id, service_id)
-    left join r using (team_id, service_id)
-    join services on fp.service_id = services.id
-  group by team_id
+    from fp join s using (team_id, service_id)
+      left join f using (team_id, service_id)
+      left join r using (team_id, service_id)
+      join services on fp.service_id = services.id
+    group by team_id
   )
   select rank() over(order by score desc) as n,
     teams.name as name, teams.host, sc.*
