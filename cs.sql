@@ -104,3 +104,6 @@ create materialized view scoreboard as (
   from sc join teams on sc.team_id = teams.id
   order by score desc
 );
+-- 1 down
+drop materialized view if exists scoreboard;
+drop table if exists rounds, teams, services, flags, stolen_flags, runs, sla, score, achievement;
