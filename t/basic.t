@@ -6,7 +6,7 @@ use Time::Piece;
 
 use CS::Command::manager;
 
-BEGIN { $ENV{MOJO_CONFIG} = 'c_s_test.conf' }
+BEGIN { $ENV{MOJO_MODE} = 'test' }
 
 my $t   = Test::Mojo->new('CS');
 my $app = $t->app;
