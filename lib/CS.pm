@@ -11,8 +11,7 @@ sub startup {
 
   push @{$app->commands->namespaces}, 'CS::Command';
 
-  my $mode = $app->mode;
-  $app->plugin(Config => {file => "cs.$mode.conf"});
+  $app->plugin('Config');
   $app->plugin('Model');
 
   my $pg_uri = $ENV{TEST_ONLINE} // $app->config->{pg}{uri};
