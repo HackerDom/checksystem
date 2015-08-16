@@ -1,0 +1,24 @@
+% layout 'default';
+% title app->config->{cs}{ctf}{name};
+
+<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+<script>
+$(function () {
+  $.getJSON("<%= url_for('charts_data') %>", function(data) {
+    $('#container').highcharts({
+      title: { text: 'Scores' },
+      xAxis: { categories: data.rounds },
+      yAxis: { title: { text: 'Scores' } },
+      tooltip: { valueSuffix: '' },
+      legend: {
+          layout: 'vertical',
+          align: 'right',
+          verticalAlign: 'middle',
+          borderWidth: 0
+      },
+      series: data.scores
+    });
+  });
+});
+</script>

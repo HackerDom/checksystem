@@ -34,6 +34,8 @@ sub startup {
   # Routes
   my $r = $app->routes;
   $r->get('/')->to('main#index')->name('index');
+  $r->get('/charts')->to('main#charts')->name('charts');
+  $r->get('/charts/data')->to('main#charts_data')->name('charts_data');
   $r->websocket('/update')->to('main#update')->name('update');
   my $admin = $r->under('/admin')->to('admin#auth');
   $admin->get('/')->to('admin#index')->name('admin_index');
