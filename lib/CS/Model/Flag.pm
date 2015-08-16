@@ -37,7 +37,6 @@ sub accept {
     unless $status == 101;
 
   if ($db->query('insert into stolen_flags (data, team_id) values (?, ?)', $flag_data, $team_id)->rows) {
-    $app->minion->enqueue(achievement => [$flag_data]);
     return {ok => 1};
   } else {
     return {ok => 0, error => 'Please try again later'};

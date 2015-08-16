@@ -13,10 +13,6 @@
 
 %= include 'scoreboard';
 
-% content_for footer => begin
-%= include 'achievement';
-% end
-
 <script>
   var attempts = 1;
   function create_ws() {
@@ -29,7 +25,6 @@
         $('div#round').html(data.round);
         $('div.progress').html(data.progress);
         $('div#scoreboard').html(data.scoreboard);
-        $('footer > div.container').html(data.achievement);
       };
     }
 

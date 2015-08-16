@@ -1,3 +1,5 @@
+-- 2 up
+drop table achievement;
 -- 1 up (init)
 create table teams (
   id      serial not null primary key,

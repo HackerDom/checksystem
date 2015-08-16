@@ -6,7 +6,3 @@
 % end
 
 %= include 'scoreboard';
-
-% content_for footer => begin
-%= include 'achievement';
-% end

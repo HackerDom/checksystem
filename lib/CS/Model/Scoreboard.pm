@@ -32,13 +32,9 @@ sub generate {
   );
 
   return (
-    { scoreboard  => $scoreboard,
-      round       => $db->query('select max(n) from rounds')->array->[0],
-      progress    => $self->app->model('util')->progress,
-      achievement => $db->query(
-        'select *, extract(epoch from ts)::int as time
-          from achievement order by ts desc'
-      )->hashes->map(sub { $_->{time} = localtime($_->{time}); $_ })
+    { scoreboard => $scoreboard,
+      round      => $db->query('select max(n) from rounds')->array->[0],
+      progress   => $self->app->model('util')->progress
     }
   );
 }
