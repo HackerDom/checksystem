@@ -1,5 +1,3 @@
--- 2 up
-drop table achievement;
 -- 1 up (init)
 create table teams (
   id      serial not null primary key,
@@ -60,11 +58,6 @@ create table score (
 );
 create index on score (round);
 
-create table achievement (
-  ts   timestamp with time zone not null default now(),
-  data text
-);
-
 create materialized view scoreboard as (
   with fp as (
     select distinct on (team_id, service_id) team_id, service_id, score
@@ -108,4 +101,4 @@ create materialized view scoreboard as (
 );
 -- 1 down
 drop materialized view if exists scoreboard;
-drop table if exists rounds, teams, services, flags, stolen_flags, runs, sla, score, achievement;
+drop table if exists rounds, teams, services, flags, stolen_flags, runs, sla, score;
