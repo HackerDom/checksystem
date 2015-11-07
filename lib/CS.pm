@@ -3,8 +3,7 @@ use Mojo::Base 'Mojolicious';
 
 use Mojo::Pg;
 
-has teams    => sub { {} };
-has services => sub { {} };
+has [qw/teams services vulns/] => sub { {} };
 
 sub startup {
   my $app = shift;
@@ -45,19 +44,23 @@ sub startup {
 sub init {
   my $app = shift;
 
-  my $teams =
-    $app->pg->db->query('select * from teams')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
+  my $teams = $app->pg->db->query('table teams')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
   for (@{$app->config->{teams}}) {
     next unless my $team = $teams->{$_->{name}};
     $app->teams->{$team->{id}} = {id => $team->{id}, %$_};
   }
 
-  my $services =
-    $app->pg->db->query('select * from services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
+  my $services = $app->pg->db->query('table services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
   for (@{$app->config->{services}}) {
     next unless my $service = $services->{$_->{name}};
-    $app->services->{$service->{id}} = {id => $service->{id}, %$_};
+    my @vulns = split /:/, $_->{vulns} // '1';
+    my $vulns;
+    for my $n (0 .. $#vulns) { push @$vulns, $n + 1 for 1 .. $vulns[$n] }
+    $app->services->{$service->{id}} = {id => $service->{id}, %$_, vulns => $vulns};
   }
+
+  $app->vulns($app->pg->db->query('table vulns')
+      ->hashes->reduce(sub { $a->{$b->{service_id}}{$b->{n}} = $b->{id}; $a }, {}));
 }
 
 1;

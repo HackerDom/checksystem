@@ -27,7 +27,7 @@ sub status2color {
 }
 
 sub check {
-  my ($self, $job, $round, $team, $service, $flag, $old_flag) = @_;
+  my ($self, $job, $round, $team, $service, $flag, $old_flag, $vuln) = @_;
   my $result = {};
 
   return $self->_finish($job, $result)
@@ -39,20 +39,20 @@ sub check {
   return $self->_finish($job, $result) unless ($result->{check}{exit_code} == 101);
 
   # Put
-  $cmd = [$service->{path}, 'put', $team->{host}, $flag->{id}, $flag->{data}];
+  $cmd = [$service->{path}, 'put', $team->{host}, $flag->{id}, $flag->{data}, $vuln->{n}];
   $result->{put} = $self->_run($cmd, $service->{timeout});
   (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
   $flag->{id} = $result->{put}{fid} = $id if $id;
   return $self->_finish($job, $result) unless $result->{put}{exit_code} == 101;
 
   # Get 1
-  $cmd = [$service->{path}, 'get', $team->{host}, $flag->{id}, $flag->{data}];
+  $cmd = [$service->{path}, 'get', $team->{host}, $flag->{id}, $flag->{data}, $vuln->{n}];
   $result->{get_1} = $self->_run($cmd, $service->{timeout});
   return $self->_finish($job, $result) unless $result->{get_1}{exit_code} == 101;
 
   # Get 2
   if ($old_flag) {
-    $cmd = [$service->{path}, 'get', $team->{host}, $old_flag->{id}, $old_flag->{data}];
+    $cmd = [$service->{path}, 'get', $team->{host}, $old_flag->{id}, $old_flag->{data}, $vuln->{n}];
     $result->{get_2} = $self->_run($cmd, $service->{timeout});
   }
   return $self->_finish($job, $result);

@@ -52,15 +52,19 @@ sub start_round {
 
   for my $team (values %{$app->teams}) {
     for my $service (values %{$app->services}) {
+      my $n       = $service->{vulns}->[$round % @{$service->{vulns}}];
+      my $vuln_id = $app->vulns->{$service->{id}}{$n};
+
       my $flag     = $app->model('flag')->create;
       my $old_flag = $app->pg->db->query(
         'select id, data from flags
-        where team_id = ? and service_id = ? and round >= ? order by random() limit 1',
-        ($team->{id}, $service->{id}, $round - $app->config->{cs}{flag_life_time})
+        where team_id = ? and vuln_id = ? and round >= ? order by random() limit 1',
+        ($team->{id}, $vuln_id, $round - $app->config->{cs}{flag_life_time})
       )->hash;
-      my $id = $app->minion->enqueue(check => [$round, $team, $service, $flag, $old_flag]);
+      my $id = $app->minion->enqueue(
+        check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}]);
       push @$ids, $id;
-      $app->log->debug("Enqueue new job for $team->{name}/$service->{name}: $id");
+      $app->log->debug("Enqueue new job for $team->{name}/$service->{name}/$n: $id");
     }
   }
 
@@ -72,7 +76,7 @@ sub finalize_check {
   my $app = $self->app;
 
   my $result = $job->info->{result};
-  my ($round, $team, $service, $flag) = @{$job->args};
+  my ($round, $team, $service, $flag, undef, $vuln) = @{$job->args};
 
   if (!$result->{check} || $round != $self->round) {
     $result->{error} = 'Job is too old!';
@@ -84,8 +88,8 @@ sub finalize_check {
   # Save result
   eval {
     $app->pg->db->query(
-      'insert into runs (round, team_id, service_id, status, result) values (?, ?, ?, ?, ?)',
-      $round, $team->{id}, $service->{id}, $status, {json => $result});
+      'insert into runs (round, team_id, service_id, vuln_id, status, result) values (?, ?, ?, ?, ?, ?)',
+      $round, $team->{id}, $service->{id}, $vuln->{id}, $status, {json => $result});
   };
   $app->log->error("Error while insert check result: $@") if $@;
 
@@ -93,8 +97,9 @@ sub finalize_check {
   return unless ($result->{get_1}{exit_code} // 0) == 101;
   my $id = $result->{put}{fid} // $flag->{id};
   eval {
-    $app->pg->db->query('insert into flags (data, id, round, team_id, service_id) values (?, ?, ?, ?, ?)',
-      $flag->{data}, $id, $self->round, $team->{id}, $service->{id});
+    $app->pg->db->query(
+      'insert into flags (data, id, round, team_id, service_id, vuln_id) values (?, ?, ?, ?, ?, ?)',
+      $flag->{data}, $id, $self->round, $team->{id}, $service->{id}, $vuln->{id});
   };
   $app->log->error("Error while insert flag: $@") if $@;
 }

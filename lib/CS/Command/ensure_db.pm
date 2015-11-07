@@ -17,7 +17,10 @@ sub run {
 
   # Ensure services
   for my $service (@{$app->config->{services}}) {
-    eval { $db->query('insert into services (name) values (?)', $service->{name}) };
+    my $service_id =
+      $db->query('insert into services (name) values (?) returning id', $service->{name})->hash->{id};
+    my $n = split /:/, ($service->{vulns} // '1');
+    $db->query('insert into vulns (service_id, n) values (?, ?)', $service_id, $_) for 1 .. $n;
   }
 
   # Init

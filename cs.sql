@@ -11,6 +11,13 @@ create table services (
   name text not null unique
 );
 
+create table vulns (
+  id         serial not null primary key,
+  service_id integer not null references services(id),
+  n          smallint not null check (n > 0),
+  unique (service_id, n)
+);
+
 create table rounds (
   n  serial not null primary key,
   ts timestamp with time zone not null default now()
@@ -22,13 +29,15 @@ create table flags (
   round      integer not null references rounds(n),
   ts         timestamp with time zone not null default now(),
   team_id    integer not null references teams(id),
-  service_id integer not null references services(id)
+  service_id integer not null references services(id),
+  vuln_id    integer not null references vulns(id),
+  unique (round, team_id, service_id)
 );
 
 create table stolen_flags (
-  data              char(32) not null references flags(data),
-  ts                timestamp with time zone not null default now(),
-  team_id           integer not null references teams(id)
+  data    char(32) not null references flags(data),
+  ts      timestamp with time zone not null default now(),
+  team_id integer not null references teams(id)
 );
 
 create table runs (
@@ -36,8 +45,10 @@ create table runs (
   ts         timestamp with time zone not null default now(),
   team_id    integer not null references teams(id),
   service_id integer not null references services(id),
+  vuln_id    integer not null references vulns(id),
   status     integer not null,
-  result     json
+  result     jsonb,
+  unique (round, team_id, service_id)
 );
 create index on runs (round);
 
@@ -101,4 +112,4 @@ create materialized view scoreboard as (
 );
 -- 1 down
 drop materialized view if exists scoreboard;
-drop table if exists rounds, teams, services, flags, stolen_flags, runs, sla, score;
+drop table if exists rounds, teams, vulns, services, flags, stolen_flags, runs, sla, score;
