@@ -29,7 +29,6 @@ html { position: relative; min-height: 100%; }
       </div>
     </div>
     <div class="container">
-      <%= content_for 'progress' %>
       <table class="table table-condensed">
         <tr class="text-center">
           % for my $status (@{app->model('checker')->statuses}) {

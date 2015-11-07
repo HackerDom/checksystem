@@ -31,12 +31,7 @@ sub generate {
     }
   );
 
-  return (
-    { scoreboard => $scoreboard,
-      round      => $db->query('select max(n) from rounds')->array->[0],
-      progress   => $self->app->model('util')->progress
-    }
-  );
+  return ({scoreboard => $scoreboard, round => $db->query('select max(n) from rounds')->array->[0]});
 }
 
 1;

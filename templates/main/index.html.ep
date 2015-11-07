@@ -5,12 +5,6 @@
   Round <%= $round %>
 % end
 
-% content_for progress => begin
-<div class="progress">
-  %= include 'progress';
-</div>
-% end
-
 %= include 'scoreboard';
 
 <script>
@@ -23,7 +17,6 @@
       ws.onmessage = function(event) {
         data = JSON.parse(event.data);
         $('div#round').html(data.round);
-        $('div.progress').html(data.progress);
         $('div#scoreboard').html(data.scoreboard);
       };
     }

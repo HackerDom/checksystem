@@ -28,24 +28,4 @@ sub game_status {
   return -1;
 }
 
-sub progress {
-  my $self = shift;
-
-  my $time = $self->app->config->{cs}{time};
-  my ($start, $end) = map { 0 + localtime(Time::Piece->strptime($time->{$_}, $self->format)) } qw/start end/;
-  my @break = map { 0 + localtime(Time::Piece->strptime($time->{break}[$_], $self->format)) } 0 .. 1;
-
-  my $now = localtime;
-  my $all = ($end - $start)->seconds;
-  my $p1  = min(($now - $start)->seconds, ($break[0] - $start)->seconds) / $all;
-  my $p2  = min(($now - $break[0])->seconds, ($break[1] - $break[0])->seconds) / $all;
-  my $p3  = min(($now - $break[1])->seconds, ($end - $break[1])->seconds) / $all;
-  for ($p1, $p2, $p3) {
-    $_ = 0 if $_ < 0;
-    $_ = sprintf '%.2f', $_ * 100;
-  }
-  $p3 -= $_ if ($_ = $p1 + $p2 + $p3 - 100) > 0;
-  return [$p1, $p2, $p3];
-}
-
 1;

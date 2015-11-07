@@ -4,7 +4,7 @@ use Mojo::Base 'Mojolicious::Controller';
 sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
 
 sub charts_data {
-  my $c = shift;
+  my $c  = shift;
   my $db = $c->pg->db;
 
   my $scores = $c->pg->db->query(
@@ -38,14 +38,7 @@ sub update {
       $c->stash(%{$c->model('scoreboard')->generate});
       my $round = $c->stash('round');
 
-      $c->send({
-          json => {
-            round      => "Round $round",
-            scoreboard => $c->render_to_string('scoreboard'),
-            progress   => $c->render_to_string('progress')
-          }
-        }
-      );
+      $c->send({json => {round => "Round $round", scoreboard => $c->render_to_string('scoreboard')}});
     }
   );
 
