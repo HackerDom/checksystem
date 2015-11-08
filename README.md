@@ -11,14 +11,16 @@ root# cpanm --installdeps .
 ```bash
 psql$ createuser -P cs
 psql$ createdb -O cs cs
+ctf$ cp cs.conf.example c_s.conf
+ctf$ $EDITOR c_s.conf
 ```
 
 # run
 ```bash
-ctf$ $EDITOR c_s.conf
 ctf$ script/cs ensure_db
 ctf$ script/cs manager
 ctf$ script/cs flags
-ctf$ script/cs minion worker -j 48
+ctf$ script/cs minion worker -j 3
+ctf$ script/cs minion worker -q checker -j 48
 ctf$ hypnotoad script/cs
 ```

@@ -62,7 +62,9 @@ sub start_round {
         ($team->{id}, $vuln_id, $round - $app->config->{cs}{flag_life_time})
       )->hash;
       my $id = $app->minion->enqueue(
-        check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}]);
+        check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}],
+        {queue => 'checker'}
+      );
       push @$ids, $id;
       $app->log->debug("Enqueue new job for $team->{name}/$service->{name}/$n: $id");
     }
