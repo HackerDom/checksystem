@@ -34,7 +34,7 @@ my $manager = CS::Command::manager->new(app => $app);
 # New round (#1)
 my $ids = $manager->start_round;
 is $manager->round, 1, 'right round';
-$app->minion->perform_jobs;
+$app->minion->perform_jobs({queues => ['default', 'checker']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
 
 # Runs
@@ -130,12 +130,12 @@ $data = $app->model('flag')->accept(2, $flag_data);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/you already submitted this flag/, 'right error';
 
-$app->minion->perform_jobs;
+$app->minion->perform_jobs({queues => ['default', 'checker']});
 
 # New round (#2)
 $ids = $manager->start_round;
 is $manager->round, 2, 'right round';
-$app->minion->perform_jobs;
+$app->minion->perform_jobs({queues => ['default', 'checker']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
 
 # SLA
@@ -163,7 +163,7 @@ for my $team_id (1, 2) {
 # New round (#3)
 $ids = $manager->start_round;
 is $manager->round, 3, 'right round';
-$app->minion->perform_jobs;
+$app->minion->perform_jobs({queues => ['default', 'checker']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
 
 # SLA

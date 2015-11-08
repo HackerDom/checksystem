@@ -36,7 +36,7 @@ sub check {
   # Check
   my $cmd = [$service->{path}, 'check', $team->{host}];
   $result->{check} = $self->_run($cmd, $service->{timeout});
-  return $self->_finish($job, $result) unless ($result->{check}{exit_code} == 101);
+  return $self->_finish($job, $result) unless $result->{check}{exit_code} == 101;
 
   # Put
   $cmd = [$service->{path}, 'put', $team->{host}, $flag->{id}, $flag->{data}, $vuln->{n}];
