@@ -5,6 +5,6 @@ requires 'IPC::Run'                   => '0.94';
 requires 'List::Util'                 => '1.42';
 requires 'Minion'                     => '3.02';
 requires 'Mojo::Pg'                   => '2.15';
-requires 'Mojolicious'                => '6.27';
+requires 'Mojolicious'                => '6.29';
 requires 'Mojolicious::Plugin::Model' => '0.05';
 requires 'String::Random'             => '0.28';
