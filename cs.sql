@@ -90,7 +90,7 @@ create materialized view scoreboard as (
   ),
   sc as (
     select
-      fp.team_id, round(sum(100 * sla * score)::numeric, 2) as score,
+      fp.team_id, round(sum(sla * score)::numeric, 2) as score,
       json_agg(json_build_object(
         'id', fp.service_id,
         'flags', coalesce(f.flags, 0),
