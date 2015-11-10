@@ -46,13 +46,13 @@ sub check {
   return $self->_finish($job, $result) unless $result->{put}{exit_code} == 101;
 
   # Get 1
-  $cmd = [$service->{path}, 'get', $team->{host}, $flag->{id}, $flag->{data}, $vuln->{n}];
+  $cmd = [$service->{path}, 'get', $team->{host}, $flag->{id}, $flag->{data}];
   $result->{get_1} = $self->_run($cmd, $service->{timeout});
   return $self->_finish($job, $result) unless $result->{get_1}{exit_code} == 101;
 
   # Get 2
   if ($old_flag) {
-    $cmd = [$service->{path}, 'get', $team->{host}, $old_flag->{id}, $old_flag->{data}, $vuln->{n}];
+    $cmd = [$service->{path}, 'get', $team->{host}, $old_flag->{id}, $old_flag->{data}];
     $result->{get_2} = $self->_run($cmd, $service->{timeout});
   }
   return $self->_finish($job, $result);
