@@ -34,7 +34,7 @@ sub vulns {
   return (1, '1') unless $info->{exit_code} == 101;
 
   $info->{stdout} =~ /^vulns:(.*)$/m;
-  my $vulns = trim $1;
+  my $vulns = trim($1 // '');
   return (1, '1') unless $vulns =~ /^[0-9:]+$/;
 
   return (0 + split(/:/, $vulns), $vulns);
