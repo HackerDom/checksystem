@@ -17,9 +17,10 @@ sub run {
 
   # Ensure services
   for my $service (@{$app->config->{services}}) {
+    my ($n, $vulns) = $app->model('checker')->vulns($service);
     my $service_id =
-      $db->query('insert into services (name) values (?) returning id', $service->{name})->hash->{id};
-    my $n = split /:/, ($service->{vulns} // '1');
+      $db->query('insert into services (name, vulns) values (?, ?) returning id', $service->{name}, $vulns)
+      ->hash->{id};
     $db->query('insert into vulns (service_id, n) values (?, ?)', $service_id, $_) for 1 .. $n;
   }
 

@@ -4,6 +4,7 @@ use Mojo::Base 'MojoX::Model';
 use Convert::Color;
 use IPC::Run qw/run timeout/;
 use List::Util 'all';
+use Mojo::Util 'trim';
 use Time::HiRes qw/gettimeofday tv_interval/;
 
 has statuses => sub {
@@ -24,6 +25,19 @@ sub status2color {
   if ($code == 103) { return Convert::Color->new('rgb8:ffa600') }
   if ($code == 104) { return Convert::Color->new('rgb8:e60000') }
   return Convert::Color->new('rgb8:ffffff');
+}
+
+sub vulns {
+  my ($self, $service) = @_;
+
+  my $info = $self->_run([$service->{path}, 'info'], $service->{timeout});
+  return (1, '1') unless $info->{exit_code} == 101;
+
+  $info->{stdout} =~ /^vulns:(.*)$/m;
+  my $vulns = trim $1;
+  return (1, '1') unless $vulns =~ /^[0-9:]+$/;
+
+  return (0 + split(/:/, $vulns), $vulns);
 }
 
 sub check {

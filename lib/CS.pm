@@ -53,7 +53,7 @@ sub init {
   my $services = $app->pg->db->query('table services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
   for (@{$app->config->{services}}) {
     next unless my $service = $services->{$_->{name}};
-    my @vulns = split /:/, $_->{vulns} // '1';
+    my @vulns = split /:/, $service->{vulns};
     my $vulns;
     for my $n (0 .. $#vulns) { push @$vulns, $n + 1 for 1 .. $vulns[$n] }
     $app->services->{$service->{id}} = {id => $service->{id}, %$_, vulns => $vulns};

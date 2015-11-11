@@ -7,8 +7,9 @@ create table teams (
 );
 
 create table services (
-  id   serial not null primary key,
-  name text not null unique
+  id    serial not null primary key,
+  name  text not null unique,
+  vulns text not null
 );
 
 create table vulns (

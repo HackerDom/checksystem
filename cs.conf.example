@@ -17,12 +17,12 @@
     {name => 'team3', network => '127.0.3.0/24', host => '127.0.3.3'}
   ],
   services => [
-    {name => 'service1', vulns => '1:2',   path => '/home/and/tmp/cs/1.pl', timeout => 5},
-    {name => 'service2', vulns => '1:2',   path => '/home/and/tmp/cs/2.pl', timeout => 3},
-    {name => 'service3', vulns => '1:2',   path => '/bin/false',            timeout => 5},
-    {name => 'down',     vulns => '1:2',   path => 't/checkers/down.pl',    timeout => 1},
-    {name => 'up',       vulns => '1:2:1', path => 't/checkers/up.pl',      timeout => 1},
-    {name => 'random',   vulns => '1:3:2', path => 't/checkers/random.pl',  timeout => 1},
-    {name => 'timeout',  vulns => '1:2:2', path => 't/checkers/timeout.pl', timeout => 1}
+    {name => 'service1', path => '/home/and/tmp/cs/1.pl', timeout => 5},
+    {name => 'service2', path => '/home/and/tmp/cs/2.pl', timeout => 3},
+    {name => 'service3', path => '/bin/false',            timeout => 5},
+    {name => 'down',     path => 't/checkers/down.pl',    timeout => 1},
+    {name => 'up',       path => 't/checkers/up.pl',      timeout => 1},
+    {name => 'random',   path => 't/checkers/random.pl',  timeout => 1},
+    {name => 'timeout',  path => 't/checkers/timeout.pl', timeout => 1}
   ]
 }
