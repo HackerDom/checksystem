@@ -57,7 +57,7 @@ sub _flag_points {
   my $state = $db->query('select * from score where round = ?', $r - 1)
     ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b->{score}; $a; }, {});
   my $flags = $db->query('
-    select flags.data, array_agg(team_id) as teams, flags.service_id, flags.team_id
+    select flags.data, array_agg(stolen_flags.team_id) as teams, flags.service_id, flags.team_id
     from flags join stolen_flags using (data)
     where round = ? group by data order by flags.ts
     ', $r)->hashes;

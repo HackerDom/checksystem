@@ -96,9 +96,9 @@ $app->model('score')->flag_points;
 is $db->query('select count(*) from score')->array->[0], 8, 'right score';
 for my $team_id (1, 2) {
   $data = $db->query("select * from score where team_id = $team_id and service_id = 2 and round = 0")->hash;
-  is $data->{score}, 200, 'right score';
+  is $data->{score}, 1000, 'right score';
   $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 0")->hash;
-  is $data->{score}, 200, 'right score';
+  is $data->{score}, 1000, 'right score';
 }
 
 # Flags
@@ -155,9 +155,9 @@ $app->model('score')->flag_points;
 is $db->query('select count(*) from score')->array->[0], 8, 'right score';
 for my $team_id (1, 2) {
   $data = $db->query("select * from score where team_id = $team_id and service_id = 2 and round = 0")->hash;
-  is $data->{score}, 200, 'right score';
+  is $data->{score}, 1000, 'right score';
   $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 0")->hash;
-  is $data->{score}, 200, 'right score';
+  is $data->{score}, 1000, 'right score';
 }
 
 # New round (#3)
@@ -183,13 +183,13 @@ for my $team_id (1, 2) {
 # FP
 $app->model('score')->flag_points;
 is $db->query('select count(*) from score')->array->[0], 16, 'right score';
-is $db->query("select score from score where team_id = 2 and service_id = 2 and round = 1")->array->[0], 202,
-  'right score';
-is $db->query("select score from score where team_id = 1 and service_id = 2 and round = 1")->array->[0], 198,
+is $db->query("select score from score where team_id = 2 and service_id = 2 and round = 1")->array->[0],
+  1002, 'right score';
+is $db->query("select score from score where team_id = 1 and service_id = 2 and round = 1")->array->[0], 998,
   'right score';
 for my $team_id (1, 2) {
   $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 1")->hash;
-  is $data->{score}, 200, 'right score';
+  is $data->{score}, 1000, 'right score';
 }
 
 $db->query('refresh materialized view scoreboard');

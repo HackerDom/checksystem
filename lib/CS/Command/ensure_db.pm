@@ -27,11 +27,11 @@ sub run {
   # Init
   $app->init;
   $db->query('insert into rounds (n) values (0)');
-  if ($self->app->config->{cs}{score_method} eq 'v2') {
+  if ($app->config->{cs}{score_method} eq 'v2') {
     $db->query(
       'insert into score (round, team_id, service_id, score)
-      select 0, teams.id, services.id, (select ? * ?)
-      from teams cross join services', 500, 0 + @{$app->config->{teams}}
+      select 0, teams.id, services.id, (select 500 * ?)
+      from teams cross join services', 0 + @{$app->config->{teams}}
     );
   } else {
     $db->query(
