@@ -12,9 +12,7 @@ sub charts_data {
       select round, team_id,
       round(sum(100 * score * (case when successed + failed = 0 then 1
         else (successed::double precision / (successed + failed)) end))::numeric, 2) as score
-      from
-      score
-      join sla using (round, team_id, service_id)
+      from score join sla using (round, team_id, service_id)
       group by round, team_id
     )
     select team_id as name, array_agg(score order by round) as data

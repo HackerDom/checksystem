@@ -56,22 +56,55 @@ sub _flag_points {
   my $db = $self->app->pg->db;
   my $state = $db->query('select * from score where round = ?', $r - 1)
     ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b->{score}; $a; }, {});
-
-  $db->query('
-    select flags.data, array_agg(stolen_flags.team_id) as teams, flags.service_id, flags.team_id
+  my $flags = $db->query('
+    select flags.data, array_agg(team_id) as teams, flags.service_id, flags.team_id
     from flags join stolen_flags using (data)
     where round = ? group by data order by flags.ts
-    ', $r)->hashes->map(
-    sub {
-      my $jackpot = min $state->{$_->{team_id}}{$_->{service_id}}, 0 + keys %{$self->app->teams};
-      my $amount = $jackpot / @{$_->{teams}};
-      for my $team_id (@{$_->{teams}}) {
-        $state->{$team_id}{$_->{service_id}} += $amount;
-      }
-      $state->{$_->{team_id}}{$_->{service_id}} -= $jackpot;
-    }
-  );
+    ', $r)->hashes;
 
+  if ($self->app->config->{cs}{score_method} eq 'v2') {
+    my $scoreboard = $db->query(
+      'select rank() over(order by score desc) as n, team_id, score
+      from (select team_id,
+          round(sum(100 * score * (case when successed + failed = 0 then 1
+          else (successed::double precision / (successed + failed)) end))::numeric, 2) as score
+      from score join sla using (round, team_id, service_id)
+      where round = ?
+      group by team_id) as tmp', $r - 1
+    )->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
+    $flags->map(
+      sub {
+        my $jackpot   = 0 + keys %{$self->app->teams};
+        my $victim_id = $_->{team_id};
+        for my $team_id (@{$_->{teams}}) {
+          my $amount;
+          if ($scoreboard->{$team_id} >= $scoreboard->{$victim_id}) {
+            $amount = $jackpot;
+          } else {
+            my $n = $scoreboard->{$team_id};
+            $amount =
+              exp(
+              log($jackpot) -
+                log($jackpot) * $n / ($n - $jackpot) +
+                log($jackpot) / ($n - $jackpot) * $scoreboard->{$victim_id});
+          }
+          $state->{$team_id}{$_->{service_id}} += $amount;
+        }
+        $state->{$victim_id}{$_->{service_id}} -= $jackpot;
+      }
+    );
+  } else {
+    $flags->map(
+      sub {
+        my $jackpot = min $state->{$_->{team_id}}{$_->{service_id}}, 0 + keys %{$self->app->teams};
+        my $amount = $jackpot / @{$_->{teams}};
+        for my $team_id (@{$_->{teams}}) {
+          $state->{$team_id}{$_->{service_id}} += $amount;
+        }
+        $state->{$_->{team_id}}{$_->{service_id}} -= $jackpot;
+      }
+    );
+  }
   $self->_update_score_state($r, $state);
 }
 
