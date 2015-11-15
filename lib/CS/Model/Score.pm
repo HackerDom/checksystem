@@ -62,7 +62,7 @@ sub _flag_points {
     where round = ? group by data order by flags.ts
     ', $r)->hashes;
 
-  if ($self->app->config->{cs}{score_method} eq 'v2') {
+  if (($self->app->config->{cs}{score_method} // 'v2') eq 'v2') {
     my $scoreboard = $db->query(
       'select rank() over(order by score desc) as n, team_id, score
       from (select team_id,

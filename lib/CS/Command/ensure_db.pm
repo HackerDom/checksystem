@@ -27,7 +27,7 @@ sub run {
   # Init
   $app->init;
   $db->query('insert into rounds (n) values (0)');
-  if ($app->config->{cs}{score_method} eq 'v2') {
+  if (($app->config->{cs}{score_method} // 'v2') eq 'v2') {
     $db->query(
       'insert into score (round, team_id, service_id, score)
       select 0, teams.id, services.id, (select 500 * ?)
