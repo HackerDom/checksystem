@@ -12,7 +12,9 @@
     round_length   => 20,
     flag_life_time => 15,
     flags          => {port => 31337, timeout => 5 * 60},
-    hostname_for_checker => sub { "$_[1]->{name}.$_[0]->{name}" }
+    checkers       => {
+      hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}" }
+    }
   },
   teams => [
     {name => 'team1', network => '127.0.1.0/24', host => '127.0.1.5'},

@@ -48,7 +48,7 @@ sub check {
     unless $round == $job->app->pg->db->query('select max(n) from rounds')->array->[0];
 
   my $host = $team->{host};
-  if (my $cb = $job->app->config->{cs}{hostname_for_checker}) { $host = $cb->($team, $service) }
+  if (my $cb = $job->app->config->{cs}{checkers}{hostname}) { $host = $cb->($team, $service) }
 
   # Check
   my $cmd = [$service->{path}, 'check', $host];
