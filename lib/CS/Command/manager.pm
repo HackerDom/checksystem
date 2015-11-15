@@ -103,7 +103,7 @@ sub skip_check {
       $info->{service_id},
       $info->{vuln_id},
       104,
-      {json => {error => 'Checker does not run, connect on port was failed.'}}
+      {json => {error => 'Checker did not run, connect on port was failed.'}}
     );
   };
   $self->app->log->error("Error while insert check result: $@") if $@;
