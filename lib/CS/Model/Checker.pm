@@ -47,26 +47,29 @@ sub check {
   return $self->_finish($job, $result)
     unless $round == $job->app->pg->db->query('select max(n) from rounds')->array->[0];
 
+  my $host = $team->{host};
+  if (my $cb = $job->app->config->{cs}{hostname_for_checker}) { $host = $cb->($team, $service) }
+
   # Check
-  my $cmd = [$service->{path}, 'check', $team->{host}];
+  my $cmd = [$service->{path}, 'check', $host];
   $result->{check} = $self->_run($cmd, $service->{timeout});
   return $self->_finish($job, $result) unless $result->{check}{exit_code} == 101;
 
   # Put
-  $cmd = [$service->{path}, 'put', $team->{host}, $flag->{id}, $flag->{data}, $vuln->{n}];
+  $cmd = [$service->{path}, 'put', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
   $result->{put} = $self->_run($cmd, $service->{timeout});
   (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
   $flag->{id} = $result->{put}{fid} = $id if $id;
   return $self->_finish($job, $result) unless $result->{put}{exit_code} == 101;
 
   # Get 1
-  $cmd = [$service->{path}, 'get', $team->{host}, $flag->{id}, $flag->{data}, $vuln->{n}];
+  $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
   $result->{get_1} = $self->_run($cmd, $service->{timeout});
   return $self->_finish($job, $result) unless $result->{get_1}{exit_code} == 101;
 
   # Get 2
   if ($old_flag) {
-    $cmd = [$service->{path}, 'get', $team->{host}, $old_flag->{id}, $old_flag->{data}, $vuln->{n}];
+    $cmd = [$service->{path}, 'get', $host, $old_flag->{id}, $old_flag->{data}, $vuln->{n}];
     $result->{get_2} = $self->_run($cmd, $service->{timeout});
   }
   return $self->_finish($job, $result);

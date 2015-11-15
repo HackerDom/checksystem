@@ -7,11 +7,12 @@
       break => ['2015-04-18 17:15:00', '2015-04-18 17:20:00']
     },
     score_method   => 'v2',
+    admin          => {auth => 'root:qwer'},
     ctf            => {name => 'RuCTF 2015'},
     round_length   => 20,
     flag_life_time => 15,
     flags          => {port => 31337, timeout => 5 * 60},
-    admin => {auth => 'root:qwer'}
+    hostname_for_checker => sub { "$_[1]->{name}.$_[0]->{name}" }
   },
   teams => [
     {name => 'team1', network => '127.0.1.0/24', host => '127.0.1.5'},
