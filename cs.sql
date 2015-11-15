@@ -70,6 +70,14 @@ create table score (
 );
 create index on score (round);
 
+create table monitor (
+  round      integer not null references rounds(n),
+  ts         timestamp with time zone not null default now(),
+  team_id    integer not null references teams(id),
+  service_id integer not null references services(id),
+  status     boolean not null
+);
+
 create materialized view scoreboard as (
   with fp as (
     select distinct on (team_id, service_id) team_id, service_id, score
@@ -113,4 +121,4 @@ create materialized view scoreboard as (
 );
 -- 1 down
 drop materialized view if exists scoreboard;
-drop table if exists rounds, teams, vulns, services, flags, stolen_flags, runs, sla, score;
+drop table if exists rounds, monitor, teams, vulns, services, flags, stolen_flags, runs, sla, score;

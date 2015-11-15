@@ -46,17 +46,36 @@ sub start_round {
 
   $app->minion->enqueue($_) for (qw/sla flag_points/);
 
-  my $round = $app->pg->db->query('insert into rounds default values returning n')->hash->{n};
+  my $db = $app->pg->db;
+
+  my $round = $db->query('insert into rounds default values returning n')->hash->{n};
   $self->round($round);
   $app->log->debug("Start new round #$round");
+
+  my $status = $db->query(
+    'select distinct on (team_id, service_id) *
+    from monitor order by team_id, service_id, ts desc'
+    )
+    ->hashes->reduce(
+    sub { $a->{$b->{team_id}}{$b->{service_id}} = {round => $b->{round}, status => $b->{status}}; $a; }, {});
 
   for my $team (values %{$app->teams}) {
     for my $service (values %{$app->services}) {
       my $n       = $service->{vulns}->[$round % @{$service->{vulns}}];
       my $vuln_id = $app->vulns->{$service->{id}}{$n};
+      my ($team_id, $service_id) = ($team->{id}, $service->{id});
+
+      if (my $s = $status->{$team_id}{$service_id}) {
+        if ($self->round - $s->{round} <= 1 && !$s->{status}) {
+          $self->skip_check(
+            {round => $self->round, team_id => $team_id, service_id => $service_id, vuln_id => $vuln_id});
+          $app->log->debug("Skip job for $team->{name}/$service->{name}/$n");
+          next;
+        }
+      }
 
       my $flag     = $app->model('flag')->create;
-      my $old_flag = $app->pg->db->query(
+      my $old_flag = $db->query(
         'select id, data from flags
         where team_id = ? and vuln_id = ? and round >= ? order by random() limit 1',
         ($team->{id}, $vuln_id, $round - $app->config->{cs}{flag_life_time})
@@ -71,6 +90,23 @@ sub start_round {
   }
 
   return $ids;
+}
+
+sub skip_check {
+  my ($self, $info) = @_;
+
+  eval {
+    $self->app->pg->db->query(
+      'insert into runs (round, team_id, service_id, vuln_id, status, result) values (?, ?, ?, ?, ?, ?)',
+      $info->{round},
+      $info->{team_id},
+      $info->{service_id},
+      $info->{vuln_id},
+      104,
+      {json => {error => 'Checker does not run, connect on port was failed.'}}
+    );
+  };
+  $self->app->log->error("Error while insert check result: $@") if $@;
 }
 
 sub finalize_check {
