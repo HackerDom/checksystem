@@ -1,5 +1,6 @@
-{ pg => {uri => 'postgresql://cs:qwer@127.0.0.1:5432/cs'},
-  cs => {
+{ hypnotoad => {listen => ['http://127.0.0.1:8080'], workers => 8},
+  pg        => {uri    => 'postgresql://cs:qwer@127.0.0.1:5432/cs'},
+  cs        => {
     time => {
       start => '2015-04-18 17:00:00',
       end   => '2015-04-18 17:25:00',
@@ -9,7 +10,7 @@
     ctf            => {name => 'RuCTF 2015'},
     round_length   => 20,
     flag_life_time => 15,
-    flags => {port => 31337, timeout => 5 * 60},
+    flags          => {port => 31337, timeout => 5 * 60},
     admin => {auth => 'root:qwer'}
   },
   teams => [
