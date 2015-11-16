@@ -4,6 +4,7 @@ use Mojo::Base 'Mojolicious';
 use Mojo::Pg;
 
 has [qw/teams services vulns/] => sub { {} };
+has 'scoreboard';
 
 sub startup {
   my $app = shift;
@@ -39,6 +40,9 @@ sub startup {
   my $admin = $r->under('/admin')->to('admin#auth');
   $admin->get('/')->to('admin#index')->name('admin_index');
   $admin->get('/view/:team_id/:service_id')->to('admin#view')->name('admin_view');
+
+  Mojo::IOLoop->next_tick(sub { $app->scoreboard($app->model('scoreboard')->generate) });
+  Mojo::IOLoop->recurring(10 => sub { $app->scoreboard($app->model('scoreboard')->generate) });
 }
 
 sub init {
