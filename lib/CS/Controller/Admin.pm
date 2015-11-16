@@ -10,7 +10,7 @@ sub auth {
   return undef;
 }
 
-sub index { $_[0]->render(%{$_[0]->app->scoreboard}) }
+sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
 
 sub view {
   my $c = shift;
