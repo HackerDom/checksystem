@@ -21,8 +21,17 @@ sub run {
   my $now = localtime;
   my $start = localtime(Time::Piece->strptime($app->config->{cs}{time}{start}, $app->model('util')->format));
   my $round_length = $app->config->{cs}{round_length};
+
+  my $sleep;
+  if ($now < $start) { $sleep = ($start - $now)->seconds }
+  else {
+    my $round_start =
+      $round_length + $app->pg->db->query('select extract(epoch from max(ts)) from rounds')->array->[0];
+    $sleep = time > $round_start ? 0 : $round_start - time;
+  }
+
   Mojo::IOLoop->timer(
-    ($now < $start ? ($start - $now)->seconds : $round_length) => sub {
+    $sleep => sub {
       Mojo::IOLoop->recurring($round_length => sub { $self->start_round });
       $self->start_round;
     }
