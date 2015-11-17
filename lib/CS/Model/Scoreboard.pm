@@ -7,7 +7,7 @@ sub generate {
   my $self = shift;
   my $db   = $self->app->pg->db;
 
-  my $scoreboard = $db->query('select * from scoreboard')->expand->hashes;
+  my $scoreboard = $db->query('select * from scoreboard order by n')->expand->hashes;
   $scoreboard->map(
     sub {
       for my $s (@{$_->{services}}) {
