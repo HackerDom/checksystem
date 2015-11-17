@@ -22,7 +22,11 @@ sub startup {
   $app->minion->add_task(sla         => sub { shift->app->model('score')->sla(@_) });
   $app->minion->add_task(flag_points => sub { shift->app->model('score')->flag_points(@_) });
   $app->minion->add_task(
-    scoreboard => sub { shift->app->pg->db->query('refresh materialized view scoreboard') });
+    scoreboard => sub {
+      $_[0]->app->pg->db->query("refresh materialized view concurrently $_")
+        for (qw/scoreboard scoreboard_history/);
+    }
+  );
 
   # Migrations
   $app->pg->migrations->name('cs')->from_file($app->home->rel_file('cs.sql'));
