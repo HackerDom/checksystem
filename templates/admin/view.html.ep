@@ -4,7 +4,7 @@
 % my $view_line = begin
   % my ($name, $data) = @_;
   % if ($data) {
-    <dt><%= $name %></dt><dd><samp><%= $data %></samp></dd>
+    <dt><%= $name %></dt><dd><samp style="white-space: pre-wrap"><%= $data %></samp></dd>
   % }
 % end
 
