@@ -20,7 +20,8 @@ sub generate {
     }
   );
 
-  return ({scoreboard => $scoreboard, round => $db->query('select max(n) from rounds')->array->[0]});
+  return (
+    {scoreboard => $scoreboard->to_array, round => $db->query('select max(n) from rounds')->array->[0]});
 }
 
 1;
