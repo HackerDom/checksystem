@@ -42,8 +42,8 @@ sub startup {
 
   # Charts
   $r->get('/charts')->to('main#charts')->name('charts');
-  $r->get('/charts/:team_id')->to('main#team_charts')->name('team_charts');
   $r->get('/charts/data')->to('main#charts_data')->name('charts_data');
+  $r->get('/charts/:team_id')->to('main#team_charts')->name('team_charts');
 
   # Admin
   my $admin = $r->under('/admin')->to('admin#auth');
