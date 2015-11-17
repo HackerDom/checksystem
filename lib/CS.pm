@@ -37,9 +37,14 @@ sub startup {
   # Routes
   my $r = $app->routes;
   $r->get('/')->to('main#index')->name('index');
-  $r->get('/charts')->to('main#charts')->name('charts');
-  $r->get('/charts/data')->to('main#charts_data')->name('charts_data');
   $r->websocket('/update')->to('main#update')->name('update');
+
+  # Charts
+  $r->get('/charts')->to('main#charts')->name('charts');
+  $r->get('/charts/:team_id')->to('main#team_charts')->name('team_charts');
+  $r->get('/charts/data')->to('main#charts_data')->name('charts_data');
+
+  # Admin
   my $admin = $r->under('/admin')->to('admin#auth');
   $admin->get('/')->to('admin#index')->name('admin_index');
   $admin->get('/view/:team_id/:service_id')->to('admin#view')->name('admin_view');
