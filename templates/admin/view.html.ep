@@ -4,16 +4,16 @@
 % my $view_line = begin
   % my ($name, $data) = @_;
   % if ($data) {
-    <dt><%= $name %></dt><dd><samp style="white-space: pre-wrap"><%= $data %></samp></dd>
+    <dt><%= $name %></dt><dd><samp style="white-space: pre-wrap; word-wrap: break-word"><%= $data %></samp></dd>
   % }
 % end
 
 <h2><%= app->services->{param('service_id')}{name} %> on <%= app->teams->{param('team_id')}{name} %></h2>
 
-<table class="table table-bordered table-condensed">
+<table class="table table-bordered table-condensed" style="table-layout: fixed">
   <tr>
-    <td><b>round</b></td>
-    <td><b>status</b></td>
+    <td width="60px"><b>round</b></td>
+    <td width="60px"><b>status</b></td>
     <td><b>result</b></td>
   </tr>
   % for my $r (@$view) {
