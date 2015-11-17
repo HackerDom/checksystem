@@ -48,33 +48,30 @@ sub check {
   return $self->_finish($job, $result)
     unless $round == $job->app->pg->db->query('select max(n) from rounds')->array->[0];
 
-  my $path = File::Spec->rel2abs($service->{path});
-  my (undef, $cwd) = File::Spec->splitpath($path);
-
   my $host = $team->{host};
   if (my $cb = $job->app->config->{cs}{checkers}{hostname}) { $host = $cb->($team, $service) }
 
   # Check
-  my $cmd = [$path, 'check', $host];
-  $result->{check} = $self->_run($cmd, $service->{timeout}, $cwd);
+  my $cmd = [$service->{path}, 'check', $host];
+  $result->{check} = $self->_run($cmd, $service->{timeout});
   return $self->_finish($job, $result) unless $result->{check}{exit_code} == 101;
 
   # Put
-  $cmd = [$path, 'put', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
-  $result->{put} = $self->_run($cmd, $service->{timeout}, $cwd);
+  $cmd = [$service->{path}, 'put', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
+  $result->{put} = $self->_run($cmd, $service->{timeout});
   (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
   $flag->{id} = $result->{put}{fid} = $id if $id;
   return $self->_finish($job, $result) unless $result->{put}{exit_code} == 101;
 
   # Get 1
-  $cmd = [$path, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
-  $result->{get_1} = $self->_run($cmd, $service->{timeout}, $cwd);
+  $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
+  $result->{get_1} = $self->_run($cmd, $service->{timeout});
   return $self->_finish($job, $result) unless $result->{get_1}{exit_code} == 101;
 
   # Get 2
   if ($old_flag) {
-    $cmd = [$path, 'get', $host, $old_flag->{id}, $old_flag->{data}, $vuln->{n}];
-    $result->{get_2} = $self->_run($cmd, $service->{timeout}, $cwd);
+    $cmd = [$service->{path}, 'get', $host, $old_flag->{id}, $old_flag->{data}, $vuln->{n}];
+    $result->{get_2} = $self->_run($cmd, $service->{timeout});
   }
   return $self->_finish($job, $result);
 }
@@ -87,8 +84,12 @@ sub _finish {
 }
 
 sub _run {
-  my ($self, $cmd, $timeout, $cwd) = @_;
+  my ($self, $cmd, $timeout) = @_;
   my ($stdout, $stderr);
+
+  my $path = File::Spec->rel2abs($cmd->[0]);
+  my (undef, $cwd) = File::Spec->splitpath($path);
+  $cmd->[0] = $path;
 
   $self->app->log->debug("Run '@$cmd' with timeout $timeout");
   my $start = [gettimeofday];
