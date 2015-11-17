@@ -82,11 +82,8 @@ sub _flag_points {
             $amount = $jackpot;
           } else {
             my $n = $scoreboard->{$team_id};
-            $amount =
-              exp(
-              log($jackpot) -
-                log($jackpot) * $n / ($n - $jackpot) +
-                log($jackpot) / ($n - $jackpot) * $scoreboard->{$victim_id});
+            my $j = log $jackpot;
+            $amount = exp($j - $j * $n / ($n - $jackpot) + $j / ($n - $jackpot) * $scoreboard->{$victim_id});
           }
           $state->{$team_id}{$_->{service_id}} += $amount;
         }
