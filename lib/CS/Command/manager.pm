@@ -146,7 +146,7 @@ sub finalize_check {
   eval {
     $app->pg->db->query(
       'insert into flags (data, id, round, team_id, service_id, vuln_id) values (?, ?, ?, ?, ?, ?)',
-      $flag->{data}, $id, $self->round, $team->{id}, $service->{id}, $vuln->{id});
+      $flag->{data}, $id, $round, $team->{id}, $service->{id}, $vuln->{id});
   };
   $app->log->error("Error while insert flag: $@") if $@;
 }
