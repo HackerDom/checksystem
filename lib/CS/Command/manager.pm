@@ -127,7 +127,7 @@ sub finalize_check {
 
   if (!$result->{check} || $round != $self->round) {
     $result->{error} = 'Job is too old!';
-    $status = 110;
+    $status = 104;
   } else {
     $status = $result->{first { defined $result->{$_}{exit_code} } (qw/get_2 get_1 put check/)}{exit_code};
   }
