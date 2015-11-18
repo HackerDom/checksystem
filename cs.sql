@@ -75,7 +75,8 @@ create table monitor (
   ts         timestamp with time zone not null default now(),
   team_id    integer not null references teams(id),
   service_id integer not null references services(id),
-  status     boolean not null
+  status     boolean not null,
+  error      text
 );
 
 create materialized view scoreboard as (

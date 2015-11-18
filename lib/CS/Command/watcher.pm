@@ -28,8 +28,9 @@ sub check {
         {address => $address, port => $port, timeout => 10} => sub {
           my ($loop, $err, $stream) = @_;
           $db->query(
-            'insert into monitor (team_id, service_id, status, round)
-            values (?, ?, ?, (select max(n) from rounds))', $team->{id}, $service->{id}, $err ? 'f' : 't'
+            'insert into monitor (team_id, service_id, status, round, error)
+            values (?, ?, ?, (select max(n) from rounds), ?)', $team->{id}, $service->{id},
+            ($err ? 'f' : 't'), $err
           );
           $stream->close if $stream;
         }
