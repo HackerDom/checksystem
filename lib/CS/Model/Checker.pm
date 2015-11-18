@@ -43,7 +43,7 @@ sub vulns {
 
 sub check {
   my ($self, $job, $round, $team, $service, $flag, $old_flag, $vuln) = @_;
-  my $result = {};
+  my $result = {vuln => $vuln};
 
   return $self->_finish($job, $result)
     unless $round == $job->app->pg->db->query('select max(n) from rounds')->array->[0];

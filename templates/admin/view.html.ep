@@ -24,7 +24,7 @@
       %= $view_line->('Error', $r->{result}{error});
       % for my $state (qw/check put get_1 get_2/) {
         % next unless defined $r->{result}{$state}{command};
-        <strong><%= $state %> (<%= $r->{result}{$state}{ts} %>)</strong>
+        <strong><%= $state %> [vuln_<%= $r->{result}{vuln}{n} %>] (<%= $r->{result}{$state}{ts} %>)</strong>
         <dl class="dl-horizontal">
           %= $view_line->('Command',   $r->{result}{$state}{command});
           %= $view_line->('Elapsed',   $r->{result}{$state}{elapsed});
