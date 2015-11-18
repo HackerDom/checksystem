@@ -47,23 +47,25 @@
     <td width="60px"><b>status</b></td>
     <td><b>result</b></td>
   </tr>
-  % for my $r (@$view) {
+  % for my $result (@$view) {
   <tr>
-    <td><%= $r->{round} %></td>
-    <td><%= $r->{status} %></td>
+    <td><%= $result->{round} %></td>
+    <td><%= $result->{status} %></td>
     <td>
-      %= $view_line->('Error', $r->{result}{error});
+      %= $view_line->('Error', $result->{result}{error});
       % for my $state (qw/check put get_1 get_2/) {
-        % next unless defined $r->{result}{$state}{command};
-        <strong><%= $state %> [vuln_<%= $r->{result}{vuln}{n} %>] (<%= $r->{result}{$state}{ts} %>)</strong>
+        % my $r = $result->{result}{$state};
+        % next unless $r->{command};
+        <strong><%= $state %> [vuln_<%= $result->{result}{vuln}{n} %>] (<%= $result->{result}{$state}{ts} %>)</strong>
         <dl class="dl-horizontal">
-          %= $view_line->('Command',   $r->{result}{$state}{command});
-          %= $view_line->('Elapsed',   $r->{result}{$state}{elapsed});
-          %= $view_line->('Exit code', $r->{result}{$state}{exit_code});
-          %= $view_line->('Timeout',   $r->{result}{$state}{timeout});
-          %= $view_line->('STDOUT',    $r->{result}{$state}{stdout});
-          %= $view_line->('STDERR',    $r->{result}{$state}{stderr});
-          %= $view_line->('Exception', $r->{result}{$state}{exception});
+          %= $view_line->('Command',   $r->{command});
+          %= $view_line->('Elapsed',   $r->{elapsed});
+          %= $view_line->('Exit code', $r->{exit_code});
+          %= $view_line->('Exit',      join ', ', map { "$_ => $r->{exit}{$_}" } sort keys %{$r->{exit}});
+          %= $view_line->('Timeout',   $r->{timeout});
+          %= $view_line->('STDOUT',    $r->{stdout});
+          %= $view_line->('STDERR',    $r->{stderr});
+          %= $view_line->('Exception', $r->{exception});
         </dl>
       % }
     </td>

@@ -101,6 +101,7 @@ sub _run {
   my $elapsed = tv_interval($start);
 
   $timeout = ($@ && $@ =~ /timeout/i) ? 1 : 0;
+  my $exit = {value => $?, code => $? >> 8, signal => $? & 127, coredump => $? & 128};
   my $code = ($@ || all { $? >> 8 != $_ } (101, 102, 103, 104)) ? 110 : $? >> 8;
   $code = 104 if $timeout;
 
@@ -109,6 +110,7 @@ sub _run {
     timeout   => $timeout,
     stderr    => $stderr,
     stdout    => $stdout,
+    exit      => $exit,
     exit_code => $code,
     elapsed   => $elapsed,
     command   => "@$cmd",
