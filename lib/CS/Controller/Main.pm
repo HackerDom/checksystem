@@ -22,9 +22,10 @@ sub update {
   my $id = Mojo::IOLoop->recurring(
     15 => sub {
       $c->stash(%{$c->model('scoreboard')->generate});
-      my $round = $c->stash('round');
+      my $round      = $c->stash('round');
+      my $scoreboard = $c->render_to_string('scoreboard')->to_string;
 
-      $c->send({json => {round => "Round $round", scoreboard => $c->render_to_string('scoreboard')}});
+      $c->send({json => {round => "Round $round", scoreboard => $scoreboard}});
     }
   );
 
