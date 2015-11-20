@@ -1,7 +1,6 @@
 package CS::Command::manager;
 use Mojo::Base 'Mojolicious::Command';
 
-use List::Util 'first';
 use Mojo::Collection 'c';
 use Time::Piece;
 use Time::Seconds;
@@ -131,7 +130,7 @@ sub finalize_check {
     $result->{error} = 'Job is too old!';
     $status = 104;
   } else {
-    my $state = first { defined $result->{$_}{exit_code} } (qw/get_2 get_1 put check/);
+    my $state = c(qw/get_2 get_1 put check/)->first(sub { defined $result->{$_}{exit_code} });
     $status = $result->{$state}{exit_code};
     $stdout = $result->{$state}{stdout} if $status != 101;
   }
