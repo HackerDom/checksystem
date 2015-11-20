@@ -19,11 +19,14 @@ sub game_status {
   $now //= localtime;
   my $time = $self->app->config->{cs}{time};
   my ($start, $end) = map { 0 + localtime(Time::Piece->strptime($time->{$_}, $self->format)) } qw/start end/;
-  my @break = map { 0 + localtime(Time::Piece->strptime($time->{break}[$_], $self->format)) } 0 .. 1;
+  my @break;
+  if (my $break = $time->{break}) {
+    @break = map { 0 + localtime(Time::Piece->strptime($break->[$_], $self->format)) } 0 .. 1;
+  }
 
   return 0 if $now < $start;
   return 1 if $now >= $start && $now < $break[0];
-  return 0 if $now >= $break[0] && $now < $break[1];
+  return 0 if @break && $now >= $break[0] && $now < $break[1];
   return 1 if $now >= $break[1] && $now < $end;
   return -1;
 }
