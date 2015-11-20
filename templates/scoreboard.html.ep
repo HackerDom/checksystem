@@ -19,7 +19,10 @@
       </td>
       <td><%= $team->{score} %></td>
       % for my $service (@{$team->{services}}) {
-        <td title="<%= $service->{title} // '' %>" class="<%= $service->{class} %>">
+        <td
+          title="<%= $service->{stdout} // '' %>"
+          class="status_<%= app->model('checker')->status2name->{$service->{status}} // '' %>"
+        >
           % if (current_route eq 'admin_index') {
             <div class="pull-right">
               <a class="btn btn-default" role="button"

@@ -119,24 +119,29 @@ sub skip_check {
 }
 
 sub finalize_check {
-  my ($self, $job, $status) = @_;
+  my ($self, $job) = @_;
   my $app = $self->app;
 
   my $result = $job->info->{result};
   my ($round, $team, $service, $flag, undef, $vuln) = @{$job->args};
+  my ($stdout, $status) = ('');
 
   if (!$result->{check} || $round != $self->round) {
     $result->{error} = 'Job is too old!';
     $status = 104;
   } else {
-    $status = $result->{first { defined $result->{$_}{exit_code} } (qw/get_2 get_1 put check/)}{exit_code};
+    my $state = first { defined $result->{$_}{exit_code} } (qw/get_2 get_1 put check/);
+    $status = $result->{$state}{exit_code};
+    $stdout = $result->{$state}{stdout} if $status != 101;
   }
 
   # Save result
   eval {
     $app->pg->db->query(
-      'insert into runs (round, team_id, service_id, vuln_id, status, result) values (?, ?, ?, ?, ?, ?)',
-      $round, $team->{id}, $service->{id}, $vuln->{id}, $status, {json => $result});
+      'insert into runs (round, team_id, service_id, vuln_id, status, result, stdout)
+      values (?, ?, ?, ?, ?, ?, ?)', $round, $team->{id}, $service->{id}, $vuln->{id}, $status,
+      {json => $result}, $stdout
+    );
   };
   $app->log->error("Error while insert check result: $@") if $@;
 

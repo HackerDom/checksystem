@@ -49,6 +49,7 @@ create table runs (
   vuln_id    integer not null references vulns(id),
   status     integer not null,
   result     jsonb,
+  stdout     text,
   unique (round, team_id, service_id)
 );
 create index on runs (round);
@@ -95,7 +96,7 @@ create materialized view scoreboard as (
     group by sf.team_id, f.service_id
   ),
   r as (
-    select distinct on (team_id, service_id) team_id, service_id, status, result
+    select distinct on (team_id, service_id) team_id, service_id, status, stdout
     from runs order by team_id, service_id, round desc
   ),
   sc as (
@@ -107,7 +108,7 @@ create materialized view scoreboard as (
         'fp', round(fp.score::numeric, 2),
         'sla', round(100 * s.sla::numeric, 2),
         'status', status,
-        'result', result
+        'stdout', stdout
       ) order by id) as services
     from fp join s using (team_id, service_id)
       left join f using (team_id, service_id)
