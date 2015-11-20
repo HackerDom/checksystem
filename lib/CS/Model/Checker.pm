@@ -29,14 +29,19 @@ sub vulns {
 }
 
 sub check {
-  my ($self, $job, $round, $team, $service, $flag, $old_flag, $vuln) = @_;
+  my ($self, $job, $round, $team_id, $service_id, $flag, $old_flag, $vuln) = @_;
+  my $app = $job->app;
+
   my $result = {vuln => $vuln};
 
   return $self->_finish($job, $result)
-    unless $round == $job->app->pg->db->query('select max(n) from rounds')->array->[0];
+    unless $round == $app->pg->db->query('select max(n) from rounds')->array->[0];
+
+  my $team    = $app->teams->{$team_id};
+  my $service = $app->services->{$service_id};
 
   my $host = $team->{host};
-  if (my $cb = $job->app->config->{cs}{checkers}{hostname}) { $host = $cb->($team, $service) }
+  if (my $cb = $app->config->{cs}{checkers}{hostname}) { $host = $cb->($team, $service) }
 
   # Check
   my $cmd = [$service->{path}, 'check', $host];

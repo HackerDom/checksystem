@@ -90,7 +90,7 @@ sub start_round {
       my $flag     = $app->model('flag')->create;
       my $old_flag = c(@{$flags->{$team->{id}}{$vuln_id}})->shuffle->first;
       my $id       = $app->minion->enqueue(
-        check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}],
+        check => [$round, $team_id, $service_id, $flag, $old_flag, {n => $n, id => $vuln_id}],
         {queue => 'checker'}
       );
       push @$ids, $id;
@@ -123,7 +123,7 @@ sub finalize_check {
   my $app = $self->app;
 
   my $result = $job->info->{result};
-  my ($round, $team, $service, $flag, undef, $vuln) = @{$job->args};
+  my ($round, $team_id, $service_id, $flag, undef, $vuln) = @{$job->args};
   my ($stdout, $status) = ('');
 
   if (!$result->{check} || $round != $self->round) {
@@ -139,8 +139,8 @@ sub finalize_check {
   eval {
     $app->pg->db->query(
       'insert into runs (round, team_id, service_id, vuln_id, status, result, stdout)
-      values (?, ?, ?, ?, ?, ?, ?)', $round, $team->{id}, $service->{id}, $vuln->{id}, $status,
-      {json => $result}, $stdout
+      values (?, ?, ?, ?, ?, ?, ?)', $round, $team_id, $service_id, $vuln->{id}, $status, {json => $result},
+      $stdout
     );
   };
   $app->log->error("Error while insert check result: $@") if $@;
@@ -151,7 +151,7 @@ sub finalize_check {
   eval {
     $app->pg->db->query(
       'insert into flags (data, id, round, team_id, service_id, vuln_id) values (?, ?, ?, ?, ?, ?)',
-      $flag->{data}, $id, $round, $team->{id}, $service->{id}, $vuln->{id});
+      $flag->{data}, $id, $round, $team_id, $service_id, $vuln->{id});
   };
   $app->log->error("Error while insert flag: $@") if $@;
 }
