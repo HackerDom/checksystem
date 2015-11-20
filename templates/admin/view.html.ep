@@ -19,7 +19,7 @@
     <label for="status" class="sr-only">Password</label>
     <select class="form-control" id="status" name="status">
     % for my $status (qw/all 101 102 103 104 110/) {
-      <option <%= (param 'status' // '') eq $status ? 'selected': '' %>><%= $status %></option>
+      <option <%= (param('status') // '') eq $status ? 'selected': '' %>><%= $status %></option>
     % }
     </select>
   </div>
