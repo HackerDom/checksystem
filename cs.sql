@@ -126,14 +126,24 @@ create unique index scoreboard_row on scoreboard (team_id);
 create materialized view scoreboard_history as (
   with score_by_round as (
     select round, team_id,
-    round(sum(100 * score * (case when successed + failed = 0 then 1
+    round(sum(score * (case when successed + failed = 0 then 1
       else (successed::double precision / (successed + failed)) end))::numeric, 2) as score
     from score join sla using (round, team_id, service_id)
     group by round, team_id
+  ),
+  s as (
+    select *, rank() over(partition by round order by score desc) as n
+    from score_by_round
+  ),
+  tmp as (
+    select team_id as team_id,
+    array_agg(score order by round) as scores,
+    array_agg(n order by round) as position
+    from s
+    group by team_id
   )
-  select team_id as team_id, array_agg(score order by round) as data
-  from score_by_round
-  group by team_id
+  select teams.name as team_name, tmp.*
+  from tmp join teams on tmp.team_id = teams.id
 );
 create unique index scoreboard_history_row on scoreboard_history (team_id);
 -- 1 down

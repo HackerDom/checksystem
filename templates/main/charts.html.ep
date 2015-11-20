@@ -6,18 +6,27 @@
 <script>
 $(function () {
   $.getJSON("<%= url_for('charts_data') %>", function(data) {
-    $('#container').highcharts({
+    new Highcharts.Chart({
+      chart: {
+        zoomType: 'x',
+        renderTo: 'container'
+      },
       title: { text: 'Scores' },
       xAxis: { categories: data.rounds },
       yAxis: { title: { text: 'Scores' } },
       tooltip: { valueSuffix: '' },
       legend: {
           layout: 'vertical',
-          align: 'right',
-          verticalAlign: 'middle',
-          borderWidth: 0
+          align: 'right'
       },
-      series: data.scores
+      series:  data.scores.map(function(el) {
+        el.visible = data.scoreboard[el.name] < 15;
+        el.legendIndex = data.scoreboard[el.name];
+        return el
+      })
+    }, function(chart) {
+      chart.xAxis[0].setExtremes(data.rounds[data.rounds.length - 180], data.rounds[data.rounds.length - 1]);
+      chart.showResetZoom();
     });
   });
 });

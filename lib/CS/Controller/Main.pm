@@ -7,10 +7,12 @@ sub charts_data {
   my $c  = shift;
   my $db = $c->pg->db;
 
-  my $scores = $c->pg->db->query('select team_id as name, data from scoreboard_history')->expand->hashes;
+  my $scores = $db->query('select team_name as name, scores as data from scoreboard_history')->expand->hashes;
+  my $scoreboard =
+    $db->query('select n, name from scoreboard')->hashes->reduce(sub { $a->{$b->{name}} = $b->{n}; $a; }, {});
   my $rounds = $db->query('select n from rounds')->arrays->flatten->to_array;
 
-  $c->render(json => {rounds => $rounds, scores => $scores});
+  $c->render(json => {rounds => $rounds, scores => $scores, scoreboard => $scoreboard});
 }
 
 sub update {
