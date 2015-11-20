@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1" />
     <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="/css/default.css">
     <script src="/mojo/jquery/jquery.js"></script>
     <script src="http://code.highcharts.com/highcharts.js"></script>
     <script src="http://code.highcharts.com/modules/exporting.js"></script>
@@ -28,7 +29,7 @@
       <table class="table table-condensed">
         <tr class="text-center">
           % for my $status (@{app->model('checker')->statuses}) {
-            <td class="col-md-3" bgcolor="#<%= $status->[1] %>"><%= $status->[0] %></td>
+            <td class="col-md-3 status_<%= $status->[0] %>"><%= uc $status->[0] %></td>
           % }
         </tr>
       </table>

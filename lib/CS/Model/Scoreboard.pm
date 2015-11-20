@@ -15,7 +15,7 @@ sub generate {
           my $state = first { defined $s->{result}{$_}{exit_code} } (qw/get_2 get_1 put check/);
           $s->{title} = $s->{result}{$state}{stdout} // '' if $state;
         }
-        $s->{bgcolor} = '#' . $self->app->model('checker')->status2color($s->{status})->as_rgb8->hex;
+        $s->{class} = 'status_' . $self->app->model('checker')->status2name->{$s->{status}} // '';
       }
     }
   );

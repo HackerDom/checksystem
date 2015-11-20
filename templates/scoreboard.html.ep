@@ -19,7 +19,7 @@
       </td>
       <td><%= $team->{score} %></td>
       % for my $service (@{$team->{services}}) {
-        <td title="<%= $service->{title} // '' %>" bgcolor="<%= $service->{bgcolor} %>">
+        <td title="<%= $service->{title} // '' %>" class="<%= $service->{class} %>">
           % if (current_route eq 'admin_index') {
             <div class="pull-right">
               <a class="btn btn-default" role="button"

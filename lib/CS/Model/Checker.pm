@@ -9,24 +9,11 @@ use Mojo::Util 'trim';
 use Time::HiRes qw/gettimeofday tv_interval/;
 
 has statuses => sub {
-  [ [UP      => $_[0]->status2color(101)->hex],
-    [CORRUPT => $_[0]->status2color(102)->hex],
-    [MUMBLE  => $_[0]->status2color(103)->hex],
-    [DOWN    => $_[0]->status2color(104)->hex]
-  ];
+  [[up => 101], [corrupt => 102], [mumble => 103], [down => 104]];
 };
-
-sub status2color {
-  my ($self, $code) = @_;
-
-  return Convert::Color->new('rgb8:ffffff') unless $code;
-
-  if ($code == 101) { return Convert::Color->new('rgb8:00dc00') }
-  if ($code == 102) { return Convert::Color->new('rgb8:ffff00') }
-  if ($code == 103) { return Convert::Color->new('rgb8:ffa600') }
-  if ($code == 104) { return Convert::Color->new('rgb8:e60000') }
-  return Convert::Color->new('rgb8:ffffff');
-}
+has status2name => sub {
+  return {map { $_->[1] => $_->[0] } @{$_[0]->statuses}};
+};
 
 sub vulns {
   my ($self, $service) = @_;

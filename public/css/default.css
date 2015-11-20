@@ -1,0 +1,15 @@
+.status_up {
+  background-color: #00dc00;
+}
+
+.status_corrupt {
+  background-color: #ffff00;
+}
+
+.status_mumble {
+  background-color: #ffa600;
+}
+
+.status_down {
+  background-color: #e60000;
+}
