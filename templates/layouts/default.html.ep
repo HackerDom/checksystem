@@ -25,17 +25,7 @@
         </div>
       </div>
     </div>
-    <div class="container">
-      <img src="/ructfe2015.jpg" style="width: 88%; height: 10%;margin-bottom: -142px;margin-top: -95px;">
-      <table class="table table-condensed">
-        <tr class="text-center">
-          % for my $status (@{app->model('checker')->statuses}) {
-            <td class="col-md-3 status_<%= $status->[0] %>"><%= uc $status->[0] %></td>
-          % }
-        </tr>
-      </table>
-      <%= content %>
-    </div>
+    <%= content %>
     <script>
       $('img').error(function() { $(this).attr('src', '/logo.png'); });
     </script>
