@@ -49,6 +49,13 @@ sub startup {
   my $admin = $r->under('/admin')->to('admin#auth');
   $admin->get('/')->to('admin#index')->name('admin_index');
   $admin->get('/view/:team_id/:service_id')->to('admin#view')->name('admin_view');
+
+  $app->hook(
+    before_dispatch => sub {
+      my $c = shift;
+      if (my $base_url = $c->config->{cs}{base_url}) { $c->req->url->base(Mojo::URL->new($base_url)); }
+    }
+  );
 }
 
 sub init {
