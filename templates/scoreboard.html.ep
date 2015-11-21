@@ -1,5 +1,5 @@
-<div class="container">
-  <img src="/ructfe2015.jpg" style="width: 88%; height: 10%;margin-bottom: -142px;margin-top: -95px;">
+<div class="container" id='scoreboard_wrapper'>
+  <img src="/ructfe2015.png" style="width: 88%; margin-bottom: -4.1%;">
   <table class="table table-condensed status_descriptions">
     <tr class="text-center">
       % for my $status (@{app->model('checker')->statuses}) {
@@ -42,9 +42,9 @@
                   </a>
                 </div>
               % }
-              <div class="sla"><div class="param_name">SLA</div> <div class="param_value"><%= $service->{sla}%</div></div>
-              <div class="fp"><div class="param_name">FP</div> <div class="param_value"><%= $service->{fp}</div></div>
-              <div class="flags"><div class="param_name">Flags</div> <div class="param_value"><%= $service->{flags}</div></div>
+              <div class="sla"><div class="param_name">SLA</div> <div class="param_value"><%= $service->{sla} %>%</div></div>
+              <div class="fp"><div class="param_name">FP</div> <div class="param_value"><%= $service->{fp} %></div></div>
+              <div class="flags"><div class="param_name">Flags</div> <div class="param_value"><%= $service->{flags} %></div></div>
             </td>
           % }
         </tr>
