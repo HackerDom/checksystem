@@ -1,18 +1,18 @@
 /* Statuses */
 .status_up {
-  background-color: #6fd6a6;
+  background-color: #00dc00;
 }
 
 .status_corrupt {
-  background-color: #ffef65;
+  background-color: #ffff00;
 }
 
 .status_mumble {
-  background-color: #f9a963;
+  background-color: #ffa600;
 }
 
 .status_down {
-  background-color: #e97c7c;
+  background-color: #e60000;
 }
 
 
