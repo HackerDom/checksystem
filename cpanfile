@@ -1,4 +1,3 @@
-requires 'Convert::Color'             => '0.11';
 requires 'Cpanel::JSON::XS'           => '3.0115';
 requires 'EV'                         => '4.21';
 requires 'IO::Socket::SSL'            => '2.020';

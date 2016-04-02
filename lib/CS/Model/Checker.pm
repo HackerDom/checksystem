@@ -1,7 +1,6 @@
 package CS::Model::Checker;
 use Mojo::Base 'MojoX::Model';
 
-use Convert::Color;
 use File::Spec;
 use IPC::Run qw/run timeout/;
 use List::Util 'all';
