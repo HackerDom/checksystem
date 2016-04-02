@@ -1,4 +1,4 @@
-package CS::Command::ensure_db;
+package CS::Command::init_db;
 use Mojo::Base 'Mojolicious::Command';
 
 has description => 'Ensure db schema';
@@ -7,15 +7,12 @@ sub run {
   my $app = shift->app;
   my $db  = $app->pg->db;
 
-  # Ensure teams
+  # Teams
   for my $team (@{$app->config->{teams}}) {
-    my ($name, $network, $host) = @{$team}{qw/name network host/};
-    eval { $db->query('insert into teams (name, network, host) values (?, ?, ?)', $name, $network, $host); };
-    $db->query('update teams set (name, network, host) = ($1, $2, $3) where name = $1',
-      $name, $network, $host);
+    $db->query('insert into teams (name, network, host) values (?, ?, ?)', @{$team}{qw/name network host/});
   }
 
-  # Ensure services
+  # Services
   for my $service (@{$app->config->{services}}) {
     my ($n, $vulns) = $app->model('checker')->vulns($service);
     my $service_id =

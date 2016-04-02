@@ -17,7 +17,7 @@ ctf$ $EDITOR c_s.conf
 
 # run
 ```bash
-ctf$ MOJO_CONFIG=c_s.conf script/cs ensure_db
+ctf$ MOJO_CONFIG=c_s.conf script/cs init_db
 ctf$ MOJO_CONFIG=c_s.conf script/cs manager
 ctf$ MOJO_CONFIG=c_s.conf script/cs flags
 ctf$ MOJO_CONFIG=c_s.conf script/cs minion worker -j 3

@@ -13,7 +13,7 @@ my $app = $t->app;
 my $db  = $app->pg->db;
 
 $app->commands->run('reset_db');
-$app->commands->run('ensure_db');
+$app->commands->run('init_db');
 
 my $u = $app->model('util');
 my $f = $u->format;
