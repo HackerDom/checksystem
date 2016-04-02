@@ -1,10 +1,6 @@
 package CS::Model::Score;
 use Mojo::Base 'MojoX::Model';
 
-use List::Util 'min';
-
-has dimension => sub { keys(%{$_[0]->app->teams}) * keys(%{$_[0]->app->services}) };
-
 sub sla {
   my ($self, $round) = @_;
   my $db = $self->app->pg->db;
@@ -90,34 +86,31 @@ sub _flag_points {
 sub _update_sla_state {
   my ($self, $r, $state) = @_;
 
-  my @params;
+  my $db = $self->app->pg->db;
+  my $tx = $db->begin;
   for my $team_id (keys %$state) {
     for my $service_id (keys %{$state->{$team_id}}) {
       my $s = $state->{$team_id}{$service_id};
-      push @params, $r, $team_id, $service_id, $s->{successed} // 0, $s->{failed} // 0;
+
+      my $sql = 'insert into sla (round, team_id, service_id, successed, failed) values (?, ?, ?, ?, ?)';
+      $db->query($sql, $r, $team_id, $service_id, $s->{successed} // 0, $s->{failed} // 0);
     }
   }
-  $self->app->pg->db->query(
-    sprintf('insert into sla (round, team_id, service_id, successed, failed) values %s',
-      join(', ', ('(?, ?, ?, ?, ?)') x $self->dimension)),
-    @params
-  );
+  $tx->commit;
 }
 
 sub _update_score_state {
   my ($self, $r, $state) = @_;
 
-  my @params;
+  my $db = $self->app->pg->db;
+  my $tx = $db->begin;
   for my $team_id (keys %$state) {
     for my $service_id (keys %{$state->{$team_id}}) {
-      push @params, $r, $team_id, $service_id, $state->{$team_id}{$service_id};
+      my $sql = 'insert into score (round, team_id, service_id, score) values (?, ?, ?, ?)';
+      $db->query($sql, $r, $team_id, $service_id, $state->{$team_id}{$service_id});
     }
   }
-  $self->app->pg->db->query(
-    sprintf('insert into score (round, team_id, service_id, score) values %s',
-      join(', ', ('(?, ?, ?, ?)') x $self->dimension)),
-    @params
-  );
+  $tx->commit;
 }
 
 1;
