@@ -8,9 +8,7 @@ use List::Util 'all';
 use Mojo::Util 'trim';
 use Time::HiRes qw/gettimeofday tv_interval/;
 
-has statuses => sub {
-  [[up => 101], [corrupt => 102], [mumble => 103], [down => 104]];
-};
+has statuses => sub { [[up => 101], [corrupt => 102], [mumble => 103], [down => 104]] };
 has status2name => sub {
   return {map { $_->[1] => $_->[0] } @{$_[0]->statuses}};
 };

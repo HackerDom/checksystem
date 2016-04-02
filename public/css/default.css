@@ -15,32 +15,10 @@
   background-color: #e60000;
 }
 
-
-/* Navbar */
-.navbar-default {
-    background-color: rgb(176, 35, 43);
-    border-bottom-width: 4px;
-    border-bottom-color: #842227;
-}
-
-.navbar-default .navbar-brand {
-    color: #F5E7E7;
-}
-
-.navbar-default .navbar-brand:hover,
-.navbar-default .navbar-brand:focus {
-    
-}
-
-.navbar-default .navbar-text {
-    color: #F5E7E7;
-}
-
-
 /* Statuses descriptions */
 .status_descriptions tbody tr td {
-	padding: 10px 0px;
-	color: #500A0A;
+  padding: 10px 0px;
+  color: #500A0A;
 }
 
 /* Scoreboard */
@@ -48,34 +26,30 @@
 #scoreboard .table-bordered > thead > tr > th,
 #scoreboard .table-bordered > tbody > tr > td,
 #scoreboard .table-bordered > thead > tr > td {
-	border-right-width: 0px;
-	border-left-width: 0px;
-	border-bottom: 5px solid transparent;
+  border-right-width: 0px;
+  border-left-width: 0px;
+  border-bottom: 5px solid transparent;
 }
 
 #scoreboard table th {
-	text-align: left;
+  text-align: left;
 }
 
 /* Gold, silve and bronze places */
 #scoreboard table tr.team:nth-child(1) td:not(.team_service) {
-	background-color: #FFE8A7;
+  background-color: #FFE8A7;
 }
 
 #scoreboard table tr.team:nth-child(2) td:not(.team_service) {
-	background-color: #D8D8D8;
+  background-color: #D8D8D8;
 }
 
 #scoreboard table tr.team:nth-child(3) td:not(.team_service) {
-	background-color: #E3B689;
+  background-color: #E3B689;
 }
 
 #scoreboard table tr.team:nth-child(3) td:not(.team_service) .team_server {
-	color: white;
-}
-
-.team .team_logo {
-	/*background-color: white !important;*/
+  color: white;
 }
 
 /* Scoreboard's team and service */
@@ -83,63 +57,63 @@
 .team .team_info,
 .team .team_logo,
 .team .place {
-	vertical-align: middle;
+  vertical-align: middle;
 }
 
 .team .team_logo {
-	padding: 0px;
-	text-align: center;	
+  padding: 0px;
+  text-align: center;
 }
 
 #scoreboard table tr.team:nth-child(-n+3) .team_logo img {
-	box-shadow: 0px 0px 5px 0px rgba(212, 212, 212, 0.75);
+  box-shadow: 0px 0px 5px 0px rgba(212, 212, 212, 0.75);
 }
 
 .team .team_info {
-	padding-left: 10px;
+  padding-left: 10px;
 }
 
 .team .place,
 #scoreboard th.place {
-	text-align: center;
+  text-align: center;
 }
 
 #scoreboard th.service_name {
-	padding-left: 10px;
+  padding-left: 10px;
 }
 
 .team .team_info .team_name {
-	color: #222;
-	font-weight: bold;
+  color: #222;
+  font-weight: bold;
 }
 
 .team .team_info .team_server {
-	color: #999;
+  color: #999;
 }
 
 .team .team_service {
-	text-align: left;
-	font-size: 9pt;
-	padding: 10px 10px !important;
+  text-align: left;
+  font-size: 9pt;
+  padding: 10px 10px !important;
 }
 
 .team .team_service > div {
-	display: table-row;
+  display: table-row;
 }
 
 .team .team_service .param_name,
 .team .team_service .param_value {
-	display: table-cell;
+  display: table-cell;
 }
 
 .team .team_service .param_name {
-	font-weight: bold;
+  font-weight: bold;
 }
 
 .team .team_service .param_value {
-	padding-left: 5px;
+  padding-left: 5px;
 }
 
 #scoreboard table tr:last-child td {
-	border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
 }
