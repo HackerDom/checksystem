@@ -3,7 +3,7 @@ Checksystem for attack-defense CTF
 
 # install
 ```bash
-root# apt-get install postgresql-9.4 libssl-dev libpq-dev cpanminus
+root# apt-get install postgresql-9.5 libssl-dev libpq-dev cpanminus
 root# cpanm --installdeps .
 ```
 
