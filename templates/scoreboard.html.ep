@@ -1,4 +1,4 @@
-<div class="container" id='scoreboard_wrapper'>
+<div class="container" id="scoreboard_wrapper">
   <table class="table table-condensed status_descriptions">
     <tr class="text-center">
       % for my $status (@{app->model('checker')->statuses}) {
@@ -6,7 +6,7 @@
       % }
     </tr>
   </table>
-  <div id='scoreboard'>
+  <div id="scoreboard">
     <table class="table table-bordered table-condensed">
       <thead>
         <tr class="team">

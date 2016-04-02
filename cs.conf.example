@@ -7,7 +7,6 @@
       end   => '2015-04-18 17:25:00',
       break => ['2015-04-18 17:15:00', '2015-04-18 17:20:00']
     },
-    score_method   => 'v2',
     admin          => {auth => 'root:qwer'},
     ctf            => {name => 'RuCTF 2015'},
     round_length   => 20,

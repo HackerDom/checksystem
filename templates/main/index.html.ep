@@ -17,7 +17,7 @@
       ws.onmessage = function(event) {
         data = JSON.parse(event.data);
         $('div#round').html(data.round);
-        $('div#scoreboard_wrapper').html(data.scoreboard);
+        $('div#scoreboard_wrapper').replaceWith(data.scoreboard);
       };
     }
 
