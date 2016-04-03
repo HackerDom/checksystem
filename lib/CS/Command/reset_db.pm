@@ -5,14 +5,13 @@ has description => 'Reset db';
 
 sub run {
   my $app = shift->app;
-  my $pg  = $app->pg;
 
   # Jobs
   $app->minion->reset;
 
   # Migrations
-  $pg->migrations->active;
-  $pg->migrations->name('cs')->migrate(0)->migrate;
+  $app->pg->migrations->active;
+  $app->pg->migrations->name('cs')->migrate(0)->migrate;
 }
 
 1;

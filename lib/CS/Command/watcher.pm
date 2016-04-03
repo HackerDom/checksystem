@@ -14,9 +14,8 @@ sub run {
 }
 
 sub check {
-  my $self = shift;
-  my $app  = $self->app;
-  my $db   = $app->pg->db;
+  my $app = shift->app;
+  my $db  = $app->pg->db;
 
   for my $team (values %{$app->teams}) {
     for my $service (values %{$app->services}) {

@@ -1,16 +1,29 @@
 language: perl
 perl:
   - "5.20"
+  - "5.22"
 addons:
-  postgresql: "9.4"
+  apt:
+    sources:
+      - precise-pgdg-9.5
+    packages:
+      - postgresql-9.5
+      - postgresql-contrib-9.5
+  postgresql: 9.5
 env:
-  - "TEST_ONLINE=postgresql://postgres@/cs_test"
+  global:
+    - PGPORT=5433
+    - TEST_ONLINE=postgresql://postgres@/cs_test
 install:
-  - "cpanm -n --installdeps ."
+  - cpanm -n --installdeps .
 before_script:
-  - psql -c 'create database cs_test;' -U postgres
+  - sudo cp /etc/postgresql/9.4/main/pg_hba.conf /etc/postgresql/9.5/main/pg_hba.conf
+  - sudo /etc/init.d/postgresql restart
+  - psql -U postgres -c 'create database cs_test;'
 script:
-  - "prove -lv"
-sudo: false
+  - prove -lv
+after_script:
+  - cat log/development.log
+sudo: required
 notifications:
   email: false

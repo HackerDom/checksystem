@@ -1,5 +1,4 @@
-<div class="container" id='scoreboard_wrapper'>
-  <img src="/ructfe2015.png" style="width: 88%; margin-bottom: -4.1%;">
+<div class="container" id="scoreboard_wrapper">
   <table class="table table-condensed status_descriptions">
     <tr class="text-center">
       % for my $status (@{app->model('checker')->statuses}) {
@@ -7,7 +6,7 @@
       % }
     </tr>
   </table>
-  <div id='scoreboard'>
+  <div id="scoreboard">
     <table class="table table-bordered table-condensed">
       <thead>
         <tr class="team">
@@ -32,7 +31,7 @@
           % for my $service (@{$team->{services}}) {
             <td
               title="<%= $service->{stdout} // '' %>"
-              class="team_service status_<%= app->model('checker')->status2name->{$service->{status}} // '' %>"
+              class="team_service status_<%= app->model('checker')->status2name->{$service->{status} // ''} // '' %>"
             >
               % if (current_route eq 'admin_index') {
                 <div class="pull-right">

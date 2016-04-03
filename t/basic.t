@@ -13,7 +13,7 @@ my $app = $t->app;
 my $db  = $app->pg->db;
 
 $app->commands->run('reset_db');
-$app->commands->run('ensure_db');
+$app->commands->run('init_db');
 
 my $u = $app->model('util');
 my $f = $u->format;
@@ -102,12 +102,6 @@ is $db->query('select count(*) from sla')->array->[0], 8, 'right sla';
 # FP
 $app->model('score')->flag_points;
 is $db->query('select count(*) from score')->array->[0], 8, 'right score';
-for my $team_id (1, 2) {
-  $data = $db->query("select * from score where team_id = $team_id and service_id = 2 and round = 0")->hash;
-  is $data->{score}, 1000, 'right score';
-  $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 0")->hash;
-  is $data->{score}, 1000, 'right score';
-}
 
 # Flags
 is $db->query('select count(*) from flags')->array->[0], 2, 'right numbers of flags';
@@ -119,22 +113,23 @@ $db->query('select * from flags')->hashes->map(
   }
 );
 
-$data = $app->model('flag')->accept(2, 'flag');
+my $flag_cb = sub { $data = $_[0] };
+$app->model('flag')->accept(2, 'flag', $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/no such flag/, 'right error';
 
 $flag_data = $db->query('select data from flags where team_id = 2 limit 1')->hash->{data};
-$data = $app->model('flag')->accept(2, $flag_data);
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/flag is your own/, 'right error';
 
 $flag_data = $db->query('select data from flags where team_id = 1 limit 1')->hash->{data};
-$data = $app->model('flag')->accept(2, $flag_data);
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 1, 'right status';
 is $db->query('select data from stolen_flags where team_id = 2 limit 1')->hash->{data}, $flag_data,
   'right flag';
 
-$data = $app->model('flag')->accept(2, $flag_data);
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/you already submitted this flag/, 'right error';
 
@@ -150,23 +145,21 @@ $manager->finalize_check($app->minion->job($_)) for @$ids;
 $app->model('score')->sla;
 is $db->query('select count(*) from sla')->array->[0], 16, 'right sla';
 for my $team_id (1, 2) {
-  $data = $db->query("select * from sla where team_id = $team_id and service_id = 2 and round = 1")->hash;
+  $data = $db->query('select * from sla where team_id = ? and service_id = 2 and round = 1', $team_id)->hash;
   is $data->{successed}, 1, 'right sla';
   is $data->{failed},    0, 'right sla';
-  $data = $db->query("select * from sla where team_id = $team_id and service_id = 1 and round = 1")->hash;
+  $data = $db->query('select * from sla where team_id = ? and service_id = 1 and round = 1', $team_id)->hash;
   is $data->{successed}, 0, 'right sla';
   is $data->{failed},    1, 'right sla';
 }
 
 # FP
 $app->model('score')->flag_points;
-is $db->query('select count(*) from score')->array->[0], 8, 'right score';
-for my $team_id (1, 2) {
-  $data = $db->query("select * from score where team_id = $team_id and service_id = 2 and round = 0")->hash;
-  is $data->{score}, 1000, 'right score';
-  $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 0")->hash;
-  is $data->{score}, 1000, 'right score';
-}
+is $db->query('select count(*) from score')->array->[0], 16, 'right score';
+$data = $db->query('select * from score where team_id = 2 and service_id = 2 and round = 1')->hash;
+is $data->{score}, 2, 'right score';
+$data = $db->query('select * from score where team_id = 1 and service_id = 1 and round = 1')->hash;
+is $data->{score}, 0, 'right score';
 
 # New round (#3)
 $ids = $manager->start_round;
@@ -190,14 +183,15 @@ for my $team_id (1, 2) {
 
 # FP
 $app->model('score')->flag_points;
-is $db->query('select count(*) from score')->array->[0], 16, 'right score';
-is $db->query("select score from score where team_id = 2 and service_id = 2 and round = 1")->array->[0],
-  1002, 'right score';
-is $db->query("select score from score where team_id = 1 and service_id = 2 and round = 1")->array->[0], 998,
-  'right score';
+is $db->query('select count(*) from score')->array->[0], 24, 'right score';
+$data = $db->query('select * from score where team_id = 2 and service_id = 2 and round = 2')->hash;
+is $data->{score}, 2, 'right score';
+$data = $db->query('select * from score where team_id = 1 and service_id = 2 and round = 2')->hash;
+is $data->{score}, 0, 'right score';
 for my $team_id (1, 2) {
-  $data = $db->query("select * from score where team_id = $team_id and service_id = 1 and round = 1")->hash;
-  is $data->{score}, 1000, 'right score';
+  $data =
+    $db->query('select * from score where team_id = ? and service_id = 1 and round = 1', $team_id)->hash;
+  is $data->{score}, 0, 'right score';
 }
 
 $app->model('score')->flag_points(3);

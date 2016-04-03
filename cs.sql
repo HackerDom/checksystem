@@ -38,8 +38,21 @@ create table flags (
 create table stolen_flags (
   data    char(32) not null references flags(data),
   ts      timestamp with time zone not null default now(),
+  round   integer not null references rounds(n),
   team_id integer not null references teams(id)
 );
+create or replace function create_stolen_flags()
+returns trigger as $$
+begin
+  select max(n) into new.round from rounds;
+  return new;
+end;
+$$
+language plpgsql;
+create trigger insert_stolen_flags
+  before insert on stolen_flags
+  for each row execute procedure create_stolen_flags();
+create index on stolen_flags (data, team_id);
 
 create table runs (
   round      integer not null references rounds(n),
