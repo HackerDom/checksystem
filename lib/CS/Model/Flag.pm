@@ -3,10 +3,10 @@ use Mojo::Base 'MojoX::Model';
 
 use String::Random 'random_regex';
 
-has format => '[A-Z0-9]{31}=';
+my $format = '[A-Z0-9]{31}=';
 
 sub create {
-  return {id => join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3), data => random_regex($self->format)};
+  return {id => join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3), data => random_regex($format)};
 }
 
 sub accept {
@@ -29,5 +29,7 @@ sub accept {
     return {ok => 0, error => 'Please try again later'};
   }
 }
+
+sub validate { $_[1] =~ /^$format$/ }
 
 1;
