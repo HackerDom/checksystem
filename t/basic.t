@@ -113,22 +113,23 @@ $db->query('select * from flags')->hashes->map(
   }
 );
 
-$data = $app->model('flag')->accept(2, 'flag');
+my $flag_cb = sub { $data = $_[0] };
+$app->model('flag')->accept(2, 'flag', $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/no such flag/, 'right error';
 
 $flag_data = $db->query('select data from flags where team_id = 2 limit 1')->hash->{data};
-$data = $app->model('flag')->accept(2, $flag_data);
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/flag is your own/, 'right error';
 
 $flag_data = $db->query('select data from flags where team_id = 1 limit 1')->hash->{data};
-$data = $app->model('flag')->accept(2, $flag_data);
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 1, 'right status';
 is $db->query('select data from stolen_flags where team_id = 2 limit 1')->hash->{data}, $flag_data,
   'right flag';
 
-$data = $app->model('flag')->accept(2, $flag_data);
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/you already submitted this flag/, 'right error';
 
