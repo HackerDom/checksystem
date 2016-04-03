@@ -1,7 +1,7 @@
 [Unit]
 Description=CS: Stop/start web
 Wants=nginx.service postgresql.service
-After=nginx.service postgresql.serive
+After=nginx.service postgresql.service
 
 [Service]
 Type=forking

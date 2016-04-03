@@ -1,7 +1,7 @@
 [Unit]
 Description=CS: Stop/start worker
 Wants=postgresql.service
-After=postgresql.serive
+After=postgresql.service
 
 [Service]
 Type=simple
