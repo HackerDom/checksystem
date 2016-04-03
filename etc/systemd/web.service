@@ -1,0 +1,16 @@
+[Unit]
+Description=CS: Stop/start web
+Wants=nginx.service postgresql.service
+After=nginx.service postgresql.serive
+
+[Service]
+Type=forking
+User=cs
+WorkingDirectory=/home/cs/checksystem/
+PIDFile=/home/cs/checksystem/script/hypnotoad.pid
+ExecStart=/usr/local/bin/hypnotoad script/cs
+ExecStop=/usr/local/bin/hypnotoad -s script/cs
+ExecReload=/usr/local/bin/hypnotoad script/cs
+
+[Install]
+WantedBy=multi-user.target

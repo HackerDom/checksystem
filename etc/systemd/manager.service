@@ -1,0 +1,17 @@
+[Unit]
+Description=CS: Stop/start manager
+Wants=postgresql.service
+After=postgresql.serive
+
+[Service]
+Type=simple
+User=cs
+WorkingDirectory=/home/cs/checksystem/
+Environment=MOJO_MODE=production
+Environment=LANG=en_US.UTF-8
+ExecStart=/usr/bin/perl script/cs manager
+Restart=always
+RestartSec=15s
+
+[Install]
+WantedBy=multi-user.target
