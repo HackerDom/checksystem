@@ -2,11 +2,22 @@ package CS::Controller::Admin;
 use Mojo::Base 'Mojolicious::Controller';
 
 use List::Util 'all';
+use Mojo::Util 'b64_decode';
 
 sub auth {
   my $c = shift;
 
-  return 1 if ($c->req->url->to_abs->userinfo // '') eq $c->config->{cs}{admin}{auth};
+  my $auth = $c->req->headers->authorization // '';
+  unless ($auth) {
+    $c->res->headers->www_authenticate('Basic');
+    $c->render(text => 'Authentication required!', status => 401);
+    return undef;
+  }
+  $auth =~ s/^Basic\s//;
+  my $line = b64_decode $auth;
+
+  return 1 if $line eq $c->config->{cs}{admin}{auth};
+
   $c->res->headers->www_authenticate('Basic');
   $c->render(text => 'Authentication required!', status => 401);
   return undef;
