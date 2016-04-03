@@ -52,6 +52,7 @@ language plpgsql;
 create trigger insert_stolen_flags
   before insert on stolen_flags
   for each row execute procedure create_stolen_flags();
+create index on stolen_flags (data, team_id);
 
 create table runs (
   round      integer not null references rounds(n),
