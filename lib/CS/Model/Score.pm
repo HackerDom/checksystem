@@ -59,7 +59,7 @@ sub _flag_points {
     ', $r)->hashes;
 
   my $scoreboard = $db->query(
-'select rank() over(order by score desc rows between unbounded preceding and unbounded following) as n, team_id
+    'select rank() over(order by score desc) as n, team_id
       from (select team_id,
           round(sum(100 * score * (case when successed + failed = 0 then 1
           else (successed::double precision / (successed + failed)) end))::numeric, 2) as score
