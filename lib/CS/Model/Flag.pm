@@ -3,11 +3,10 @@ use Mojo::Base 'MojoX::Model';
 
 use String::Random 'random_regex';
 
+has format => '[A-Z0-9]{31}=';
+
 sub create {
-  return {
-    id   => join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3),
-    data => random_regex('[A-Z0-9]{31}') . '='
-  };
+  return {id => join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3), data => random_regex($self->format)};
 }
 
 sub accept {
@@ -23,17 +22,6 @@ sub accept {
   return {ok => 0, error => 'Denied: flag is too old'}
     if $flag->{round} <=
     $db->query('select max(n) from rounds')->array->[0] - $app->config->{cs}{flag_life_time};
-
-  my $row =
-    $db->query('select status from runs where team_id = ? and service_id = ? order by ts desc limit 1',
-    $team_id, $flag->{service_id})->hash;
-  my $status = $row ? $row->{status} : 110;
-  return {
-    ok => 0,
-    error =>
-      sprintf('Denied: your appropriate service %s is not UP', $app->services->{$flag->{service_id}}{name})
-    }
-    unless $status == 101;
 
   if ($db->query('insert into stolen_flags (data, team_id) values (?, ?)', $flag_data, $team_id)->rows) {
     return {ok => 1};
