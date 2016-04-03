@@ -1,6 +1,8 @@
 package CS::Model::Score;
 use Mojo::Base 'MojoX::Model';
 
+use List::Util 'min';
+
 sub sla {
   my ($self, $round) = @_;
   my $db = $self->app->pg->db;
@@ -51,9 +53,9 @@ sub _flag_points {
   my $state = $db->query('select * from score where round = ?', $r - 1)
     ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b->{score}; $a; }, {});
   my $flags = $db->query('
-    select flags.data, flags.service_id, flags.team_id as victim_id, stolen_flags.team_id
-    from flags join stolen_flags using (data)
-    where stolen_flags.round = ?
+    select f.data, f.service_id, f.team_id as victim_id, sf.team_id
+    from flags as f join stolen_flags as sf using (data)
+    where sf.round = ? order by sf.ts
     ', $r)->hashes;
 
   my $scoreboard = $db->query(
@@ -70,14 +72,10 @@ sub _flag_points {
   for my $flag (@$flags) {
     my ($v, $t) = @{$scoreboard}{@{$flag}{qw/victim_id team_id/}};
 
-    if ($t >= $v) {
-      $state->{$flag->{team_id}}{$flag->{service_id}} += $jackpot;
-      $state->{$flag->{victim_id}}{$flag->{service_id}} -= $jackpot;
-    } else {
-      my $amount = exp(log($jackpot) * ($v - $jackpot) / ($t - $jackpot));
-      $state->{$flag->{team_id}}{$flag->{service_id}} += $amount;
-      $state->{$flag->{victim_id}}{$flag->{service_id}} -= $amount;
-    }
+    my $amount = $t >= $v ? $jackpot : exp(log($jackpot) * ($v - $jackpot) / ($t - $jackpot));
+    $state->{$flag->{team_id}}{$flag->{service_id}} += $amount;
+    $state->{$flag->{victim_id}}{$flag->{service_id}} -=
+      min($amount, $state->{$flag->{victim_id}}{$flag->{service_id}});
   }
 
   $self->_update_score_state($r, $state);

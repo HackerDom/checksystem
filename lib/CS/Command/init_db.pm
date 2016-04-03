@@ -25,13 +25,11 @@ sub run {
   $db->query('insert into rounds (n) values (0)');
   $db->query(
     'insert into score (round, team_id, service_id, score)
-      select 0, teams.id, services.id, (select 500 * ?)
-      from teams cross join services', 0 + @{$app->config->{teams}}
+      select 0, teams.id, services.id, 0 from teams cross join services'
   );
   $db->query(
     'insert into sla (round, team_id, service_id, successed, failed)
-      select 0, teams.id, services.id, 0, 0
-      from teams cross join services'
+      select 0, teams.id, services.id, 0, 0 from teams cross join services'
   );
   $db->query('refresh materialized view scoreboard');
 }
