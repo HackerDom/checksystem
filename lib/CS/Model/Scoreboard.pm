@@ -7,7 +7,9 @@ sub generate {
   my $self = shift;
   my $db   = $self->app->pg->db;
 
-  my $scoreboard = $db->query('select * from scoreboard order by n')->expand->hashes;
+  my $scoreboard =
+    $db->query('select * from scoreboard where round = (select max(round) from scoreboard) order by n')
+    ->expand->hashes;
 
   return (
     {scoreboard => $scoreboard->to_array, round => $db->query('select max(n) from rounds')->array->[0]});

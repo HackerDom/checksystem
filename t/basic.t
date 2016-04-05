@@ -196,6 +196,6 @@ for my $team_id (1, 2) {
 
 $app->model('score')->flag_points(3);
 $app->model('score')->sla(3);
-$db->query("refresh materialized view concurrently $_") for (qw/scoreboard scoreboard_history/);
+$app->model('score')->scoreboard(3);
 
 done_testing;

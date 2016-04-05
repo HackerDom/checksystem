@@ -3,6 +3,54 @@ use Mojo::Base 'MojoX::Model';
 
 use List::Util 'min';
 
+sub scoreboard {
+  my ($self, $round) = @_;
+  my $db = $self->app->pg->db;
+
+  my $r = $db->query('select max(round) + 1 from scoreboard')->array->[0] // 0;
+  $round //= $db->query('select max(n) - 1 from rounds')->array->[0];
+  $self->_scoreboard($_) for $r .. $round;
+}
+
+sub _scoreboard {
+  my ($self, $r) = @_;
+  $self->app->log->debug("Calc scoreboard for round #$r");
+  $self->app->pg->db->query(
+    q{
+    insert into scoreboard
+    select $1 as round, rank() over(order by score desc) as n, sc.*
+    from (
+      select
+        fp.team_id, round(sum(sla * score)::numeric, 2) as score,
+        json_agg(json_build_object(
+          'id', fp.service_id,
+          'flags', coalesce(f.flags, 0),
+          'fp', round(fp.score::numeric, 2),
+          'sla', round(100 * s.sla::numeric, 2),
+          'status', status,
+          'stdout', stdout
+        ) order by id) as services
+      from
+        (select team_id, service_id, score from score where round = $1) as fp
+        join (
+          select team_id, service_id,
+          case when successed + failed = 0 then 1 else (successed::double precision / (successed + failed)) end as sla
+          from sla where round = $1
+        ) as s using (team_id, service_id)
+        left join (
+          select sf.team_id, f.service_id, count(sf.data) as flags
+          from stolen_flags as sf join flags as f using (data)
+          where sf.round <= $1
+          group by sf.team_id, f.service_id
+        ) as f using (team_id, service_id)
+        left join (select team_id, service_id, status, stdout from runs where round = $1) as r using (team_id, service_id)
+        join services on fp.service_id = services.id
+      group by team_id
+    ) as sc
+}, $r
+  );
+}
+
 sub sla {
   my ($self, $round) = @_;
   my $db = $self->app->pg->db;

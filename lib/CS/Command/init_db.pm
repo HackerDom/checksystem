@@ -31,7 +31,7 @@ sub run {
     'insert into sla (round, team_id, service_id, successed, failed)
       select 0, teams.id, services.id, 0, 0 from teams cross join services'
   );
-  $db->query('refresh materialized view scoreboard');
+  $app->model('score')->scoreboard(0);
 }
 
 1;
