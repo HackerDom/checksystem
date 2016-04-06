@@ -1,8 +1,6 @@
 package CS::Model::Scoreboard;
 use Mojo::Base 'MojoX::Model';
 
-use List::Util 'first';
-
 sub generate {
   my $self = shift;
   my $db   = $self->app->pg->db;
