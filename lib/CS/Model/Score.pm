@@ -106,15 +106,8 @@ sub _flag_points {
     where sf.round = ? order by sf.ts
     ', $r)->hashes;
 
-  my $scoreboard = $db->query(
-    'select rank() over(order by score desc) as n, team_id
-      from (select team_id,
-          round(sum(100 * score * (case when successed + failed = 0 then 1
-          else (successed::double precision / (successed + failed)) end))::numeric, 2) as score
-      from score join sla using (round, team_id, service_id)
-      where round = ?
-      group by team_id) as tmp', $r - 1
-  )->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
+  my $scoreboard = $db->query('select team_id, n from scoreboard where round = ?', $r - 1)
+    ->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
 
   my $jackpot = 0 + keys %{$self->app->teams};
   for my $flag (@$flags) {
