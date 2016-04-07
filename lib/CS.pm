@@ -26,8 +26,19 @@ sub startup {
 
   # Tasks
   $app->minion->add_task(check => sub { $_[0]->app->model('checker')->check(@_) });
-  $app->minion->add_task(scoreboard =>
-      sub { my $app = shift->app; $app->model('score')->$_(@_) for (qw/sla flag_points scoreboard/); });
+  $app->minion->add_task(
+    scoreboard => sub {
+      my $app = shift->app;
+      my $pg  = $app->pg;
+
+      $app->model('score')->$_(@_) for (qw/sla flag_points scoreboard/);
+
+      my $round = $pg->db->query('select max(round) from scoreboard')->array->[0];
+      my $scoreboard = $pg->db->query('select team_id, n from scoreboard where round = ?', $round)
+        ->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
+      $pg->pubsub->json('scoreboard')->notify(scoreboard => {scoreboard => $scoreboard, round => $round});
+    }
+  );
 
   $app->init;
 

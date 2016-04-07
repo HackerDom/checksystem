@@ -10,7 +10,7 @@ sub create {
 }
 
 sub accept {
-  my ($self, $team_id, $flag_data, $cb) = @_;
+  my ($self, $team_id, $flag_data, $scoreboard_info, $cb) = @_;
   my $app = $self->app;
   my $pg  = $app->pg;
 
@@ -26,7 +26,6 @@ sub accept {
       return $cb->({ok => 0, error => 'Denied: flag is your own'}) if $flag->{team_id} == $team_id;
 
       $delay->data(flag => $flag);
-
       $pg->db->query('select * from stolen_flags where data = ? and team_id = ?',
         $flag_data, $team_id, $delay->begin);
     },
@@ -49,7 +48,12 @@ sub accept {
     sub {
       my ($delay, undef, $result) = @_;
 
-      return $cb->($result->rows ? {ok => 1} : {ok => 0, error => 'Please try again later'});
+      return $cb->({ok => 0, error => 'Please try again later'}) unless $result->rows;
+
+      my $amount = $self->amount($scoreboard_info->{scoreboard}, $delay->data('flag')->{team_id}, $team_id);
+      my $msg = "Accepted. $flag_data cost $amount flag points";
+      $msg .= ' about' if $result->hash->{round} >= $scoreboard_info->{round} + 1;
+      return $cb->({ok => 1, message => $msg});
     }
     )->catch(
     sub {
