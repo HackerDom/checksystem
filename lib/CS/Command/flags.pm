@@ -21,10 +21,9 @@ sub run {
       my $buffer = '';
       $stream->timeout($app->config->{cs}{flags}{timeout});
 
-      $stream->on(error   => sub { $app->log->error("[flags] [$id] stream error: $_[1]") });
-      $stream->on(timeout => sub { $app->log->error("[flags] [$id] timeout") });
-      $stream->on(close   => sub { undef $do; $app->log->info("[flags] [$id] close stream") });
-      $stream->on(read    => sub { $buffer .= $_[1]; $do->(); });
+      $stream->on(error => sub { $app->log->error("[flags] [$id] stream error: $_[1]") });
+      $stream->on(close => sub { undef $do; $app->log->info("[flags] [$id] close stream") });
+      $stream->on(read  => sub { $buffer .= $_[1]; $do->(); });
 
       $stream->write("Your team id is $team_id\n");
       $stream->write("Enter your flags, finished with newline (or empty line to exit)\n");

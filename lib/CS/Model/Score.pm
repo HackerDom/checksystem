@@ -128,7 +128,7 @@ sub _update_sla_state {
       my $s = $state->{$team_id}{$service_id};
 
       my $sql = 'insert into sla (round, team_id, service_id, successed, failed) values (?, ?, ?, ?, ?)';
-      $db->query($sql, $r, $team_id, $service_id, $s->{successed} // 0, $s->{failed} // 0);
+      $db->query($sql, $r, $team_id, $service_id, $s->{successed}, $s->{failed});
     }
   }
   $tx->commit;
