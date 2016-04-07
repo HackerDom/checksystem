@@ -105,15 +105,11 @@ sub _flag_points {
     from flags as f join stolen_flags as sf using (data)
     where sf.round = ? order by sf.ts
     ', $r)->hashes;
-
   my $scoreboard = $db->query('select team_id, n from scoreboard where round = ?', $r - 1)
     ->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
 
-  my $jackpot = 0 + keys %{$self->app->teams};
   for my $flag (@$flags) {
-    my ($v, $t) = @{$scoreboard}{@{$flag}{qw/victim_id team_id/}};
-
-    my $amount = $t >= $v ? $jackpot : exp(log($jackpot) * ($v - $jackpot) / ($t - $jackpot));
+    my $amount = $self->app->model('flag')->amount($scoreboard, @{$flag}{qw/victim_id team_id/});
     $state->{$flag->{team_id}}{$flag->{service_id}} += $amount;
     $state->{$flag->{victim_id}}{$flag->{service_id}} -=
       min($amount, $state->{$flag->{victim_id}}{$flag->{service_id}});
