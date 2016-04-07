@@ -36,8 +36,6 @@ sub run {
       $self->start_round;
     }
   );
-
-  Mojo::IOLoop->recurring(15 => sub { $app->minion->enqueue('scoreboard') });
   Mojo::IOLoop->start;
 }
 
@@ -48,17 +46,14 @@ sub start_round {
   exit if $self->{finished};
 
   # Check end of game
-  if ($app->model('util')->game_status == -1) {
-    $app->minion->enqueue($_ => [$self->round]) for (qw/sla flag_points/);
-  }
+  $app->minion->enqueue(scoreboard => [$self->round]) if $app->model('util')->game_status == -1;
   return unless $app->model('util')->game_status == 1;
 
   my $db    = $app->pg->db;
   my $round = $db->query('insert into rounds default values returning n')->hash->{n};
   $self->round($round);
+  $app->minion->enqueue('scoreboard');
   $app->log->debug("Start new round #$round");
-
-  $app->minion->enqueue($_) for (qw/sla flag_points/);
 
   my $status = $db->query(
     'select distinct on (team_id, service_id) *

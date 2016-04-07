@@ -98,7 +98,8 @@ create table scoreboard (
   n        integer  not null,
   team_id  integer not null references teams(id),
   score    double precision not null,
-  services jsonb
+  services jsonb,
+  unique (round, team_id)
 );
 create index on scoreboard (round);
 -- 1 down

@@ -25,10 +25,9 @@ sub startup {
   );
 
   # Tasks
-  $app->minion->add_task(check       => sub { $_[0]->app->model('checker')->check(@_) });
-  $app->minion->add_task(sla         => sub { shift->app->model('score')->sla(@_) });
-  $app->minion->add_task(flag_points => sub { shift->app->model('score')->flag_points(@_) });
-  $app->minion->add_task(scoreboard  => sub { shift->app->model('score')->scoreboard(@_) });
+  $app->minion->add_task(check => sub { $_[0]->app->model('checker')->check(@_) });
+  $app->minion->add_task(scoreboard =>
+      sub { my $app = shift->app; $app->model('score')->$_(@_) for (qw/sla flag_points scoreboard/); });
 
   $app->init;
 

@@ -194,8 +194,6 @@ for my $team_id (1, 2) {
   is $data->{score}, 0, 'right score';
 }
 
-$app->model('score')->flag_points(3);
-$app->model('score')->sla(3);
-$app->model('score')->scoreboard(3);
+$app->model('score')->$_(3) for (qw/sla flag_points scoreboard/);
 
 done_testing;
