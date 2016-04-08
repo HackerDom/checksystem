@@ -72,8 +72,6 @@ sub start_round {
       my $vuln_id = $app->vulns->{$service->{id}}{$n};
       my ($team_id, $service_id) = ($team->{id}, $service->{id});
 
-      warn "$team_id, $service_id, $vuln_id";
-
       if (my $s = $status->{$team_id}{$service_id}) {
         if ($self->round - $s->{round} <= 1 && !$s->{status}) {
           $self->skip_check(
@@ -84,7 +82,6 @@ sub start_round {
       }
 
       my $flag     = $app->model('flag')->create;
-      warn "$flag->{data}";
       my $old_flag = c(@{$flags->{$team_id}{$vuln_id}})->shuffle->first;
       my $id       = $app->minion->enqueue(
         check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}],

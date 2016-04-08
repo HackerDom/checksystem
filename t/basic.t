@@ -14,6 +14,7 @@ my $db  = $app->pg->db;
 
 $app->commands->run('reset_db');
 $app->commands->run('init_db');
+$app->init;
 
 my $u = $app->model('util');
 my $f = $u->format;
@@ -41,8 +42,6 @@ my $ids = $manager->start_round;
 is $manager->round, 1, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
-
-diag $app->dumper($ids);
 
 # Runs
 is $db->query('select count(*) from runs')->array->[0], 8, 'right numbers of runs';
