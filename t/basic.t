@@ -42,7 +42,7 @@ is $manager->round, 1, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
 
-diag $db->query('table minion_jobs')->text;
+diag $app->dumper($ids);
 
 # Runs
 is $db->query('select count(*) from runs')->array->[0], 8, 'right numbers of runs';
