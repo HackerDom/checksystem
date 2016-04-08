@@ -6,13 +6,9 @@ has description => 'Get flags';
 sub run {
   my $self = shift;
   my $app  = $self->app;
-  my $pg   = $app->pg;
 
-  my $round = $pg->db->query('select max(round) from scoreboard')->array->[0];
-  my $scoreboard = $pg->db->query('select team_id, n from scoreboard where round = ?', $round)
-    ->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
-  my $scoreboard_info = {scoreboard => $scoreboard, round => $round};
-  $pg->pubsub->json('scoreboard')->listen(scoreboard => sub { $scoreboard_info = $_[1] });
+  my $scoreboard_info = $app->model('score')->scoreboard_info;
+  $app->pg->pubsub->json('scoreboard')->listen(scoreboard => sub { $scoreboard_info = $_[1] });
 
   Mojo::IOLoop->server(
     {port => $app->config->{cs}{flags}{port}} => sub {

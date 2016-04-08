@@ -32,11 +32,7 @@ sub startup {
       my $pg  = $app->pg;
 
       $app->model('score')->$_(@_) for (qw/sla flag_points scoreboard/);
-
-      my $round = $pg->db->query('select max(round) from scoreboard')->array->[0];
-      my $scoreboard = $pg->db->query('select team_id, n from scoreboard where round = ?', $round)
-        ->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
-      $pg->pubsub->json('scoreboard')->notify(scoreboard => {scoreboard => $scoreboard, round => $round});
+      $pg->pubsub->json('scoreboard')->notify(scoreboard => $app->model('score')->scoreboard_info);
     }
   );
 

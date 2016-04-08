@@ -52,7 +52,7 @@ sub accept {
 
       my $amount = $self->amount($scoreboard_info->{scoreboard}, $delay->data('flag')->{team_id}, $team_id);
       my $msg = "Accepted. $flag_data cost $amount flag points";
-      $msg .= ' about' if $result->hash->{round} >= $scoreboard_info->{round} + 1;
+      $msg .= ' about' if $result->hash->{round} != $scoreboard_info->{round} + 1;
       return $cb->({ok => 1, message => $msg});
     }
     )->catch(

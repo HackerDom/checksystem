@@ -53,7 +53,7 @@ sub start_round {
   my $round = $db->query('insert into rounds default values returning n')->hash->{n};
   $self->round($round);
   $app->minion->enqueue('scoreboard');
-  $app->log->debug("Start new round #$round");
+  $app->log->info("Start new round #$round");
 
   my $status = $db->query(
     'select distinct on (team_id, service_id) *
