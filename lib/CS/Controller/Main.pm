@@ -15,6 +15,11 @@ sub charts_data {
   $c->render(json => {rounds => $rounds, scores => $scores, scoreboard => $scoreboard});
 }
 
+sub scoreboard {
+  my $c = shift;
+  $c->render(json => $c->model('scoreboard')->generate);
+}
+
 sub update {
   my $c = shift->render_later;
   $c->inactivity_timeout(300);

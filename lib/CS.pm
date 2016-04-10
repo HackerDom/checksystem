@@ -42,6 +42,7 @@ sub startup {
   my $r = $app->routes;
   $r->get('/')->to('main#index')->name('index');
   $r->websocket('/update')->to('main#update')->name('update');
+  $r->get('/scoreboard' => [format => 'json'])->to('main#scoreboard')->name('scoreboard');
 
   # Charts
   $r->get('/charts')->to('main#charts')->name('charts');
