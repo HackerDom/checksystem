@@ -6,8 +6,8 @@ After=nginx.service postgresql.service
 [Service]
 Type=forking
 User=cs
-WorkingDirectory=/home/cs/checksystem/
-PIDFile=/home/cs/checksystem/script/hypnotoad.pid
+WorkingDirectory=/home/cs/app/
+PIDFile=/home/cs/app/script/hypnotoad.pid
 ExecStart=/usr/local/bin/hypnotoad script/cs
 ExecStop=/usr/local/bin/hypnotoad -s script/cs
 ExecReload=/usr/local/bin/hypnotoad script/cs
