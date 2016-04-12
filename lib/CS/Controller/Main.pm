@@ -4,15 +4,25 @@ use Mojo::Base 'Mojolicious::Controller';
 sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
 
 sub charts_data {
-  my $c  = shift;
+  my $c = shift;
+
   my $db = $c->pg->db;
+  my $tx = $db->begin;
+  $db->query('set transaction isolation level repeatable read');
+  my $scores = $db->query(
+    'select team_id as name, array_agg(score order by round) as data from scoreboard group by team_id')
+    ->expand->hashes;
+  my $rounds = $db->query('select distinct(round) from scoreboard order by 1')->arrays->flatten;
+  my $flags  = $db->query(
+    q{select service_id as name, array_agg(flags order by round)::int[] as data
+from
+(select round, (service->>'id')::int as service_id, sum((service->>'flags')::int) as flags
+  from (select round, team_id, jsonb_array_elements(services) as service from scoreboard) as s
+group by 1, 2) as ss
+group by service_id}
+  )->expand->hashes;
 
-  my $scores = $db->query('select team_name as name, scores as data from scoreboard_history')->expand->hashes;
-  my $scoreboard =
-    $db->query('select n, name from scoreboard')->hashes->reduce(sub { $a->{$b->{name}} = $b->{n}; $a; }, {});
-  my $rounds = $db->query('select n from rounds')->arrays->flatten->to_array;
-
-  $c->render(json => {rounds => $rounds, scores => $scores, scoreboard => $scoreboard});
+  $c->render(json => {rounds => $rounds, scores => $scores, flags => $flags});
 }
 
 sub scoreboard {

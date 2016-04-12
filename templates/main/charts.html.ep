@@ -1,7 +1,10 @@
 % layout 'default';
 % title app->config->{cs}{ctf}{name};
 
-<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+<div class="container">
+  <div id="scores" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+  <div id="flags" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+</div>
 
 <script>
 $(function () {
@@ -9,9 +12,9 @@ $(function () {
     new Highcharts.Chart({
       chart: {
         zoomType: 'x',
-        renderTo: 'container'
+        renderTo: 'scores'
       },
-      title: { text: 'Scores' },
+      title: { text: 'Scoreboard' },
       xAxis: { categories: data.rounds },
       yAxis: { title: { text: 'Scores' } },
       tooltip: { valueSuffix: '' },
@@ -19,14 +22,29 @@ $(function () {
           layout: 'vertical',
           align: 'right'
       },
-      series:  data.scores.map(function(el) {
-        el.visible = data.scoreboard[el.name] < 15;
-        el.legendIndex = data.scoreboard[el.name];
-        return el
-      })
+      series:  data.scores
     }, function(chart) {
-      chart.xAxis[0].setExtremes(data.rounds[data.rounds.length - 180], data.rounds[data.rounds.length - 1]);
-      chart.showResetZoom();
+      //chart.xAxis[0].setExtremes(data.rounds[data.rounds.length - 180], data.rounds[data.rounds.length - 1]);
+      //chart.showResetZoom();
+    });
+
+    new Highcharts.Chart({
+      chart: {
+        zoomType: 'x',
+        renderTo: 'flags'
+      },
+      title: { text: 'Flags' },
+      xAxis: { categories: data.rounds },
+      yAxis: { title: { text: 'Flags' } },
+      tooltip: { valueSuffix: '' },
+      legend: {
+          layout: 'vertical',
+          align: 'right'
+      },
+      series:  data.flags
+    }, function(chart) {
+      //chart.xAxis[0].setExtremes(data.rounds[data.rounds.length - 180], data.rounds[data.rounds.length - 1]);
+      //chart.showResetZoom();
     });
   });
 });
