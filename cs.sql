@@ -72,17 +72,19 @@ create table sla (
   team_id    integer not null references teams(id),
   service_id integer not null references services(id),
   successed  integer not null,
-  failed     integer not null
+  failed     integer not null,
+  unique (round, team_id, service_id)
 );
 create index on sla (round);
 
-create table score (
+create table flag_points (
   round      integer not null references rounds(n),
   team_id    integer not null references teams(id),
   service_id integer not null references services(id),
-  score      double precision not null
+  amount     float8 not null,
+  unique (round, team_id, service_id)
 );
-create index on score (round);
+create index on flag_points (round);
 
 create table monitor (
   round      integer not null references rounds(n),
@@ -93,14 +95,30 @@ create table monitor (
   error      text
 );
 
-create table scoreboard (
-  round    integer not null references rounds(n),
-  n        integer  not null,
-  team_id  integer not null references teams(id),
-  score    double precision not null,
-  services jsonb,
-  unique (round, team_id)
+create table scores (
+  round      integer not null references rounds(n),
+  team_id    integer not null references teams(id),
+  service_id integer not null references services(id),
+  sla        float8 not null,
+  fp         float8 not null,
+  flags      integer not null,
+  status     integer not null,
+  stdout     text,
+  unique (round, team_id, service_id)
 );
-create index on scoreboard (round);
+create index on scores (round);
+
+create view scoreboard as
+  select round, team_id, round(sum(sla * fp)::numeric, 2) as score,
+    rank() over(partition by round order by sum(sla * fp) desc) as n,
+    json_agg(json_build_object(
+      'id', service_id,
+      'flags', flags,
+      'fp', round(fp::numeric, 2),
+      'sla', round(100 * sla::numeric, 2),
+      'status', status,
+      'stdout', stdout
+    ) order by service_id) as services
+  from scores group by round, team_id;
 -- 1 down
-drop table if exists rounds, monitor, scoreboard, teams, vulns, services, flags, stolen_flags, runs, sla, score;
+drop table if exists rounds, monitor, scores, teams, vulns, services, flags, stolen_flags, runs, sla, flag_points;

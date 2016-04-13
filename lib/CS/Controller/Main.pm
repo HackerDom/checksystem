@@ -17,7 +17,7 @@ sub charts_data {
     q{select service_id as name, array_agg(flags order by round)::int[] as data
 from
 (select round, (service->>'id')::int as service_id, sum((service->>'flags')::int) as flags
-  from (select round, team_id, jsonb_array_elements(services) as service from scoreboard) as s
+  from (select round, team_id, json_array_elements(services) as service from scoreboard) as s
 group by 1, 2) as ss
 group by service_id}
   )->expand->hashes;
