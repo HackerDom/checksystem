@@ -22,7 +22,7 @@ $(function () {
           layout: 'vertical',
           align: 'right'
       },
-      series:  data.scores
+      series: data.scores
     }, function(chart) {
       //chart.xAxis[0].setExtremes(data.rounds[data.rounds.length - 180], data.rounds[data.rounds.length - 1]);
       //chart.showResetZoom();
@@ -41,7 +41,7 @@ $(function () {
           layout: 'vertical',
           align: 'right'
       },
-      series:  data.flags
+      series: data.flags
     }, function(chart) {
       //chart.xAxis[0].setExtremes(data.rounds[data.rounds.length - 180], data.rounds[data.rounds.length - 1]);
       //chart.showResetZoom();

@@ -31,7 +31,7 @@ sub startup {
       my $app = shift->app;
       my $pg  = $app->pg;
 
-      $app->model('score')->$_(@_) for (qw/sla flag_points scoreboard/);
+      $app->model('score')->update(@_);
       $pg->pubsub->json('scoreboard')->notify(scoreboard => $app->model('score')->scoreboard_info);
     }
   );
@@ -47,7 +47,6 @@ sub startup {
   # Charts
   $r->get('/charts')->to('main#charts')->name('charts');
   $r->get('/charts/data')->to('main#charts_data')->name('charts_data');
-  $r->get('/charts/:team_id')->to('main#team_charts')->name('team_charts');
 
   # Admin
   my $admin = $r->under('/admin')->to('admin#auth');
@@ -64,6 +63,13 @@ sub startup {
 
 sub init {
   my $app = shift;
+
+  if ($ENV{CS_DEBUG}) {
+    $app->teams($app->pg->db->query('table teams')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
+    $app->services(
+      $app->pg->db->query('table services')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
+    return;
+  }
 
   my $teams = $app->pg->db->query('table teams')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
   for (@{$app->config->{teams}}) {
