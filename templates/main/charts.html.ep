@@ -17,6 +17,7 @@ $(function () {
       title: { text: 'Scoreboard' },
       xAxis: { categories: data.rounds },
       yAxis: { title: { text: 'Scores' } },
+      tooltip: { animation: false, valueSuffix: '' },
       legend: {
           layout: 'vertical',
           align: 'right'
@@ -32,6 +33,14 @@ $(function () {
       title: { text: 'Flags' },
       xAxis: { categories: data.rounds },
       yAxis: { title: { text: 'Flags' } },
+      tooltip: { animation: false, valueSuffix: '', formatter: function() {
+        if (this.point.teams) {
+          var line = '';
+          this.point.teams.forEach(function(el) {line += '<strong>' + el.t + '</strong>: ' + el.f + '<br />'});
+          return line
+        }
+        return false
+      } },
       legend: {
           layout: 'vertical',
           align: 'right'

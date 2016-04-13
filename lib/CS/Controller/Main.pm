@@ -15,13 +15,19 @@ sub charts_data {
         from (select team_id, array_agg(score order by round) as data from scoreboard group by team_id) as t
           join teams on t.team_id = teams.id', $delay->begin);
       $pg->db->query('select distinct(round) from scoreboard order by 1', $delay->begin);
-      $pg->db->query('
+      $pg->db->query("
         select name, data
-        from (select service_id, array_agg(flags order by round)::int[] as data
-          from (select round, service_id, sum(flags) as flags from scores group by round, service_id) as s
-          group by service_id) as f
+        from (
+          select service_id, json_agg(json_build_object('y', flags, 'teams', teams) order by round) as data
+            from (
+              select round, service_id, sum(flags) as flags,
+                json_agg(json_build_object('t', t.name, 'f', flags) order by flags desc) filter (where flags > 0) as teams
+              from scores join teams as t on scores.team_id = t.id group by round, service_id
+            ) as s
+          group by service_id
+        ) as f
         join services on f.service_id = services.id
-        ', $delay->begin);
+        ", $delay->begin);
     },
     sub {
       my ($delay, undef, $scores, undef, $rounds, undef, $flags) = @_;
