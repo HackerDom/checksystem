@@ -42,6 +42,7 @@ my $ids = $manager->start_round;
 is $manager->round, 1, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
+$app->model('score')->update;
 
 # Runs
 is $db->query('select count(*) from runs')->array->[0], 8, 'right numbers of runs';
@@ -97,12 +98,10 @@ $db->query('select * from runs where service_id = 4')->expand->hashes->map(
 my ($data, $flag_data);
 
 # SLA
-$app->model('score')->sla;
 is $db->query('select count(*) from sla')->array->[0], 8, 'right sla';
 
 # FP
-$app->model('score')->flag_points;
-is $db->query('select count(*) from score')->array->[0], 8, 'right score';
+is $db->query('select count(*) from flag_points')->array->[0], 8, 'right fp';
 
 # Flags
 is $db->query('select count(*) from flags')->array->[0], 2, 'right numbers of flags';
@@ -142,9 +141,9 @@ $ids = $manager->start_round;
 is $manager->round, 2, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
+$app->model('score')->update;
 
 # SLA
-$app->model('score')->sla;
 is $db->query('select count(*) from sla')->array->[0], 16, 'right sla';
 for my $team_id (1, 2) {
   $data = $db->query('select * from sla where team_id = ? and service_id = 2 and round = 1', $team_id)->hash;
@@ -156,21 +155,20 @@ for my $team_id (1, 2) {
 }
 
 # FP
-$app->model('score')->flag_points;
-is $db->query('select count(*) from score')->array->[0], 16, 'right score';
-$data = $db->query('select * from score where team_id = 2 and service_id = 2 and round = 1')->hash;
-is $data->{score}, 2, 'right score';
-$data = $db->query('select * from score where team_id = 1 and service_id = 1 and round = 1')->hash;
-is $data->{score}, 0, 'right score';
+is $db->query('select count(*) from flag_points')->array->[0], 16, 'right fp';
+$data = $db->query('select * from flag_points where team_id = 2 and service_id = 2 and round = 1')->hash;
+is $data->{amount}, 2, 'right fp';
+$data = $db->query('select * from flag_points where team_id = 1 and service_id = 1 and round = 1')->hash;
+is $data->{amount}, 0, 'right fp';
 
 # New round (#3)
 $ids = $manager->start_round;
 is $manager->round, 3, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
+$app->model('score')->update;
 
 # SLA
-$app->model('score')->sla;
 is $db->query('select count(*) from sla')->array->[0], 24, 'right sla';
 for my $team_id (1, 2) {
   $data = $db->query("select * from sla where team_id = $team_id and service_id = 2 and round = 2")->hash;
@@ -184,18 +182,17 @@ for my $team_id (1, 2) {
 }
 
 # FP
-$app->model('score')->flag_points;
-is $db->query('select count(*) from score')->array->[0], 24, 'right score';
-$data = $db->query('select * from score where team_id = 2 and service_id = 2 and round = 2')->hash;
-is $data->{score}, 2, 'right score';
-$data = $db->query('select * from score where team_id = 1 and service_id = 2 and round = 2')->hash;
-is $data->{score}, 0, 'right score';
+is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
+$data = $db->query('select * from flag_points where team_id = 2 and service_id = 2 and round = 2')->hash;
+is $data->{amount}, 2, 'right fp';
+$data = $db->query('select * from flag_points where team_id = 1 and service_id = 2 and round = 2')->hash;
+is $data->{amount}, 0, 'right fp';
 for my $team_id (1, 2) {
-  $data =
-    $db->query('select * from score where team_id = ? and service_id = 1 and round = 1', $team_id)->hash;
-  is $data->{score}, 0, 'right score';
+  $data = $db->query('select * from flag_points where team_id = ? and service_id = 1 and round = 1', $team_id)
+    ->hash;
+  is $data->{amount}, 0, 'right fp';
 }
 
-$app->model('score')->$_(3) for (qw/sla flag_points scoreboard/);
+$app->model('score')->update(3);
 
 done_testing;

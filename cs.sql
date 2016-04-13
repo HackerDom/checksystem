@@ -121,5 +121,5 @@ create view scoreboard as
     ) order by service_id) as services
   from scores group by round, team_id;
 -- 1 down
-drop table if exists rounds, monitor, scores, teams, vulns, services, flags, stolen_flags, runs, sla, flag_points;
 drop view scoreboard;
+drop table if exists rounds, monitor, scores, teams, vulns, services, flags, stolen_flags, runs, sla, flag_points;
