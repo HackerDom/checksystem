@@ -8,6 +8,19 @@
   % }
 % end
 
+% my $paging = begin
+  <nav>
+    <ul class="pager">
+      <li class="previous <%= $page == 1 ? 'disabled' : '' %>">
+        <a href="<%= url_with->query([page => $page - 1]) %>"><span aria-hidden="true">&larr;</span> Newer</a>
+      </li>
+      <li class="next <%= $page == $max ? 'disabled' : '' %>">
+        <a href="<%= url_with->query([page => $page + 1]) %>">Older <span aria-hidden="true">&rarr;</span></a>
+      </li>
+    </ul>
+  </nav>
+% end
+
 <div class="container">
   <h2><%= app->services->{param('service_id')}{name} %> on <%= app->teams->{param('team_id')}{name} %></h2>
 
@@ -26,19 +39,6 @@
     </div>
     <button type="submit" class="btn btn-default">select</button>
   </form>
-
-  % my $paging = begin
-    <nav>
-      <ul class="pager">
-        <li class="previous <%= $page == 1 ? 'disabled' : '' %>">
-          <a href="<%= url_with->query([page => $page - 1]) %>"><span aria-hidden="true">&larr;</span> Newer</a>
-        </li>
-        <li class="next <%= $page == $max ? 'disabled' : '' %>">
-          <a href="<%= url_with->query([page => $page + 1]) %>">Older <span aria-hidden="true">&rarr;</span></a>
-        </li>
-      </ul>
-    </nav>
-  % end
 
   %= $paging->();
 
