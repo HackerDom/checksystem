@@ -8,69 +8,71 @@
   % }
 % end
 
-<h2><%= app->services->{param('service_id')}{name} %> on <%= app->teams->{param('team_id')}{name} %></h2>
+<div class="container">
+  <h2><%= app->services->{param('service_id')}{name} %> on <%= app->teams->{param('team_id')}{name} %></h2>
 
-<form class="form-inline" action="<%= url_with %>">
-  <div class="form-group">
-    <label class="sr-only">Status</label>
-    <p class="form-control-static">Status</p>
-  </div>
-  <div class="form-group">
-    <label for="status" class="sr-only">Password</label>
-    <select class="form-control" id="status" name="status">
-    % for my $status (qw/all 101 102 103 104 110/) {
-      <option <%= (param('status') // '') eq $status ? 'selected': '' %>><%= $status %></option>
-    % }
-    </select>
-  </div>
-  <button type="submit" class="btn btn-default">select</button>
-</form>
-
-% my $paging = begin
-  <nav>
-    <ul class="pager">
-      <li class="previous <%= $page == 1 ? 'disabled' : '' %>">
-        <a href="<%= url_with->query([page => $page - 1]) %>"><span aria-hidden="true">&larr;</span> Newer</a>
-      </li>
-      <li class="next <%= $page == $max ? 'disabled' : '' %>">
-        <a href="<%= url_with->query([page => $page + 1]) %>">Older <span aria-hidden="true">&rarr;</span></a>
-      </li>
-    </ul>
-  </nav>
-% end
-
-%= $paging->();
-
-<table class="table table-bordered table-condensed" style="table-layout: fixed">
-  <tr>
-    <td width="60px"><b>round</b></td>
-    <td width="60px"><b>status</b></td>
-    <td><b>result</b></td>
-  </tr>
-  % for my $result (@$view) {
-  <tr>
-    <td><%= $result->{round} %></td>
-    <td><%= $result->{status} %></td>
-    <td>
-      %= $view_line->('Error', $result->{result}{error});
-      % for my $state (qw/check put get_1 get_2/) {
-        % my $r = $result->{result}{$state};
-        % next unless $r->{command};
-        <strong><%= $state %> [vuln_<%= $result->{result}{vuln}{n} %>] (<%= $result->{result}{$state}{ts} %>)</strong>
-        <dl class="dl-horizontal">
-          %= $view_line->('Command',   $r->{command});
-          %= $view_line->('Elapsed',   $r->{elapsed});
-          %= $view_line->('Exit code', $r->{exit_code});
-          %= $view_line->('Exit',      join ', ', map { "$_ => $r->{exit}{$_}" } sort keys %{$r->{exit}});
-          %= $view_line->('Timeout',   $r->{timeout});
-          %= $view_line->('STDOUT',    $r->{stdout});
-          %= $view_line->('STDERR',    $r->{stderr});
-          %= $view_line->('Exception', $r->{exception});
-        </dl>
+  <form class="form-inline" action="<%= url_with %>">
+    <div class="form-group">
+      <label class="sr-only">Status</label>
+      <p class="form-control-static">Status</p>
+    </div>
+    <div class="form-group">
+      <label for="status" class="sr-only">Password</label>
+      <select class="form-control" id="status" name="status">
+      % for my $status (qw/all 101 102 103 104 110/) {
+        <option <%= (param('status') // '') eq $status ? 'selected': '' %>><%= $status %></option>
       % }
-    </td>
-  </tr>
-  % }
-</table>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-default">select</button>
+  </form>
 
-%= $paging->();
+  % my $paging = begin
+    <nav>
+      <ul class="pager">
+        <li class="previous <%= $page == 1 ? 'disabled' : '' %>">
+          <a href="<%= url_with->query([page => $page - 1]) %>"><span aria-hidden="true">&larr;</span> Newer</a>
+        </li>
+        <li class="next <%= $page == $max ? 'disabled' : '' %>">
+          <a href="<%= url_with->query([page => $page + 1]) %>">Older <span aria-hidden="true">&rarr;</span></a>
+        </li>
+      </ul>
+    </nav>
+  % end
+
+  %= $paging->();
+
+  <table class="table table-bordered table-condensed" style="table-layout: fixed">
+    <tr>
+      <td width="60px"><b>round</b></td>
+      <td width="60px"><b>status</b></td>
+      <td><b>result</b></td>
+    </tr>
+    % for my $result (@$view) {
+    <tr>
+      <td><%= $result->{round} %></td>
+      <td><%= $result->{status} %></td>
+      <td>
+        %= $view_line->('Error', $result->{result}{error});
+        % for my $state (qw/check put get_1 get_2/) {
+          % my $r = $result->{result}{$state};
+          % next unless $r->{command};
+          <strong><%= $state %> [vuln_<%= $result->{result}{vuln}{n} %>] (<%= $result->{result}{$state}{ts} %>)</strong>
+          <dl class="dl-horizontal">
+            %= $view_line->('Command',   $r->{command});
+            %= $view_line->('Elapsed',   $r->{elapsed});
+            %= $view_line->('Exit code', $r->{exit_code});
+            %= $view_line->('Exit',      join ', ', map { "$_ => $r->{exit}{$_}" } sort keys %{$r->{exit}});
+            %= $view_line->('Timeout',   $r->{timeout});
+            %= $view_line->('STDOUT',    $r->{stdout});
+            %= $view_line->('STDERR',    $r->{stderr});
+            %= $view_line->('Exception', $r->{exception});
+          </dl>
+        % }
+      </td>
+    </tr>
+    % }
+  </table>
+
+  %= $paging->();
+</div>
