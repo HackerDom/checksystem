@@ -19,6 +19,9 @@
           </a>
         </div>
         <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="<%= url_for('charts') %>">Charts</a></li>
+          </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><div id="round" class="navbar-text"><%= content_for 'r' %></div></li>
           </ul>
