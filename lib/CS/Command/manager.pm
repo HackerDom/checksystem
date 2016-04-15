@@ -85,7 +85,7 @@ sub start_round {
       my $old_flag = c(@{$flags->{$team_id}{$vuln_id}})->shuffle->first;
       my $id       = $app->minion->enqueue(
         check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}],
-        {queue => 'checker'}
+        {queue => $app->config->{queues}{$team->{name}}{$service->{name}} // 'checker'}
       );
       push @$ids, $id;
       $app->log->debug("Enqueue new job for $team->{name}/$service->{name}/$n: $id");

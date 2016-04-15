@@ -40,7 +40,7 @@ my $manager = CS::Command::manager->new(app => $app);
 # New round (#1)
 my $ids = $manager->start_round;
 is $manager->round, 1, 'right round';
-$app->minion->perform_jobs({queues => ['default', 'checker']});
+$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
 $app->model('score')->update;
 
@@ -134,12 +134,12 @@ $app->model('flag')->accept(2, $flag_data, $scoreboard_info, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/you already submitted this flag/, 'right error';
 
-$app->minion->perform_jobs({queues => ['default', 'checker']});
+$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 
 # New round (#2)
 $ids = $manager->start_round;
 is $manager->round, 2, 'right round';
-$app->minion->perform_jobs({queues => ['default', 'checker']});
+$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
 $app->model('score')->update;
 
@@ -164,7 +164,7 @@ is $data->{amount}, 0, 'right fp';
 # New round (#3)
 $ids = $manager->start_round;
 is $manager->round, 3, 'right round';
-$app->minion->perform_jobs({queues => ['default', 'checker']});
+$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 $manager->finalize_check($app->minion->job($_)) for @$ids;
 $app->model('score')->update;
 
