@@ -66,7 +66,13 @@ sub sla {
     }
   );
 
-  $self->_update_sla_state($db, $r, $state);
+  for my $team_id (keys %$state) {
+    for my $service_id (keys %{$state->{$team_id}}) {
+      my $s = $state->{$team_id}{$service_id};
+      my $sql = 'insert into sla (round, team_id, service_id, successed, failed) values (?, ?, ?, ?, ?)';
+      $db->query($sql, $r, $team_id, $service_id, $s->{successed}, $s->{failed});
+    }
+  }
 }
 
 sub flag_points {
@@ -90,25 +96,6 @@ sub flag_points {
     $state->{$flag->{victim_id}}{$flag->{service_id}} -=
       min($amount, $state->{$flag->{victim_id}}{$flag->{service_id}});
   }
-
-  $self->_update_score_state($db, $r, $state);
-}
-
-sub _update_sla_state {
-  my ($self, $db, $r, $state) = @_;
-
-  for my $team_id (keys %$state) {
-    for my $service_id (keys %{$state->{$team_id}}) {
-      my $s = $state->{$team_id}{$service_id};
-
-      my $sql = 'insert into sla (round, team_id, service_id, successed, failed) values (?, ?, ?, ?, ?)';
-      $db->query($sql, $r, $team_id, $service_id, $s->{successed}, $s->{failed});
-    }
-  }
-}
-
-sub _update_score_state {
-  my ($self, $db, $r, $state) = @_;
 
   for my $team_id (keys %$state) {
     for my $service_id (keys %{$state->{$team_id}}) {
