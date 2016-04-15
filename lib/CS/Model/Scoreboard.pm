@@ -5,7 +5,7 @@ sub generate {
   my ($self, $round) = @_;
   my $db = $self->app->pg->db;
 
-  $round //= $db->query('select max(round) from scoreboard')->array->[0];
+  $round //= $db->query('select max(round) from scores')->array->[0];
   my $scoreboard = $db->query('
     select t.host, t.name, s1.n - s.n as d, s.*
       from scoreboard as s
