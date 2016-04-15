@@ -29,6 +29,7 @@ $(function () {
           for (var i3 in f.data) { series.addPoint(f.data[i3], true) }
         }
       }
+      round += data.rounds.length;
       setTimeout(update, 20 * 1000);
     });
   }
