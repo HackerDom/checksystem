@@ -156,10 +156,9 @@ for my $team_id (1, 2) {
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 16, 'right fp';
-$data = $db->query('select * from flag_points where team_id = 2 and service_id = 2 and round = 1')->hash;
-is $data->{amount}, 2, 'right fp';
-$data = $db->query('select * from flag_points where team_id = 1 and service_id = 1 and round = 1')->hash;
-is $data->{amount}, 0, 'right fp';
+$data =
+  $db->query('select team_id, service_id, amount from flag_points where round = 1 order by 1, 2')->arrays;
+is_deeply $data, [[1, 1, 2], [1, 2, 0], [1, 3, 2], [1, 4, 2], [2, 1, 2], [2, 2, 4], [2, 3, 2], [2, 4, 2]];
 
 # New round (#3)
 $ids = $manager->start_round;
@@ -183,15 +182,9 @@ for my $team_id (1, 2) {
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
-$data = $db->query('select * from flag_points where team_id = 2 and service_id = 2 and round = 2')->hash;
-is $data->{amount}, 2, 'right fp';
-$data = $db->query('select * from flag_points where team_id = 1 and service_id = 2 and round = 2')->hash;
-is $data->{amount}, 0, 'right fp';
-for my $team_id (1, 2) {
-  $data = $db->query('select * from flag_points where team_id = ? and service_id = 1 and round = 1', $team_id)
-    ->hash;
-  is $data->{amount}, 0, 'right fp';
-}
+$data =
+  $db->query('select team_id, service_id, amount from flag_points where round = 2 order by 1, 2')->arrays;
+is_deeply $data, [[1, 1, 2], [1, 2, 0], [1, 3, 2], [1, 4, 2], [2, 1, 2], [2, 2, 4], [2, 3, 2], [2, 4, 2]];
 
 $app->model('score')->update(3);
 
