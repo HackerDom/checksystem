@@ -10,7 +10,7 @@
 <script>
   var attempts = 1;
   function create_ws() {
-    var ws = new WebSocket('<%= url_for('update') %>');
+    var ws = new WebSocket('ws://' + location.host + '<%= url_for('update') %>');
 
     ws.onopen = function(event) {
       attempts = 1;
