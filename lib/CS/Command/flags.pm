@@ -28,7 +28,6 @@ sub run {
       $stream->on(close => sub { undef $do; $app->log->info("[flags] [$id] close stream") });
       $stream->on(read  => sub { $buffer .= $_[1]; $do->(); });
 
-      $stream->write("Your team id is $team_id\n");
       $stream->write("Enter your flags, finished with newline (or empty line to exit)\n");
 
       $do = sub {
