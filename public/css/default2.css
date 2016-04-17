@@ -99,6 +99,17 @@ body, html {
 .team .place {
   vertical-align: middle;
 }
+.team .place .diff {
+  font-size: 80%;
+  margin-left: 15px;
+  color: rgba(0,0,0,0.5);
+}
+.team .place .diff.up {
+  color: rgba(0,255,0,0.5);
+}
+.team .place .diff.down {
+  color: rgba(255,0,0,0.5);
+}
 
 .team .place,
 .team .score,
@@ -153,11 +164,16 @@ body, html {
 }
 
 .team .team_service .param_name {
-  font-weight: bold;
+  font-size: 13pt;
+  color: rgba(0,0,0,0.4);
+  padding-left: 8px;
+  text-transform: lowercase;
 }
 
 .team .team_service .param_value {
   padding-left: 5px;
+  font-size: 16pt;
+  color: rgba(100,50,0,7);
 }
 
 #scoreboard table tr:last-child td {

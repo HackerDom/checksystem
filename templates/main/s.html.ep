@@ -24,24 +24,28 @@
             </tr>
           </thead>
           <tbody>
+            % my $team_idx = 0;
             % for my $team (@$scoreboard) {
             <tr class="team">
-              % my $suffix = $team->{d} ? ($team->{d} > 0 ? "(+$team->{d})" : "($team->{d})") : '';
-              <td class="place"><%= $team->{n} %><%= $suffix %></td>
+              % my $suffix = $team->{d} ? ($team->{d} > 0 ? "+$team->{d}" : "$team->{d}") : '';
+              <td class="place"><%= $team->{n} %><span class="diff <%= $team->{d} < 0 ? 'up' : 'down' %>"><%= $suffix %></span></td>
               <td class="team_logo"><img height="48px" class="img" src="<%= app->teams->{$team->{team_id}}{logo} // '/logo.png' %>"></td>
               <td class="team_info">
                 <div class="team_name"><%= $team->{name} %></div>
               </td>
               <td class="score"><%= $team->{score} %></td>
+              % my $service_idx = 0;
               % for my $service (@{$team->{services}}) {
                 <td
                   title="<%= $service->{stdout} // '' %>"
                   class="team_service status_<%= app->model('checker')->status2name->{$service->{status} // ''} // '' %>"
                 >
-                  <div class="flags"><div class="param_name">Flags</div> <div class="param_value"><%= $service->{flags} %></div></div>
+                  <div class="flags"><div class="param_value"><%= $service->{flags} %></div> <div class="param_name"><%= $team_idx + $service_idx == 0 ? 'Flags' : '' %></div></div>
                 </td>
+                % $service_idx++;
               % }
             </tr>
+            % $team_idx++;
             % }
           </tbody>
         </table>
