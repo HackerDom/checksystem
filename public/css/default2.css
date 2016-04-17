@@ -16,6 +16,9 @@ body, html {
 }
 
 /* Statuses */
+.status_ {
+  background-color: white;
+}
 .status_up {
   background-color: #8CEC8C;
 }
