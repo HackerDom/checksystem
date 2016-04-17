@@ -101,7 +101,7 @@ body, html {
 }
 .team .place .diff {
   font-size: 80%;
-  margin-left: 15px;
+  margin-left: 5px;
   color: rgba(0,0,0,0.5);
 }
 .team .place .diff.up {
@@ -142,6 +142,9 @@ body, html {
 .team .team_info .team_name {
   color: #222;
   font-weight: bold;
+}
+.team .team_info .team_name.big {
+  font-size: 85%;
 }
 
 .team .team_info .team_server {
