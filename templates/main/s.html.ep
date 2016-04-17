@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1" />
-    <meta http-equiv="refresh" content="30">
+    <meta http-equiv="refresh" content="60">
     <link rel="stylesheet" href="/css/bootstrap.css">
     <link rel="stylesheet" href="/css/default2.css">
     <script src="/mojo/jquery/jquery.js"></script>
@@ -53,6 +53,16 @@
     </div>
     <script>
       $('img').error(function() { $(this).attr('src', '/logo.png'); });
+      $(document).ready(function() {
+        setTimeout(function() {
+          $('body').animate({scrollTop: 0}, 0);
+          var scrollTo = $(document).height() - $(window).height() + 100;
+          $('body').animate({scrollTop: scrollTo}, 30000, 'linear', function () {
+            $('body').animate({scrollTop: 0}, 0);
+            location.reload();
+          });
+        }, 10000);
+      });
     </script>
   </body>
 </html>
