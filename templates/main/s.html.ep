@@ -28,7 +28,7 @@
             <tr class="team">
               % my $suffix = $team->{d} ? ($team->{d} > 0 ? "(+$team->{d})" : "($team->{d})") : '';
               <td class="place"><%= $team->{n} %><%= $suffix %></td>
-              <td class="team_logo"><img height="64px" class="img" src="<%= app->teams->{$team->{team_id}}{logo} // '/logo.png' %>"></td>
+              <td class="team_logo"><img height="48px" class="img" src="<%= app->teams->{$team->{team_id}}{logo} // '/logo.png' %>"></td>
               <td class="team_info">
                 <div class="team_name"><%= $team->{name} %></div>
               </td>
@@ -38,8 +38,6 @@
                   title="<%= $service->{stdout} // '' %>"
                   class="team_service status_<%= app->model('checker')->status2name->{$service->{status} // ''} // '' %>"
                 >
-                  <div class="sla"><div class="param_name">SLA</div> <div class="param_value"><%= $service->{sla} %>%</div></div>
-                  <div class="fp"><div class="param_name">FP</div> <div class="param_value"><%= $service->{fp} %></div></div>
                   <div class="flags"><div class="param_name">Flags</div> <div class="param_value"><%= $service->{flags} %></div></div>
                 </td>
               % }
