@@ -28,7 +28,7 @@
             % for my $team (@$scoreboard) {
             <tr class="team">
               % my $suffix = $team->{d} ? ($team->{d} > 0 ? "+$team->{d}" : "$team->{d}") : '';
-              <td class="place"><%= $team->{n} %><span class="diff <%= $team->{d} < 0 ? 'up' : 'down' %>"><%= $suffix %></span></td>
+              <td class="place"><%= $team->{n} %><span class="diff <%= $team->{d} > 0 ? 'up' : 'down' %>"><%= $suffix %></span></td>
               <td class="team_logo"><img height="48px" class="img" src="<%= app->teams->{$team->{team_id}}{logo} // '/logo.png' %>"></td>
               <td class="team_info">
                 <div class="team_name <%= length($team->{name}) > 14 ? 'big' : '' %>"><%= $team->{name} %></div>

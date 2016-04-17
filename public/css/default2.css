@@ -108,7 +108,7 @@ body, html {
   color: rgba(0,0,0,0.5);
 }
 .team .place .diff.up {
-  color: rgba(0,255,0,0.5);
+  color: rgba(0,255,0,0.7);
 }
 .team .place .diff.down {
   color: rgba(255,0,0,0.5);
