@@ -2,7 +2,6 @@ package CS::Controller::Main;
 use Mojo::Base 'Mojolicious::Controller';
 
 sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
-sub s { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
 
 sub charts_data {
   my $c  = shift;
