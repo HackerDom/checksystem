@@ -11,6 +11,9 @@ sub create {
 
 sub accept {
   my ($self, $team_id, $flag_data, $scoreboard_info, $cb) = @_;
+
+  # return $cb->({ok => 1, message => 'test'});
+
   my $app = $self->app;
   my $pg  = $app->pg;
 

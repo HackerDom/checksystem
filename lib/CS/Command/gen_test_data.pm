@@ -12,7 +12,7 @@ sub run {
 
   $db->query(
     "insert into rounds (ts)
-    select generate_series(now(), now() + interval '0.5 hour', interval '1 minute')"
+    select generate_series(now(), now() + interval '0.3 hour', interval '1 minute')"
   );
   $db->query(
     "insert into runs select
@@ -22,7 +22,10 @@ sub run {
   $db->query(
     "insert into flags
     select
-    md5((random() * random())::text), md5(random()::text), round, ts, team_id, service_id, vuln_id
+      array_to_string(array(select
+        substr('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', trunc(random() * random() * 36)::integer + 1, 1)
+        from generate_series(1, 31 + round * 0)), '') || '=',
+      md5(random()::text), round, ts, team_id, service_id, vuln_id
     from runs where status = 101"
   );
 
