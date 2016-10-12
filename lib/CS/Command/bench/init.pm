@@ -1,4 +1,4 @@
-package CS::Command::gen_test_data;
+package CS::Command::bench::init;
 use Mojo::Base 'Mojolicious::Command';
 
 has description => 'Generate test data';
@@ -12,7 +12,7 @@ sub run {
 
   $db->query(
     "insert into rounds (ts)
-    select generate_series(now(), now() + interval '0.3 hour', interval '1 minute')"
+    select generate_series(now(), now() + interval '10 hour', interval '1 minute')"
   );
   $db->query(
     "insert into runs select

@@ -20,7 +20,7 @@ sub run {
   );
 
   Mojo::IOLoop->server(
-    {port => $app->config->{cs}{flags}{port}} => sub {
+    {port => $app->config->{cs}{flags}{port}, reuse => 1} => sub {
       my ($loop, $stream, $id, $do, $lock) = @_;
       return $stream->close unless $app->model('util')->game_status == 1;
 
