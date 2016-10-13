@@ -18,8 +18,11 @@ sub startup {
   $app->plugin(Minion => {Pg => $pg_uri});
   $app->helper(
     pg => sub {
-      state $pg = Mojo::Pg->new($pg_uri)->max_connections(1000)->auto_migrate(1);
-      $pg->migrations->name('cs')->from_file($app->home->rel_file('cs.sql'));
+      state $pg;
+      unless ($pg) {
+        $pg = Mojo::Pg->new($pg_uri)->max_connections(1000)->auto_migrate(1);
+        $pg->migrations->name('cs')->from_file($app->home->rel_file('cs.sql'));
+      }
       return $pg;
     }
   );
