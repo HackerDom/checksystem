@@ -1,26 +1,26 @@
 -- 1 up (init)
 create table teams (
-  id      serial not null primary key,
+  id      serial primary key,
   name    text not null unique,
   network cidr not null,
   host    text not null
 );
 
 create table services (
-  id    serial not null primary key,
+  id    serial primary key,
   name  text not null unique,
   vulns text not null
 );
 
 create table vulns (
-  id         serial not null primary key,
+  id         serial primary key,
   service_id integer not null references services(id),
   n          smallint not null check (n > 0),
   unique (service_id, n)
 );
 
 create table rounds (
-  n  serial not null primary key,
+  n  serial primary key,
   ts timestamptz not null default now()
 );
 
