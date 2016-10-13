@@ -1,7 +1,5 @@
 [Unit]
-Description=CS: Stop/start manager
-Wants=postgresql.service
-After=postgresql.service
+Description=CS manager
 
 [Service]
 Type=simple
