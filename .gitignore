@@ -2,3 +2,4 @@ c_s.conf
 *.log
 *.pid
 *.bak
+*.swp
