@@ -16,8 +16,6 @@ sub run {
   local $SIG{INT} = local $SIG{TERM} =
     sub { $app->log->info('Gracefully stopping manager. Wait for new round...'); $self->{finished}++ };
 
-  $app->pg->pubsub->listen(job_finish => sub { $self->finalize_check($app->minion->job($_[1])) });
-
   my $now = localtime;
   my $start = localtime(Time::Piece->strptime($app->config->{cs}{time}{start}, $app->model('util')->format));
   my $round_length = $app->config->{cs}{round_length};
@@ -41,7 +39,7 @@ sub run {
 
 sub start_round {
   my $self = shift;
-  my ($app, $ids) = ($self->app);
+  my $app  = $self->app;
 
   exit if $self->{finished};
 
@@ -87,12 +85,9 @@ sub start_round {
         check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}],
         {queue => $app->config->{queues}{$team->{name}}{$service->{name}} // 'checker'}
       );
-      push @$ids, $id;
       $app->log->debug("Enqueue new job for $team->{name}/$service->{name}/$n: $id");
     }
   }
-
-  return $ids;
 }
 
 sub skip_check {
@@ -110,44 +105,6 @@ sub skip_check {
     );
   };
   $self->app->log->error("Error while insert check result: $@") if $@;
-}
-
-sub finalize_check {
-  my ($self, $job) = @_;
-  my $app = $self->app;
-
-  my $result = $job->info->{result};
-  my ($round, $team, $service, $flag, undef, $vuln) = @{$job->args};
-  my ($stdout, $status) = ('');
-
-  if (!$result->{check} || $round != $self->round) {
-    $result->{error} = 'Job is too old!';
-    $status = 104;
-  } else {
-    my $state = c(qw/get_2 get_1 put check/)->first(sub { defined $result->{$_}{exit_code} });
-    $status = $result->{$state}{exit_code};
-    $stdout = $result->{$state}{stdout} if $status != 101;
-  }
-
-  # Save result
-  eval {
-    $app->pg->db->query(
-      'insert into runs (round, team_id, service_id, vuln_id, status, result, stdout)
-      values (?, ?, ?, ?, ?, ?, ?)', $round, $team->{id}, $service->{id}, $vuln->{id}, $status,
-      {json => $result}, $stdout
-    );
-  };
-  $app->log->error("Error while insert check result: $@") if $@;
-
-  # Check, put and get was ok, save flag
-  return unless ($result->{get_1}{exit_code} // 0) == 101;
-  my $id = $result->{put}{fid} // $flag->{id};
-  eval {
-    $app->pg->db->query(
-      'insert into flags (data, id, round, team_id, service_id, vuln_id) values (?, ?, ?, ?, ?, ?)',
-      $flag->{data}, $id, $round, $team->{id}, $service->{id}, $vuln->{id});
-  };
-  $app->log->error("Error while insert flag: $@") if $@;
 }
 
 1;

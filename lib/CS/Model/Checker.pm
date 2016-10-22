@@ -4,6 +4,7 @@ use Mojo::Base 'MojoX::Model';
 use File::Spec;
 use IPC::Run qw/run timeout/;
 use List::Util 'all';
+use Mojo::Collection 'c';
 use Mojo::Util 'trim';
 use Time::HiRes qw/gettimeofday tv_interval/;
 
@@ -62,9 +63,41 @@ sub check {
 
 sub _finish {
   my ($self, $job, $result) = @_;
+  my $app = $job->app;
+  my $db  = $app->pg->db;
 
   $job->finish($result);
-  $job->app->pg->pubsub->notify(job_finish => $job->id);
+
+  my ($round, $team, $service, $flag, undef, $vuln) = @{$job->args};
+  my ($stdout, $status) = ('');
+
+  if (!$result->{check} || $round != $db->query('select max(n) from rounds')->array->[0]) {
+    $result->{error} = 'Job is too old!';
+    $status = 104;
+  } else {
+    my $state = c(qw/get_2 get_1 put check/)->first(sub { defined $result->{$_}{exit_code} });
+    $status = $result->{$state}{exit_code};
+    $stdout = $result->{$state}{stdout} if $status != 101;
+  }
+
+  # Save result
+  eval {
+    $db->query(
+      'insert into runs (round, team_id, service_id, vuln_id, status, result, stdout)
+      values (?, ?, ?, ?, ?, ?, ?)', $round, $team->{id}, $service->{id}, $vuln->{id}, $status,
+      {json => $result}, $stdout
+    );
+  };
+  $app->log->error("Error while insert check result: $@") if $@;
+
+  # Check, put and get was ok, save flag
+  return unless ($result->{get_1}{exit_code} // 0) == 101;
+  my $id = $result->{put}{fid} // $flag->{id};
+  eval {
+    $db->query('insert into flags (data, id, round, team_id, service_id, vuln_id) values (?, ?, ?, ?, ?, ?)',
+      $flag->{data}, $id, $round, $team->{id}, $service->{id}, $vuln->{id});
+  };
+  $app->log->error("Error while insert flag: $@") if $@;
 }
 
 sub _run {

@@ -38,10 +38,9 @@ is $u->team_id_by_address('127.0.23.127'), undef, 'right id';
 my $manager = CS::Command::manager->new(app => $app);
 
 # New round (#1)
-my $ids = $manager->start_round;
+$manager->start_round;
 is $manager->round, 1, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
-$manager->finalize_check($app->minion->job($_)) for @$ids;
 $app->model('score')->update;
 
 # Runs
@@ -137,10 +136,9 @@ like $data->{error}, qr/you already submitted this flag/, 'right error';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 
 # New round (#2)
-$ids = $manager->start_round;
+$manager->start_round;
 is $manager->round, 2, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
-$manager->finalize_check($app->minion->job($_)) for @$ids;
 $app->model('score')->update;
 
 # SLA
@@ -161,10 +159,9 @@ $data =
 is_deeply $data, [[1, 1, 2], [1, 2, 0], [1, 3, 2], [1, 4, 2], [2, 1, 2], [2, 2, 4], [2, 3, 2], [2, 4, 2]];
 
 # New round (#3)
-$ids = $manager->start_round;
+$manager->start_round;
 is $manager->round, 3, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
-$manager->finalize_check($app->minion->job($_)) for @$ids;
 $app->model('score')->update;
 
 # SLA
