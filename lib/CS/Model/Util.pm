@@ -13,6 +13,14 @@ sub team_id_by_address {
   return $team ? $team->{id} : undef;
 }
 
+sub game_time {
+  my $self = shift;
+
+  my $time = $self->app->config->{cs}{time};
+  my ($start, $end) = map { 0 + localtime(Time::Piece->strptime($time->{$_}, $self->format)) } qw/start end/;
+  return {start => $start->epoch, end => $end->epoch};
+}
+
 sub game_status {
   my ($self, $now) = @_;
 

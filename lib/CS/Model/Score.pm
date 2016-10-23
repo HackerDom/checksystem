@@ -109,7 +109,7 @@ sub scoreboard_info {
   my $self = shift;
   my $db   = $self->app->pg->db;
 
-  my $round = $db->query('select max(round) from scoreboard')->array->[0];
+  my $round = $db->query('select max(round) from scores')->array->[0];
   my $scoreboard = $db->query('select team_id, n from scoreboard where round = ?', $round)
     ->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
   return {scoreboard => $scoreboard, round => $round};

@@ -51,6 +51,12 @@ sub startup {
   $r->get('/charts')->to('main#charts')->name('charts');
   $r->get('/charts/data')->to('main#charts_data')->name('charts_data');
 
+  # API
+  my $api = $r->route('/api');
+  $api->get('/info')->to('api#info')->name('api_info');
+  $api->get('/scoreboard')->to('api#scoreboard')->name('api_scoreboard');
+  $api->get('/events')->to('api#events')->name('api_events');
+
   # Admin
   my $admin = $r->under('/admin')->to('admin#auth');
   $admin->get('/')->to('admin#index')->name('admin_index');
