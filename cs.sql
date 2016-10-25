@@ -41,17 +41,6 @@ create table stolen_flags (
   round   integer not null references rounds(n),
   team_id integer not null references teams(id)
 );
-create or replace function create_stolen_flags()
-returns trigger as $$
-begin
-  select max(n) into new.round from rounds;
-  return new;
-end;
-$$
-language plpgsql;
-create trigger insert_stolen_flags
-  before insert on stolen_flags
-  for each row execute procedure create_stolen_flags();
 create index on stolen_flags (data, team_id);
 
 create table runs (
@@ -120,6 +109,28 @@ create view scoreboard as
       'stdout', stdout
     ) order by service_id) as services
   from scores group by round, team_id;
+
+create function accept_flag(team_id integer, flag_data text, flag_life_time integer) returns record as $$
+declare
+  flag  flags%rowtype;
+  round rounds.n%type;
+begin
+  select * from flags where data = flag_data into flag;
+
+  if not found then return row(false, 'Denied: no such flag'); end if;
+  if team_id = flag.team_id then return row(false, 'Denied: flag is your own'); end if;
+
+  perform * from stolen_flags as sf where sf.data = flag_data and sf.team_id = accept_flag.team_id;
+  if found then return row(false, 'Denied: you already submitted this flag'); end if;
+
+  select max(n) into round from rounds;
+  if flag.round <= round - flag_life_time then return row(false, 'Denied: flag is too old'); end if;
+
+  insert into stolen_flags (data, team_id, round) values (flag_data, team_id, round);
+  return row(true, null, round, flag.team_id);
+end;
+$$ language plpgsql;
 -- 1 down
 drop view if exists scoreboard;
+drop function if exists accept_flag(integer, text, integer);
 drop table if exists rounds, monitor, scores, teams, vulns, services, flags, stolen_flags, runs, sla, flag_points;

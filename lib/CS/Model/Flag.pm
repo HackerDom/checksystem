@@ -11,51 +11,25 @@ sub create {
 
 sub accept {
   my ($self, $team_id, $flag_data, $scoreboard_info, $cb) = @_;
-
-  # return $cb->({ok => 1, message => 'test'});
-
   my $app = $self->app;
-  my $pg  = $app->pg;
 
   Mojo::IOLoop->delay(
     sub {
-      $pg->db->query('select team_id, service_id, round from flags where data = ?', $flag_data, shift->begin);
+      $app->pg->db->query(
+        'select row_to_json(accept_flag(?, ?, ?)) as r',
+        $team_id, $flag_data, $app->config->{cs}{flag_life_time},
+        shift->begin
+      );
     },
     sub {
-      my ($delay, undef, $result) = @_;
+      my ($d, undef, $result) = @_;
+      my ($ok, $msg, $round, $victim_id) = @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4/};
 
-      my $flag = $result->hash;
-      return $cb->({ok => 0, error => 'Denied: no such flag'}) unless $flag;
-      return $cb->({ok => 0, error => 'Denied: flag is your own'}) if $flag->{team_id} == $team_id;
+      return $cb->({ok => 0, error => $msg}) unless $ok;
 
-      $delay->data(flag => $flag);
-      $pg->db->query('select * from stolen_flags where data = ? and team_id = ?',
-        $flag_data, $team_id, $delay->begin);
-    },
-    sub {
-      my ($delay, undef, $result) = @_;
-
-      return $cb->({ok => 0, error => 'Denied: you already submitted this flag'}) if $result->rows;
-
-      $pg->db->query('select max(n) from rounds', $delay->begin);
-    },
-    sub {
-      my ($delay, undef, $result) = @_;
-
-      return $cb->({ok => 0, error => 'Denied: flag is too old'})
-        if $delay->data('flag')->{round} <= $result->array->[0] - $app->config->{cs}{flag_life_time};
-
-      $pg->db->query('insert into stolen_flags (data, team_id) values (?, ?) returning round',
-        $flag_data, $team_id, $delay->begin);
-    },
-    sub {
-      my ($delay, undef, $result) = @_;
-
-      return $cb->({ok => 0, error => 'Please try again later'}) unless $result->rows;
-
-      my $amount = $self->amount($scoreboard_info->{scoreboard}, $delay->data('flag')->{team_id}, $team_id);
-      my $msg = "Accepted. $flag_data cost $amount flag points";
-      $msg .= ' about' if $result->hash->{round} != $scoreboard_info->{round} + 1;
+      my $amount = $self->amount($scoreboard_info->{scoreboard}, $victim_id, $team_id);
+      $msg = "Accepted. $flag_data cost $amount flag points";
+      $msg .= ' about' if $round != $scoreboard_info->{round} + 1;
       return $cb->({ok => 1, message => $msg});
     }
     )->catch(
