@@ -110,39 +110,33 @@ sub _run {
   $cmd->[0] = $path;
 
   $self->app->log->debug("Run '@$cmd' with timeout $timeout");
+  my ($t, $h) = timeout($timeout);
   my $start = [gettimeofday];
-  my $h;
   eval {
-    $h = start $cmd, \undef, \$stdout, \$stderr,
-      init => sub { chdir $cwd },
-      timeout($timeout);
+    $h = start $cmd, \undef, \$stdout, \$stderr, 'init', sub { chdir $cwd }, $t;
     $h->finish;
   };
-  my $elapsed = tv_interval($start);
+  my $result = {
+    command   => "@$cmd",
+    elapsed   => tv_interval($start),
+    exception => $@,
+    exit      => {value => $?, code => $? >> 8, signal => $? & 127, coredump => $? & 128},
+    stderr    => $stderr,
+    stdout    => $stdout,
+    timeout   => 0
+  };
+  $result->{exit_code} = ($@ || all { $? >> 8 != $_ } (101, 102, 103, 104)) ? 110 : $? >> 8;
+
   if ($@ && $@ =~ /timeout/i) {
-    $timeout = 1;
+    $result->{timeout}   = 1;
+    $result->{exit_code} = 104;
     my $pid = $h->{KIDS}[0]{PID};
     my $n = killfam 9, $pid;
     $self->app->log->debug("Kill all sub process for $pid => $n");
-  } else {
-    $timeout = 0;
   }
 
-  my $exit = {value => $?, code => $? >> 8, signal => $? & 127, coredump => $? & 128};
-  my $code = ($@ || all { $? >> 8 != $_ } (101, 102, 103, 104)) ? 110 : $? >> 8;
-  $code = 104 if $timeout;
-
-  return {
-    exception => $@,
-    timeout   => $timeout,
-    stderr    => $stderr,
-    stdout    => $stdout,
-    exit      => $exit,
-    exit_code => $code,
-    elapsed   => $elapsed,
-    command   => "@$cmd",
-    ts        => scalar localtime
-  };
+  $result->{ts} = scalar localtime;
+  return $result;
 }
 
 1;
