@@ -2,10 +2,11 @@ package CS::Model::Checker;
 use Mojo::Base 'MojoX::Model';
 
 use File::Spec;
-use IPC::Run qw/run timeout/;
+use IPC::Run qw/start timeout/;
 use List::Util 'all';
 use Mojo::Collection 'c';
 use Mojo::Util 'trim';
+use Proc::Killfam;
 use Time::HiRes qw/gettimeofday tv_interval/;
 
 has statuses => sub { [[up => 101], [corrupt => 102], [mumble => 103], [down => 104]] };
@@ -110,14 +111,23 @@ sub _run {
 
   $self->app->log->debug("Run '@$cmd' with timeout $timeout");
   my $start = [gettimeofday];
+  my $h;
   eval {
-    run $cmd, \undef, \$stdout, \$stderr,
+    $h = start $cmd, \undef, \$stdout, \$stderr,
       init => sub { chdir $cwd },
       timeout($timeout);
+    $h->finish;
   };
   my $elapsed = tv_interval($start);
+  if ($@ && $@ =~ /timeout/i) {
+    $timeout = 1;
+    my $pid = $h->{KIDS}[0]{PID};
+    my $n = killfam 9, $pid;
+    $self->app->log->debug("Kill all sub process for $pid => $n");
+  } else {
+    $timeout = 0;
+  }
 
-  $timeout = ($@ && $@ =~ /timeout/i) ? 1 : 0;
   my $exit = {value => $?, code => $? >> 8, signal => $? & 127, coredump => $? & 128};
   my $code = ($@ || all { $? >> 8 != $_ } (101, 102, 103, 104)) ? 110 : $? >> 8;
   $code = 104 if $timeout;

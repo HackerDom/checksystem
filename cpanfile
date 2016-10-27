@@ -9,4 +9,5 @@ requires 'Mojo::JSON::MaybeXS'        => '0.012';
 requires 'Mojo::Pg'                   => '2.29';
 requires 'Mojolicious'                => '7.03';
 requires 'Mojolicious::Plugin::Model' => '0.07';
+requires 'Proc::Killfam'              => '0.53';
 requires 'String::Random'             => '0.29';
