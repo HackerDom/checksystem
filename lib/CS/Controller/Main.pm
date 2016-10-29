@@ -3,6 +3,13 @@ use Mojo::Base 'Mojolicious::Controller';
 
 sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
 
+sub team {
+  my $c = shift;
+  return $c->reply->not_found unless my $team = $c->app->teams->{$c->param('team_id')};
+
+  $c->render(%{$c->model('scoreboard')->generate_for_team($team->{id})});
+}
+
 sub charts_data {
   my $c  = shift;
   my $pg = $c->pg;

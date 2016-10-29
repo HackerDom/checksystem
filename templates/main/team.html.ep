@@ -1,0 +1,8 @@
+% layout 'default';
+% title app->config->{cs}{ctf}{name};
+
+% content_for r => begin
+  Round <%= $round %>
+% end
+
+%= include 'scoreboard_for_team';
