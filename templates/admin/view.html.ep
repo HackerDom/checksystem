@@ -22,7 +22,7 @@
 % end
 
 <div class="container">
-  <h2><%= app->services->{param('service_id')}{name} %> on <%= app->teams->{param('team_id')}{name} %></h2>
+  <h2><%= app->services->{param('service_id')}{name} // '*' %> on <%= app->teams->{param('team_id')}{name} // '*' %></h2>
 
   <form class="form-inline" action="<%= url_with %>">
     <div class="form-group">

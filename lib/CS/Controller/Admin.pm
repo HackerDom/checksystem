@@ -29,9 +29,12 @@ sub view {
   my $c  = shift;
   my $db = $c->pg->db;
 
+  my $team    = $c->app->teams->{$c->param('team_id')};
+  my $service = $c->app->services->{$c->param('service_id')};
+
   return $c->reply->not_found
-    unless (my $team = $c->app->teams->{$c->param('team_id')})
-    && (my $service = $c->app->services->{$c->param('service_id')});
+    unless ($team->{id} || ($c->param('team_id') eq '*'))
+    && ($service->{id} || ($c->param('service_id') eq '*'));
 
   my $status = $c->param('status');
   if ($status) {
@@ -41,7 +44,8 @@ sub view {
   my $last = $db->query(
     'select count(*)
     from runs where
-    team_id = $1 and service_id = $2 and (status = $3 or $3 is null)', $team->{id}, $service->{id}, $status
+    (team_id = $1 or $1 is null) and (service_id = $2 or $2 is null) and (status = $3 or $3 is null)',
+    $team->{id}, $service->{id}, $status
   )->array->[0];
   my $limit = 30;
   my $max   = int($last / $limit) + 1;
@@ -54,7 +58,7 @@ sub view {
   my $view = $db->query(
     'select round, status, result
     from runs where
-    team_id = $1 and service_id = $2 and (status = $3 or $3 is null)
+    (team_id = $1 or $1 is null) and (service_id = $2 or $2 is null) and (status = $3 or $3 is null)
     order by round desc limit $4 offset $5', $team->{id}, $service->{id}, $status, $limit, $offset
   )->expand->hashes->to_array;
   $c->render(view => $view, page => $page, max => $max);
