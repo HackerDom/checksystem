@@ -3,7 +3,7 @@ use Mojo::Base 'MojoX::Model';
 
 use File::Spec;
 use IPC::Run qw/start timeout/;
-use List::Util 'all';
+use List::Util qw/all min/;
 use Mojo::Collection 'c';
 use Mojo::Util 'trim';
 use Proc::Killfam;
@@ -30,56 +30,54 @@ sub vulns {
 sub check {
   my ($self, $job, $round, $team, $service, $flag, $old_flag, $vuln) = @_;
   my $result = {vuln => $vuln};
-
-  return $self->_finish($job, $result)
-    unless $round == $job->app->pg->db->query('select max(n) from rounds')->array->[0];
+  my $db = $job->app->pg->db;
 
   my $host = $team->{host};
   if (my $cb = $job->app->config->{cs}{checkers}{hostname}) { $host = $cb->($team, $service) }
 
   # Check
   my $cmd = [$service->{path}, 'check', $host];
-  $result->{check} = $self->_run($cmd, $service->{timeout});
-  return $self->_finish($job, $result) unless $result->{check}{exit_code} == 101;
+  $result->{check} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+  return $self->_finish($job, $result, $db) unless $result->{check}{exit_code} == 101;
 
   # Put
   $cmd = [$service->{path}, 'put', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
-  $result->{put} = $self->_run($cmd, $service->{timeout});
+  $result->{put} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
   (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
   $flag->{id} = $result->{put}{fid} = $id if $id;
-  return $self->_finish($job, $result) unless $result->{put}{exit_code} == 101;
+  return $self->_finish($job, $result, $db) unless $result->{put}{exit_code} == 101;
 
   # Get 1
   $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
-  $result->{get_1} = $self->_run($cmd, $service->{timeout});
-  return $self->_finish($job, $result) unless $result->{get_1}{exit_code} == 101;
+  $result->{get_1} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+  return $self->_finish($job, $result, $db) unless $result->{get_1}{exit_code} == 101;
 
   # Get 2
   if ($old_flag) {
     $cmd = [$service->{path}, 'get', $host, $old_flag->{id}, $old_flag->{data}, $vuln->{n}];
-    $result->{get_2} = $self->_run($cmd, $service->{timeout});
+    $result->{get_2} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
   }
-  return $self->_finish($job, $result);
+  return $self->_finish($job, $result, $db);
 }
 
 sub _finish {
-  my ($self, $job, $result) = @_;
-  my $app = $job->app;
-  my $db  = $app->pg->db;
-
-  $job->finish($result);
+  my ($self, $job, $result, $db) = @_;
 
   my ($round, $team, $service, $flag, undef, $vuln) = @{$job->args};
   my ($stdout, $status) = ('');
 
-  if (!$result->{check} || $round != $db->query('select max(n) from rounds')->array->[0]) {
+  # Prepare result for runs
+  if ($result->{slow}) {
     $result->{error} = 'Job is too old!';
     $status = 104;
-  } else {
+  }
+  else {
     my $state = c(qw/get_2 get_1 put check/)->first(sub { defined $result->{$_}{exit_code} });
     $status = $result->{$state}{exit_code};
     $stdout = $result->{$state}{stdout} if $status != 101;
   }
+
+  $job->finish($result);
 
   # Save result
   eval {
@@ -89,7 +87,7 @@ sub _finish {
       {json => $result}, $stdout
     );
   };
-  $app->log->error("Error while insert check result: $@") if $@;
+  $self->app->log->error("Error while insert check result: $@") if $@;
 
   # Check, put and get was ok, save flag
   return unless ($result->{get_1}{exit_code} // 0) == 101;
@@ -98,12 +96,21 @@ sub _finish {
     $db->query('insert into flags (data, id, round, team_id, service_id, vuln_id) values (?, ?, ?, ?, ?, ?)',
       $flag->{data}, $id, $round, $team->{id}, $service->{id}, $vuln->{id});
   };
-  $app->log->error("Error while insert flag: $@") if $@;
+  $self->app->log->error("Error while insert flag: $@") if $@;
+}
+
+sub _next_round_start {
+  my ($self, $db, $round) = @_;
+
+  return $db->query('select extract(epoch from ts + ?::interval - now()) from rounds where n = ?',
+    $self->app->config->{cs}{round_length}, $round)->array->[0];
 }
 
 sub _run {
   my ($self, $cmd, $timeout) = @_;
   my ($stdout, $stderr);
+
+  return {slow => 1} if $timeout <= 0;
 
   my $path = File::Spec->rel2abs($cmd->[0]);
   my (undef, $cwd) = File::Spec->splitpath($path);
