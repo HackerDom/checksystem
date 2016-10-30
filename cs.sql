@@ -105,6 +105,8 @@ create table scoreboard (
   services jsonb not null,
   unique (round, team_id)
 );
+create index on scoreboard (round);
+create index on scoreboard (team_id);
 
 create function accept_flag(team_id integer, flag_data text, flag_life_time integer) returns record as $$
 declare
