@@ -97,18 +97,14 @@ create table scores (
 );
 create index on scores (round);
 
-create view scoreboard as
-  select round, team_id, round(sum(sla * fp)::numeric, 2) as score,
-    rank() over(partition by round order by sum(sla * fp) desc) as n,
-    json_agg(json_build_object(
-      'id', service_id,
-      'flags', flags,
-      'fp', round(fp::numeric, 2),
-      'sla', round(100 * sla::numeric, 2),
-      'status', status,
-      'stdout', stdout
-    ) order by service_id) as services
-  from scores group by round, team_id;
+create table scoreboard (
+  round    integer not null references rounds(n),
+  team_id  integer not null references teams(id),
+  score    numeric not null,
+  n        smallint not null,
+  services jsonb not null,
+  unique (round, team_id)
+);
 
 create function accept_flag(team_id integer, flag_data text, flag_life_time integer) returns record as $$
 declare
@@ -131,6 +127,6 @@ begin
 end;
 $$ language plpgsql;
 -- 1 down
-drop view if exists scoreboard;
 drop function if exists accept_flag(integer, text, integer);
-drop table if exists rounds, monitor, scores, teams, vulns, services, flags, stolen_flags, runs, sla, flag_points;
+drop table if exists rounds, monitor, scores, teams, vulns, services, flags,
+  stolen_flags, runs, sla, flag_points, scoreboard;

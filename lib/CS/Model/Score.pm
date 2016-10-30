@@ -42,7 +42,23 @@ sub scoreboard {
       left join (
         select team_id, service_id, status, stdout from runs where round = $1
       ) as r using (team_id, service_id)
-}, $r
+    }, $r
+  );
+  $db->query(
+    q{
+    insert into scoreboard
+    select round, team_id, round(sum(sla * fp)::numeric, 2) as score,
+      rank() over(order by sum(sla * fp) desc) as n,
+      json_agg(json_build_object(
+        'id', service_id,
+        'flags', flags,
+        'fp', round(fp::numeric, 2),
+        'sla', round(100 * sla::numeric, 2),
+        'status', status,
+        'stdout', stdout
+      ) order by service_id) as services
+    from scores where round = $1 group by round, team_id;
+    }, $r
   );
 }
 

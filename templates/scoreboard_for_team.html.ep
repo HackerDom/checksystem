@@ -10,7 +10,7 @@
     <table class="table table-bordered table-condensed">
       <thead>
         <tr class="team">
-          <th class="place">#</th>
+          <th>#</th>
           <th>round</th>
           <th>score</th>
           % for my $sid (sort { $a <=> $b } keys %{app->services}) {
@@ -21,9 +21,8 @@
       <tbody>
         % for my $team (@$scoreboard) {
         <tr class="team">
-          % my $suffix = $team->{d} ? ($team->{d} > 0 ? "(+$team->{d})" : "($team->{d})") : '';
-          <td class="place"><%= $team->{n} %><%= $suffix %></td>
-          <td><%= $team->{round} %></td>
+          <td class="score"><%= $team->{n} %></td>
+          <td class="score"><%= $team->{round} %></td>
           <td class="score"><%= $team->{score} %></td>
           % for my $service (@{$team->{services}}) {
             <td

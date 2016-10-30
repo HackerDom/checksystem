@@ -24,9 +24,7 @@ sub generate_for_team {
 
   my $round = $db->query('select max(round) from scores')->array->[0];
   my $scoreboard = $db->query(q{
-    select t.host, t.name, s.*,
-      (select n from scoreboard
-      where team_id = $1 and round = case when round-1<0 then 0 else round-1 end) - n as d
+    select t.host, t.name, s.*
     from scoreboard as s join teams as t on s.team_id = t.id
     where team_id = $1 order by round desc
   }, $team_id)->expand->hashes;
