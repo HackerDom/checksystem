@@ -7,6 +7,7 @@
     </tr>
   </table>
   <div id="scoreboard">
+    <h1><%= $team->{name} %></h1>
     <table class="table table-bordered table-condensed">
       <thead>
         <tr class="team">

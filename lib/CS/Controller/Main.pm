@@ -7,7 +7,7 @@ sub team {
   my $c = shift;
   return $c->reply->not_found unless my $team = $c->app->teams->{$c->param('team_id')};
 
-  $c->render(%{$c->model('scoreboard')->generate_for_team($team->{id})});
+  $c->render(%{$c->model('scoreboard')->generate_for_team($team->{id})}, team => $team);
 }
 
 sub charts_data {
