@@ -57,6 +57,7 @@ sub scoreboard {
 
 sub update {
   my $c = shift->render_later;
+  $c->tx->with_compression;
   $c->inactivity_timeout(300);
 
   return $c->finish if $c->model('util')->game_status == -1;
