@@ -13,9 +13,6 @@ sub run {
   my $self = shift;
   my $app  = $self->app;
 
-  local $SIG{INT} = local $SIG{TERM} =
-    sub { $app->log->info('Gracefully stopping manager. Wait for new round...'); $self->{finished}++ };
-
   my $now = localtime;
   my $start = localtime(Time::Piece->strptime($app->config->{cs}{time}{start}, $app->model('util')->format));
   my $round_length = $app->config->{cs}{round_length};
@@ -40,8 +37,6 @@ sub run {
 sub start_round {
   my $self = shift;
   my $app  = $self->app;
-
-  exit if $self->{finished};
 
   # Check end of game
   $app->minion->enqueue(scoreboard => [$self->round]) if $app->model('util')->game_status == -1;
