@@ -1,5 +1,6 @@
 [Unit]
 Description=CS worker
+After=network.target
 
 [Service]
 Type=simple

@@ -1,5 +1,6 @@
 [Unit]
 Description=CS Flags #%I
+After=network.target
 
 [Service]
 Type=simple
