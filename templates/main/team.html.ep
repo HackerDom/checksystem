@@ -5,4 +5,114 @@
   Round <%= $round %>
 % end
 
-%= include 'scoreboard_for_team';
+<div class="container" id="scoreboard_wrapper">
+  <table class="table table-condensed status_descriptions">
+    <tr class="text-center">
+      % for my $status (@{app->model('checker')->statuses}) {
+        <td class="col-md-3 status_<%= $status->[0] %>"><%= uc $status->[0] %></td>
+      % }
+    </tr>
+  </table>
+
+  <h1><%= $team->{name} %></h1>
+
+  <div class="charts">
+    <div id="scores" style="min-width: 400px; height: 300px; margin: 0 auto"></div>
+    <div id="flags"  style="min-width: 400px; height: 300px; margin: 0 auto"></div>
+  </div>
+
+  <div id="scoreboard">
+    <table class="table table-bordered table-condensed">
+      <thead>
+        <tr class="team">
+          <th>#</th>
+          <th>round</th>
+          <th>score</th>
+          % for my $sid (sort { $a <=> $b } keys %{app->services}) {
+            <th class="service_name"><%= app->services->{$sid}{name} %></th>
+          % }
+        </tr>
+      </thead>
+      <tbody>
+        % for my $team (@$scoreboard) {
+        <tr class="team">
+          <td class="score"><%= $team->{n} %></td>
+          <td class="score"><%= $team->{round} %></td>
+          <td class="score"><%= $team->{score} %></td>
+          % for my $service (@{$team->{services}}) {
+            <td
+              title="<%= $service->{stdout} // '' %>"
+              class="team_service status_<%= app->model('checker')->status2name->{$service->{status} // ''} // '' %>"
+            >
+              <div class="sla"><div class="param_name">SLA</div> <div class="param_value"><%= $service->{sla} %>%</div></div>
+              <div class="fp"><div class="param_name">FP</div> <div class="param_value"><%= $service->{fp} %></div></div>
+              <div class="flags"><div class="param_name">Flags</div> <div class="param_value"><%= $service->{flags} %></div></div>
+            </td>
+          % }
+        </tr>
+        % }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+$(function() {
+  var scores, flags, round;
+
+  function update() {
+    if (round == null) { setTimeout(update, 1000); return; }
+    $.getJSON("<%= url_for('charts_data') %>" + "?r=" + round, function(data) {
+      for (var i1 in scores.series) {
+        for (var i2 in data.scores) {
+          var series = scores.series[i1];
+          var s = data.scores[i2];
+          if (series.name != s.name) { continue; }
+          for (var i3 in s.data) { series.addPoint(s.data[i3], true) }
+        }
+      }
+      for (var i1 in flags.series) {
+        for (var i2 in data.flags) {
+          var series = flags.series[i1];
+          var f = data.flags[i2];
+          if (series.name != f.name) { continue; }
+          for (var i3 in f.data) { series.addPoint(f.data[i3], true) }
+        }
+      }
+      round += data.rounds.length;
+      setTimeout(update, 20 * 1000);
+    });
+  }
+
+  $.getJSON("<%= url_for('charts_data') %>", function(data) {
+    scores = new Highcharts.Chart({
+      chart: { zoomType: 'x', renderTo: 'scores' },
+      title: { text: 'Scoreboard' },
+      xAxis: { categories: data.rounds },
+      yAxis: { title: { text: 'Scores' } },
+      tooltip: { animation: false, valueSuffix: '' },
+      legend: { layout: 'vertical', align: 'right' },
+      series: data.scores
+    });
+
+    flags = new Highcharts.Chart({
+      chart: { zoomType: 'x', renderTo: 'flags', events: { load: update } },
+      title: { text: 'Flags' },
+      xAxis: { categories: data.rounds },
+      yAxis: { title: { text: 'Flags' } },
+      tooltip: { animation: false, valueSuffix: '', formatter: function() {
+        if (this.point.teams) {
+          var line = '';
+          this.point.teams.forEach(function(el) {line += '<strong>' + el.t + '</strong>: ' + el.f + '<br />'});
+          return line
+        }
+        return false
+      } },
+      legend: { layout: 'vertical', align: 'right' },
+      series: data.flags
+    });
+
+    round = data.rounds.length;
+  });
+});
+</script>

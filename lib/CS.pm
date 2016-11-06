@@ -49,7 +49,6 @@ sub startup {
   $r->get('/scoreboard' => [format => 'json'])->to('main#scoreboard')->name('scoreboard');
 
   # Charts
-  $r->get('/charts')->to('main#charts')->name('charts');
   $r->get('/charts/data')->to('main#charts_data')->name('charts_data');
 
   # API
