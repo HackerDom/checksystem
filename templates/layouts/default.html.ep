@@ -30,7 +30,7 @@
     </div>
     <%= content %>
     <script>
-      $('img').error(function() { $(this).attr('src', '/logo.png'); });
+      $('img').bind('error', function() { $(this).attr('src', '/logo.png'); });
     </script>
   </body>
 </html>
