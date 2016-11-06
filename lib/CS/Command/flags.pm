@@ -45,7 +45,6 @@ sub run {
           my $flag = substr $buffer, 0, $index + 1, '';
           $flag =~ s/\r?\n$//;
           return $stream->write("Goodbye!\n" => sub { $stream->close }) unless length $flag;
-          return $stream->write("Invalid flag\n") unless $app->model('flag')->validate($flag);
 
           $lock = 1;
           $a++;

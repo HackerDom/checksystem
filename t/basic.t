@@ -116,7 +116,7 @@ my $scoreboard_info = $app->model('score')->scoreboard_info;
 my $flag_cb = sub { $data = $_[0] };
 $app->model('flag')->accept(2, 'flag', $scoreboard_info, $flag_cb);
 is $data->{ok}, 0, 'right status';
-like $data->{error}, qr/no such flag/, 'right error';
+like $data->{error}, qr/invalid flag/, 'right error';
 
 $flag_data = $db->query('select data from flags where team_id = 2 limit 1')->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $scoreboard_info, $flag_cb);

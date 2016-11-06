@@ -1,12 +1,19 @@
 package CS::Model::Flag;
 use Mojo::Base 'MojoX::Model';
 
+use Digest::SHA 'hmac_sha1_hex';
 use String::Random 'random_regex';
 
 my $format = '[A-Z0-9]{31}=';
 
 sub create {
-  return {id => join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3), data => random_regex($format)};
+  my $self = shift;
+
+  my $id   = join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3);
+  my $data = random_regex('[A-Z0-9]{21}');
+  my $sign = uc substr hmac_sha1_hex($data, $self->app->config->{cs}{flags}{secret}), 0, 10;
+
+  return {id => $id, data => "${data}${sign}="};
 }
 
 sub accept {
@@ -15,6 +22,8 @@ sub accept {
 
   Mojo::IOLoop->delay(
     sub {
+      return $cb->({ok => 0, error => 'Denied: invalid flag'}) unless $self->validate($flag_data);
+
       $app->pg->db->query(
         'select row_to_json(accept_flag(?, ?, ?)) as r',
         $team_id, $flag_data, $app->config->{cs}{flag_life_time},
@@ -49,6 +58,13 @@ sub amount {
   return $t >= $v ? $jackpot : exp(log($jackpot) * ($v - $jackpot) / ($t - $jackpot));
 }
 
-sub validate { $_[1] =~ /^$format$/ }
+sub validate {
+  my ($self, $flag) = @_;
+
+  return undef unless $flag =~ /^$format$/;
+  my $data = substr $flag, 0, 21;
+  my $sign = uc substr hmac_sha1_hex($data, $self->app->config->{cs}{flags}{secret}), 0, 10;
+  return $sign eq substr $flag, 21, 10;
+}
 
 1;
