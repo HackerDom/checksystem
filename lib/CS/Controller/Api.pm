@@ -28,7 +28,7 @@ sub events {
 
   my $round = $c->param('from') // 0;
   my $events = $pg->db->query(
-    'select extract(epoch from sf.ts)::int, f.service_id, sf.team_id, f.team_id
+    'select sf.round, (1000 * extract(epoch from sf.ts))::bigint, f.service_id, sf.team_id, f.team_id
     from stolen_flags as sf join flags as f using(data) where sf.round >= ?', $round
   )->arrays;
   $c->render(json => $events->to_array);
