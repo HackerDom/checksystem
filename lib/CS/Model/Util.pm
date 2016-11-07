@@ -18,6 +18,8 @@ sub game_time {
 
   my $time = $self->app->config->{cs}{time};
   my ($start, $end) = map { 0 + localtime(Time::Piece->strptime($time->{$_}, $self->format)) } qw/start end/;
+  $start += localtime->tzoffset;
+  $end   += localtime->tzoffset;
   return {start => $start->epoch, end => $end->epoch};
 }
 
