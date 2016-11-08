@@ -45,10 +45,10 @@ sub check {
   $result->{put} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
   return $self->_finish($job, $result, $db) if $result->{slow} || $result->{put}{exit_code} != 101;
   (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
-  $result->{put}{fid} = $id if $id;
+  $flag->{id} = $result->{put}{fid} = $id if $id;
 
   # Get 1
-  $cmd = [$service->{path}, 'get', $host, $id, $flag->{data}, $vuln->{n}];
+  $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
   $result->{get_1} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
   return $self->_finish($job, $result, $db) if $result->{slow} || $result->{get_1}{exit_code} != 101;
 
