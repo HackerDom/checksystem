@@ -87,6 +87,11 @@
   font-weight: bold;
 }
 
+.team_name a {
+  color: #222;
+  text-decoration: underline;
+}
+
 .team .team_info .team_server {
   color: #999;
 }
