@@ -46,7 +46,7 @@
             >
               <div class="sla"><div class="param_name">SLA</div> <div class="param_value"><%= $service->{sla} %>%</div></div>
               <div class="fp"><div class="param_name">FP</div> <div class="param_value"><%= $service->{fp} %></div></div>
-              <div class="flags"><div class="param_name">Flags</div><div class="param_value">
+              <div class="flags"><div class="param_name">⚑</div><div class="param_value">
                   <%= $service->{flags} %>
                   % if (my $sflags = $service->{sflags}) {
                     / -<%= $service->{sflags} %>
