@@ -131,8 +131,8 @@ sub _run {
     elapsed   => tv_interval($start),
     exception => $@,
     exit      => {value => $?, code => $? >> 8, signal => $? & 127, coredump => $? & 128},
-    stderr    => $stderr =~ s/\x00//gr,
-    stdout    => $stdout =~ s/\x00//gr,
+    stderr    => ($stderr // '') =~ s/\x00//gr,
+    stdout    => ($stdout // '') =~ s/\x00//gr,
     timeout   => 0
   };
   $result->{exit_code} = ($@ || all { $? >> 8 != $_ } (101, 102, 103, 104)) ? 110 : $? >> 8;
