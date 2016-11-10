@@ -70,13 +70,17 @@ sub _finish {
   if ($result->{slow}) {
     $result->{error} = 'Job is too old!';
     $status = 104;
-  } else {
+  }
+  else {
     my $state = c(qw/get_2 get_1 put check/)->first(sub { defined $result->{$_}{exit_code} });
     $status = $result->{$state}{exit_code};
     $stdout = $result->{$state}{stdout} if $status != 101;
   }
 
   $job->finish($result);
+  $self->app->metric->write('check', {},
+    {status => $status, team => $team->{id}, service => $service->{id}, vuln => $vuln->{id}, round => $round}
+  );
 
   # Save result
   eval {

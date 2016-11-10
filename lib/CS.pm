@@ -2,6 +2,7 @@ package CS;
 use Mojo::JSON::MaybeXS;
 use Mojo::Base 'Mojolicious';
 
+use Fcntl ':flock';
 use InfluxDB::LineProtocol 'data2line';
 use Mojo::Pg;
 
@@ -38,7 +39,10 @@ sub startup {
       }
 
       my $line = data2line($measure, $values, $tags, $ts);
+
+      flock $handle, LOCK_EX;
       $handle->print("$line\n");
+      flock $handle, LOCK_UN;
     }
   );
 

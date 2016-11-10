@@ -47,6 +47,7 @@ sub start_round {
   $self->round($round);
   $app->minion->enqueue('scoreboard');
   $app->log->info("Start new round #$round");
+  $app->metric->write('round', {}, {n => $round});
 
   my $status = $db->query(
     'select distinct on (team_id, service_id) *
