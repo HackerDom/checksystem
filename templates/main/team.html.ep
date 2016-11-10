@@ -6,6 +6,13 @@
 % end
 
 <div class="container" id="scoreboard_wrapper">
+  <h1><%= $team->{name} %></h1>
+
+  <div class="charts">
+    <div id="scores" style="min-width: 400px; height: 300px; margin: 0 auto"></div>
+    <div id="flags"  style="min-width: 400px; height: 300px; margin: 0 auto"></div>
+  </div>
+
   <table class="table table-condensed status_descriptions">
     <tr class="text-center">
       % for my $status (@{app->model('checker')->statuses}) {
@@ -13,13 +20,6 @@
       % }
     </tr>
   </table>
-
-  <h1><%= $team->{name} %></h1>
-
-  <div class="charts">
-    <div id="scores" style="min-width: 400px; height: 300px; margin: 0 auto"></div>
-    <div id="flags"  style="min-width: 400px; height: 300px; margin: 0 auto"></div>
-  </div>
 
   <div id="scoreboard">
     <table class="table table-bordered table-condensed">

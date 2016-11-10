@@ -34,5 +34,5 @@
     return Math.random() * interval;
   }
 
-  create_ws();
+ create_ws();
 </script>

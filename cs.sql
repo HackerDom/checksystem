@@ -91,6 +91,7 @@ create table scores (
   sla        float8 not null,
   fp         float8 not null,
   flags      integer not null,
+  sflags     integer not null,
   status     integer not null,
   stdout     text,
   unique (round, team_id, service_id)

@@ -28,7 +28,7 @@
 #scoreboard .table-bordered > thead > tr > td {
   border-right-width: 0px;
   border-left-width: 0px;
-  border-bottom: 5px solid transparent;
+  border-bottom: 3px solid transparent;
 }
 
 #scoreboard table th {

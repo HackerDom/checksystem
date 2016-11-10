@@ -25,7 +25,8 @@ sub scoreboard {
     q{
     insert into scores
     select
-      $1 as round, team_id, service_id, sla, fp, coalesce(f.flags, 0) as flags, coalesce(status, 110), stdout
+      $1 as round, team_id, service_id, sla, fp,
+      coalesce(f.flags, 0) as flags, coalesce(sf.flags, 0) as sflags, coalesce(status, 110), stdout
     from
       (select team_id, service_id, amount as fp from flag_points where round = $1) as fp
       join (
@@ -40,6 +41,12 @@ sub scoreboard {
         group by sf.team_id, f.service_id
       ) as f using (team_id, service_id)
       left join (
+        select f.team_id, f.service_id, count(sf.data) as flags
+        from stolen_flags as sf join flags as f using (data)
+        where sf.round <= $1
+        group by f.team_id, f.service_id
+      ) as sf using (team_id, service_id)
+      left join (
         select team_id, service_id, status, stdout from runs where round = $1
       ) as r using (team_id, service_id)
     }, $r
@@ -52,6 +59,7 @@ sub scoreboard {
       json_agg(json_build_object(
         'id', service_id,
         'flags', flags,
+        'sflags', sflags,
         'fp', round(fp::numeric, 2),
         'sla', round(100 * sla::numeric, 2),
         'status', status,
