@@ -19,10 +19,15 @@ sub create {
 sub accept {
   my ($self, $team_id, $flag_data, $scoreboard_info, $cb) = @_;
   my $app = $self->app;
+  my @metric = ('flags', {data => $flag_data}, {team => $team_id});
 
   Mojo::IOLoop->delay(
     sub {
-      return $cb->({ok => 0, error => 'Denied: invalid flag'}) unless $self->validate($flag_data);
+      unless ($self->validate($flag_data)) {
+        $metric[2]{state} = 'invalid';
+        $app->metric->write(@metric);
+        return $cb->({ok => 0, error => 'Denied: invalid flag'});
+      }
 
       $app->pg->db->query(
         'select row_to_json(accept_flag(?, ?, ?)) as r',
@@ -34,7 +39,14 @@ sub accept {
       my ($d, undef, $result) = @_;
       my ($ok, $msg, $round, $victim_id) = @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4/};
 
-      return $cb->({ok => 0, error => $msg}) unless $ok;
+      unless ($ok) {
+        $metric[2]{state} = 'reject';
+        $app->metric->write(@metric);
+        return $cb->({ok => 0, error => $msg});
+      }
+
+      $metric[2]{state} = 'accept';
+      $app->metric->write(@metric);
 
       my $amount = $self->amount($scoreboard_info->{scoreboard}, $victim_id, $team_id);
       $msg = "Accepted. $flag_data cost $amount flag points";
@@ -44,6 +56,8 @@ sub accept {
     )->catch(
     sub {
       $app->log->error("[flags] Error while accept: $_[1]");
+      $metric[2]{state} = 'error';
+      $app->metric->write(@metric);
       return $cb->({ok => 0, error => 'Please try again later'});
     }
     )->wait;

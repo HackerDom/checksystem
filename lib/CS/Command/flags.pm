@@ -10,15 +10,6 @@ sub run {
   my $scoreboard_info = $app->model('score')->scoreboard_info;
   $app->pg->pubsub->json('scoreboard')->listen(scoreboard => sub { $scoreboard_info = $_[1] });
 
-  my ($a, $v, $i) = (0, 0, 0);
-  Mojo::IOLoop->recurring(
-    1 => sub {
-      my $size = keys %{Mojo::IOLoop->singleton->{in}};
-      warn time . " => $v valid, $i invalid ($a all) ($size connections)";
-      $a = $v = $i = 0;
-    }
-  );
-
   Mojo::IOLoop->server(
     {port => $app->config->{cs}{flags}{port}, reuse => 1} => sub {
       my ($loop, $stream, $id, $do, $lock) = @_;
@@ -47,12 +38,10 @@ sub run {
           return $stream->write("Goodbye!\n" => sub { $stream->close }) unless length $flag;
 
           $lock = 1;
-          $a++;
           $app->model('flag')->accept(
             $team_id, $flag,
             $scoreboard_info,
             sub {
-              $_[0]->{ok} ? $v++ : $i++;
               my $msg = $_[0]->{ok} ? $_[0]->{message} : $_[0]->{error};
               $app->log->info("[flags] [$id] input flag '$flag' result '$msg'");
               $stream->write("$msg\n");

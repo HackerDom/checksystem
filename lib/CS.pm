@@ -2,6 +2,7 @@ package CS;
 use Mojo::JSON::MaybeXS;
 use Mojo::Base 'Mojolicious';
 
+use InfluxDB::LineProtocol 'data2line';
 use Mojo::Pg;
 
 has [qw/teams services vulns/] => sub { {} };
@@ -24,6 +25,20 @@ sub startup {
         $pg->migrations->name('cs')->from_file($app->home->rel_file('cs.sql'));
       }
       return $pg;
+    }
+  );
+
+  $app->helper(
+    'metric.write' => sub {
+      my (undef, $measure, $values, $tags, $ts) = @_;
+      state $handle;
+
+      unless ($handle) {
+        open $handle, '>>', $app->home->rel_file('log/metrics.log') or die "Can't open metrics log file: $!";
+      }
+
+      my $line = data2line($measure, $values, $tags, $ts);
+      $handle->print("$line\n");
     }
   );
 
