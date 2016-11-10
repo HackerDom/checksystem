@@ -65,6 +65,7 @@
 $(function() {
   var scores, flags, round;
 
+  /*
   function update() {
     if (round == null) { setTimeout(update, 1000); return; }
     $.getJSON("<%= url_for('charts_data') %>" + "?r=" + round, function(data) {
@@ -119,5 +120,6 @@ $(function() {
 
     round = data.rounds.length;
   });
+  */
 });
 </script>
