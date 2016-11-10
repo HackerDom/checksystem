@@ -36,19 +36,19 @@
 }
 
 /* Gold, silve and bronze places */
-#scoreboard table tr.team:nth-child(1) td:not(.team_service) {
+#scoreboard table.scoreboard tr.team:nth-child(1) td:not(.team_service) {
   background-color: #FFE8A7;
 }
 
-#scoreboard table tr.team:nth-child(2) td:not(.team_service) {
+#scoreboard table.scoreboard tr.team:nth-child(2) td:not(.team_service) {
   background-color: #D8D8D8;
 }
 
-#scoreboard table tr.team:nth-child(3) td:not(.team_service) {
+#scoreboard table.scoreboard tr.team:nth-child(3) td:not(.team_service) {
   background-color: #E3B689;
 }
 
-#scoreboard table tr.team:nth-child(3) td:not(.team_service) .team_server {
+#scoreboard table.scoreboard tr.team:nth-child(3) td:not(.team_service) .team_server {
   color: white;
 }
 

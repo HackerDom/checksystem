@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="/css/bootstrap.css">
     <link rel="stylesheet" href="/css/default.css">
     <script src="/mojo/jquery/jquery.js"></script>
-    <script src="/js/highcharts.js"></script>
     <title><%= title %></title>
   </head>
   <body>

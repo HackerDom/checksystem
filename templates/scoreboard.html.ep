@@ -7,7 +7,7 @@
     </tr>
   </table>
   <div id="scoreboard">
-    <table class="table table-bordered table-condensed">
+    <table class="table table-bordered table-condensed scoreboard">
       <thead>
         <tr class="team">
           <th class="place">#</th>
@@ -25,7 +25,9 @@
           <td class="place"><%= $team->{n} %><%= $suffix %></td>
           <td class="team_logo"><img width="64px" class="img" src="<%= app->teams->{$team->{team_id}}{logo} // '/logo.png' %>"></td>
           <td class="team_info">
-            <div class="team_name"><%= $team->{name} %></div>
+            <div class="team_name"><a class="text-muted" href="<%= url_for 'team', team_id => $team->{team_id} %>">
+              <%= $team->{name} %></a>
+            </div>
             <div class="team_server"><%= $team->{host} %></div>
           </td>
           <td class="score"><%= $team->{score} %></td>

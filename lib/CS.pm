@@ -67,9 +67,6 @@ sub startup {
   $r->websocket('/update')->to('main#update')->name('update');
   $r->get('/scoreboard' => [format => 'json'])->to('main#scoreboard')->name('scoreboard');
 
-  # Charts
-  $r->get('/charts/data')->to('main#charts_data')->name('charts_data');
-
   # API
   my $api = $r->route('/api');
   $api->get('/info')->to('api#info')->name('api_info');
