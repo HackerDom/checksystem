@@ -78,7 +78,7 @@ sub _finish {
   }
 
   $job->finish($result);
-  $self->app->metric->write('check', {},
+  $self->app->metric->write('check', 1,
     {status => $status, team => $team->{id}, service => $service->{id}, vuln => $vuln->{id}, round => $round}
   );
 
