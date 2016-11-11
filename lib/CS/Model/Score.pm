@@ -7,15 +7,17 @@ sub update {
   my ($self, $round) = @_;
 
   my $db = $self->app->pg->db;
+  my $tx = $db->begin;
+  return unless $db->query('select pg_try_advisory_xact_lock(1)')->array->[0];
+
   my $r = $db->query('select max(round) + 1 from scores')->array->[0] // 0;
   $round //= $db->query('select max(n) - 1 from rounds')->array->[0];
   for ($r .. $round) {
-    my $tx = $db->begin;
     $self->sla($db, $_);
     $self->flag_points($db, $_);
     $self->scoreboard($db, $_);
-    $tx->commit;
   }
+  $tx->commit;
 }
 
 sub scoreboard {
