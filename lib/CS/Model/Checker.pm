@@ -38,19 +38,19 @@ sub check {
   # Check
   my $cmd = [$service->{path}, 'check', $host];
   $result->{check} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
-  return $self->_finish($job, $result, $db) if $result->{slow} || $result->{check}{exit_code} != 101;
+  return $self->_finish($job, $result, $db) if $result->{check}{slow} || $result->{check}{exit_code} != 101;
 
   # Put
   $cmd = [$service->{path}, 'put', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
   $result->{put} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
-  return $self->_finish($job, $result, $db) if $result->{slow} || $result->{put}{exit_code} != 101;
+  return $self->_finish($job, $result, $db) if $result->{put}{slow} || $result->{put}{exit_code} != 101;
   (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
   $flag->{id} = $result->{put}{fid} = $id if $id;
 
   # Get 1
   $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
   $result->{get_1} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
-  return $self->_finish($job, $result, $db) if $result->{slow} || $result->{get_1}{exit_code} != 101;
+  return $self->_finish($job, $result, $db) if $result->{get_1}{slow} || $result->{get_1}{exit_code} != 101;
 
   # Get 2
   if ($old_flag) {
@@ -67,7 +67,7 @@ sub _finish {
   my ($stdout, $status) = ('');
 
   # Prepare result for runs
-  if ($result->{slow}) {
+  if (c(qw/get_2 get_1 put check/)->first(sub { defined $result->{$_}{slow} })) {
     $result->{error} = 'Job is too old!';
     $status = 104;
   }
