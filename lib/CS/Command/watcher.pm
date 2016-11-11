@@ -15,7 +15,6 @@ sub run {
 
 sub check {
   my $app = shift->app;
-  my $db  = $app->pg->db;
 
   for my $team (values %{$app->teams}) {
     for my $service (values %{$app->services}) {
@@ -26,7 +25,7 @@ sub check {
       Mojo::IOLoop->client(
         {address => $address, port => $port, timeout => 10} => sub {
           my ($loop, $err, $stream) = @_;
-          $db->query(
+          $app->pg->db->query(
             'insert into monitor (team_id, service_id, status, round, error)
             values (?, ?, ?, (select max(n) from rounds), ?)', $team->{id}, $service->{id},
             ($err ? 'f' : 't'), $err,
