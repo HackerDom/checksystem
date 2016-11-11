@@ -29,7 +29,8 @@ sub check {
           $db->query(
             'insert into monitor (team_id, service_id, status, round, error)
             values (?, ?, ?, (select max(n) from rounds), ?)', $team->{id}, $service->{id},
-            ($err ? 'f' : 't'), $err
+            ($err ? 'f' : 't'), $err,
+            sub { my ($db, $err) = @_; $app->log->error("[monitor] insert error: $err") if $err }
           );
           $stream->close if $stream;
         }
