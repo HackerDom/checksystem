@@ -84,6 +84,8 @@ sub startup {
       if (my $base_url = $c->config->{cs}{base_url}) { $c->req->url->base(Mojo::URL->new($base_url)); }
     }
   );
+
+  $app->hook(after_static => sub { shift->res->headers->cache_control('max-age=3600, must-revalidate'); });
 }
 
 sub init {
