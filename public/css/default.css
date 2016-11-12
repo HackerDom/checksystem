@@ -123,3 +123,10 @@
 #scoreboard table tr:last-child td {
   border-bottom: 1px solid #ddd;
 }
+
+.task_stars {
+  position: relative;
+}
+.star {
+  display: inline-block;
+}

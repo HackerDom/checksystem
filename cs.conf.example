@@ -17,9 +17,9 @@
     }
   },
   teams => [
-    {name => 'team1', network => '127.0.1.0/24', host => '127.0.1.5'},
+    {name => 'team1', network => '127.0.1.0/24', host => '127.0.1.5', bonus => 13},
     {name => 'team2', network => '127.0.2.0/24', host => '127.0.2.3'},
-    {name => 'team3', network => '127.0.3.0/24', host => '127.0.3.3'}
+    {name => 'team3', network => '127.0.3.0/24', host => '127.0.3.3', bonus => 23}
   ],
   services => [
     {name => 'service1', path => '/home/and/tmp/cs/1.pl', timeout => 5, tcp_port => 80},

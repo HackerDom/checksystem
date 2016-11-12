@@ -13,7 +13,7 @@ sub generate {
       join (
         select team_id, n from scoreboard where round = case when $1-1<0 then 0 else $1-1 end
       ) as s1 using (team_id)
-    where round = $1 order by n', $round)->expand->hashes;
+    where round = $1 order by n, t.bonus desc', $round)->expand->hashes;
 
   return {scoreboard => $scoreboard->to_array, round => $round};
 }

@@ -9,7 +9,8 @@ sub run {
 
   # Teams
   for my $team (@{$app->config->{teams}}) {
-    $db->query('insert into teams (name, network, host) values (?, ?, ?)', @{$team}{qw/name network host/});
+    $db->query('insert into teams (name, network, host, bonus) values (?, ?, ?, ?)',
+      @{$team}{qw/name network host bonus/});
   }
 
   # Services
