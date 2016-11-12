@@ -28,11 +28,11 @@
 #scoreboard .table-bordered > thead > tr > td {
   border-right-width: 0px;
   border-left-width: 0px;
-  border-bottom: 3px solid transparent;
+  border-bottom: 1px solid #ddd;
 }
 
 #scoreboard table th {
-  text-align: left;
+  text-align: center;
 }
 
 /* Gold, silve and bronze places */
@@ -95,6 +95,7 @@
 
 .team .team_info .team_server {
   color: #999;
+  max-width: 250px;
 }
 
 .team .team_service {
