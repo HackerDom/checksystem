@@ -85,6 +85,7 @@
 .team .team_info .team_name {
   color: #222;
   font-weight: bold;
+  max-width: 250px;
 }
 
 .team_name a {
