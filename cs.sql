@@ -26,7 +26,7 @@ create table rounds (
 );
 
 create table flags (
-  data       char(32) primary key,
+  data       text primary key,
   id         text not null,
   round      integer not null references rounds(n),
   ts         timestamptz not null default now(),
@@ -37,7 +37,7 @@ create table flags (
 );
 
 create table stolen_flags (
-  data    char(32) not null references flags(data),
+  data    text not null references flags(data),
   ts      timestamptz not null default now(),
   round   integer not null references rounds(n),
   team_id integer not null references teams(id)
