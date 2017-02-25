@@ -25,10 +25,14 @@ sub check {
       Mojo::IOLoop->client(
         {address => $address, port => $port, timeout => 10} => sub {
           my ($loop, $err, $stream) = @_;
-          $app->pg->db->query(
-            'insert into monitor (team_id, service_id, status, round, error)
-            values (?, ?, ?, (select max(n) from rounds), ?)', $team->{id}, $service->{id},
-            ($err ? 'f' : 't'), $err,
+          $app->pg->db->insert(
+            monitor => {
+              team_id    => $team->{id},
+              service_id => $service->{id},
+              status     => ($err ? 'f' : 't'),
+              round      => \'select max(n) from rounds',
+              error      => $err
+            },
             sub { my ($db, $err) = @_; $app->log->error("[monitor] insert error: $err") if $err }
           );
           $stream->close if $stream;

@@ -7,7 +7,7 @@ use Time::Seconds;
 
 has description => 'Run CTF game';
 
-has round => sub { $_[0]->app->pg->db->query('select max(n) from rounds')->array->[0] };
+has round => sub { $_[0]->app->pg->db->select(rounds => 'max(n)')->array->[0] };
 
 sub run {
   my $self = shift;
@@ -21,7 +21,7 @@ sub run {
   if ($now < $start) { $sleep = ($start - $now)->seconds }
   else {
     my $round_start =
-      $round_length + $app->pg->db->query('select extract(epoch from max(ts)) from rounds')->array->[0];
+      $round_length + $app->pg->db->select(rounds => 'extract(epoch from max(ts))')->array->[0];
     $sleep = time > $round_start ? 0 : $round_start - time;
   }
 
@@ -42,8 +42,8 @@ sub start_round {
   $app->minion->enqueue(scoreboard => [$self->round]) if $app->model('util')->game_status == -1;
   return unless $app->model('util')->game_status == 1;
 
-  my $db    = $app->pg->db;
-  my $round = $db->query('insert into rounds default values returning n')->hash->{n};
+  my $db = $app->pg->db;
+  my $round = $db->insert('rounds', \'default values', {returning => 'n'})->hash->{n};
   $self->round($round);
   $app->minion->enqueue('scoreboard');
   $app->log->info("Start new round #$round");
@@ -92,12 +92,9 @@ sub skip_check {
   eval {
     $self->app->pg->db->query(
       'insert into runs (round, team_id, service_id, vuln_id, status, result) values (?, ?, ?, ?, ?, ?)',
-      $info->{round},
-      $info->{team_id},
-      $info->{service_id},
-      $info->{vuln_id},
-      104,
+      $info->{round}, $info->{team_id}, $info->{service_id}, $info->{vuln_id}, 104,
       {json => {error => 'Checker did not run, connect on port was failed.'}}
+
     );
   };
   $self->app->log->error("Error while insert check result: $@") if $@;

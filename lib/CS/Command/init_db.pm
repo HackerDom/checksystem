@@ -9,21 +9,19 @@ sub run {
 
   # Teams
   for my $team (@{$app->config->{teams}}) {
-    $db->query('insert into teams (name, network, host, bonus) values (?, ?, ?, ?)',
-      @{$team}{qw/name network host bonus/});
+    $db->insert(teams => {%{$team}{qw/name network host bonus/}});
   }
 
   # Services
   for my $service (@{$app->config->{services}}) {
     my ($n, $vulns) = $app->model('checker')->vulns($service);
-    my $service_id =
-      $db->query('insert into services (name, vulns) values (?, ?) returning id', $service->{name}, $vulns)
-      ->hash->{id};
-    $db->query('insert into vulns (service_id, n) values (?, ?)', $service_id, $_) for 1 .. $n;
+    my $name = $service->{name};
+    my $id = $db->insert(services => {name => $name, vulns => $vulns}, {returning => 'id'})->hash->{id};
+    $db->insert(vulns => {service_id => $id, n => $_}) for 1 .. $n;
   }
 
   # Scores
-  $db->query('insert into rounds (n) values (0)');
+  $db->insert(rounds => {n => 0});
   $db->query('
     insert into flag_points (round, team_id, service_id, amount)
     select 0, teams.id, services.id, ? from teams cross join services', 0 + @{$app->config->{teams}});

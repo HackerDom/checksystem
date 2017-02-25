@@ -70,8 +70,7 @@ sub _finish {
   if (c(qw/get_2 get_1 put check/)->first(sub { defined $result->{$_}{slow} })) {
     $result->{error} = 'Job is too old!';
     $status = 104;
-  }
-  else {
+  } else {
     my $state = c(qw/get_2 get_1 put check/)->first(sub { defined $result->{$_}{exit_code} });
     $status = $result->{$state}{exit_code};
     $stdout = $result->{$state}{stdout} if $status != 101;
@@ -96,8 +95,16 @@ sub _finish {
   return unless ($result->{get_1}{exit_code} // 0) == 101;
   my $id = $result->{put}{fid} // $flag->{id};
   eval {
-    $db->query('insert into flags (data, id, round, team_id, service_id, vuln_id) values (?, ?, ?, ?, ?, ?)',
-      $flag->{data}, $id, $round, $team->{id}, $service->{id}, $vuln->{id});
+    $db->insert(
+      flags => {
+        data       => $flag->{data},
+        id         => $id,
+        round      => $round,
+        team_id    => $team->{id},
+        service_id => $service->{id},
+        vuln_id    => $vuln->{id}
+      }
+    );
   };
   $self->app->log->error("Error while insert flag: $@") if $@;
 }
@@ -131,9 +138,9 @@ sub _run {
     elapsed   => tv_interval($start),
     exception => $@,
     exit      => {value => $?, code => $? >> 8, signal => $? & 127, coredump => $? & 128},
-    stderr    => ($stderr // '') =~ s/\x00//gr,
-    stdout    => ($stdout // '') =~ s/\x00//gr,
-    timeout   => 0
+    stderr => ($stderr // '') =~ s/\x00//gr,
+    stdout => ($stdout // '') =~ s/\x00//gr,
+    timeout => 0
   };
   $result->{exit_code} = ($@ || all { $? >> 8 != $_ } (101, 102, 103, 104)) ? 110 : $? >> 8;
 

@@ -90,21 +90,21 @@ sub startup {
 
 sub init {
   my $app = shift;
+  my $db  = $app->pg->db;
 
   if ($ENV{CS_DEBUG}) {
-    $app->teams($app->pg->db->query('table teams')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
-    $app->services(
-      $app->pg->db->query('table services')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
+    $app->teams($db->select('teams')->hashes->reduce(sub       { $a->{$b->{id}} = $b; $a }, {}));
+    $app->services($db->select('services')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
     return;
   }
 
-  my $teams = $app->pg->db->query('table teams')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
+  my $teams = $db->select('teams')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
   for (@{$app->config->{teams}}) {
     next unless my $team = $teams->{$_->{name}};
     $app->teams->{$team->{id}} = {id => $team->{id}, %$_};
   }
 
-  my $services = $app->pg->db->query('table services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
+  my $services = $db->select('services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
   for (@{$app->config->{services}}) {
     next unless my $service = $services->{$_->{name}};
     my @vulns = split /:/, $service->{vulns};
@@ -113,8 +113,8 @@ sub init {
     $app->services->{$service->{id}} = {id => $service->{id}, %$_, vulns => $vulns};
   }
 
-  $app->vulns($app->pg->db->query('table vulns')
-      ->hashes->reduce(sub { $a->{$b->{service_id}}{$b->{n}} = $b->{id}; $a }, {}));
+  $app->vulns(
+    $db->select('vulns')->hashes->reduce(sub { $a->{$b->{service_id}}{$b->{n}} = $b->{id}; $a }, {}));
 }
 
 1;
