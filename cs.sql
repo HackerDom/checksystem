@@ -3,8 +3,7 @@ create table teams (
   id      serial primary key,
   name    text not null unique,
   network cidr not null,
-  host    text not null,
-  bonus   integer
+  host    text not null
 );
 
 create table services (
