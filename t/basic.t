@@ -47,7 +47,7 @@ $app->model('score')->update;
 is $db->query('select count(*) from runs')->array->[0], 8, 'right numbers of runs';
 
 # Down
-$db->query('select * from runs where service_id = 1')->expand->hashes->map(
+$db->select(runs => '*', {service_id => 1})->expand->hashes->map(
   sub {
     is $_->{round},  1,               'right round';
     is $_->{status}, 104,             'right status';
@@ -63,7 +63,7 @@ $db->query('select * from runs where service_id = 1')->expand->hashes->map(
 );
 
 # Up
-$db->query('select * from runs where service_id = 2')->expand->hashes->map(
+$db->select(runs => '*', {service_id => 2})->expand->hashes->map(
   sub {
     is $_->{round},  1,   'right round';
     is $_->{status}, 101, 'right status';
@@ -79,7 +79,7 @@ $db->query('select * from runs where service_id = 2')->expand->hashes->map(
 );
 
 # Timeout
-$db->query('select * from runs where service_id = 4')->expand->hashes->map(
+$db->select(runs => '*', {service_id => 4})->expand->hashes->map(
   sub {
     is $_->{round},  1,   'right round';
     is $_->{status}, 104, 'right status';
@@ -104,7 +104,7 @@ is $db->query('select count(*) from flag_points')->array->[0], 8, 'right fp';
 
 # Flags
 is $db->query('select count(*) from flags')->array->[0], 2, 'right numbers of flags';
-$db->query('select * from flags')->hashes->map(
+$db->select('flags')->hashes->map(
   sub {
     is $_->{round},  1,                'right round';
     is $_->{id},     911,              'right id';
@@ -118,16 +118,15 @@ $app->model('flag')->accept(2, 'flag', $scoreboard_info, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/invalid flag/, 'right error';
 
-$flag_data = $db->query('select data from flags where team_id = 2 limit 1')->hash->{data};
+$flag_data = $db->select(flags => 'data', {team_id => 2})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $scoreboard_info, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/flag is your own/, 'right error';
 
-$flag_data = $db->query('select data from flags where team_id = 1 limit 1')->hash->{data};
+$flag_data = $db->select(flags => 'data', {team_id => 1})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $scoreboard_info, $flag_cb);
 is $data->{ok}, 1, 'right status';
-is $db->query('select data from stolen_flags where team_id = 2 limit 1')->hash->{data}, $flag_data,
-  'right flag';
+is $db->select(stolen_flags => 'data', {team_id => 2})->hash->{data}, $flag_data, 'right flag';
 
 $app->model('flag')->accept(2, $flag_data, $scoreboard_info, $flag_cb);
 is $data->{ok}, 0, 'right status';
@@ -144,18 +143,17 @@ $app->model('score')->update;
 # SLA
 is $db->query('select count(*) from sla')->array->[0], 16, 'right sla';
 for my $team_id (1, 2) {
-  $data = $db->query('select * from sla where team_id = ? and service_id = 2 and round = 1', $team_id)->hash;
+  $data = $db->select(sla => '*', {team_id => $team_id, service_id => 2, round => 1})->hash;
   is $data->{successed}, 1, 'right sla';
   is $data->{failed},    0, 'right sla';
-  $data = $db->query('select * from sla where team_id = ? and service_id = 1 and round = 1', $team_id)->hash;
+  $data = $db->select(sla => '*', {team_id => $team_id, service_id => 1, round => 1})->hash;
   is $data->{successed}, 0, 'right sla';
   is $data->{failed},    1, 'right sla';
 }
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 16, 'right fp';
-$data =
-  $db->query('select team_id, service_id, amount from flag_points where round = 1 order by 1, 2')->arrays;
+$data = $db->select(flag_points => 'team_id, service_id, amount', {round => 1}, \'1, 2')->arrays;
 is_deeply $data, [[1, 1, 2], [1, 2, 0], [1, 3, 2], [1, 4, 2], [2, 1, 2], [2, 2, 4], [2, 3, 2], [2, 4, 2]];
 
 # New round (#3)
@@ -167,20 +165,19 @@ $app->model('score')->update;
 # SLA
 is $db->query('select count(*) from sla')->array->[0], 24, 'right sla';
 for my $team_id (1, 2) {
-  $data = $db->query("select * from sla where team_id = $team_id and service_id = 2 and round = 2")->hash;
+  $data = $db->select(sla => '*', {team_id => $team_id, service_id => 2, round => 2})->hash;
   is $data->{successed}, 2, 'right sla';
   is $data->{failed},    0, 'right sla';
-  $data = $db->query("select * from sla where team_id = $team_id and service_id = 1 and round = 2")->hash;
+  $data = $db->select(sla => '*', {team_id => $team_id, service_id => 1, round => 2})->hash;
   is $data->{successed}, 0, 'right sla';
   is $data->{failed},    2, 'right sla';
-  $data = $db->query("select * from sla where team_id = $team_id and service_id = 3 and round = 2")->hash;
+  $data = $db->select(sla => '*', {team_id => $team_id, service_id => 3, round => 2})->hash;
   is $data->{successed} + $data->{failed}, 2, 'right sla';
 }
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
-$data =
-  $db->query('select team_id, service_id, amount from flag_points where round = 2 order by 1, 2')->arrays;
+$data = $db->select(flag_points => 'team_id, service_id, amount', {round => 2}, \'1, 2')->arrays;
 is_deeply $data, [[1, 1, 2], [1, 2, 0], [1, 3, 2], [1, 4, 2], [2, 1, 2], [2, 2, 4], [2, 3, 2], [2, 4, 2]];
 
 $app->model('score')->update(3);
