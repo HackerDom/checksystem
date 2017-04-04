@@ -47,7 +47,7 @@ sub view {
     (team_id = $1 or $1 is null) and (service_id = $2 or $2 is null) and (status = $3 or $3 is null)',
     $team->{id}, $service->{id}, $status
   )->array->[0];
-  my $limit = int($c->param('limit')) || 30;
+  my $limit = int($c->param('limit') // 0) || 30;
   my $max   = int($last / $limit) + 1;
 
   my $page = int($c->param('page') // 1);
