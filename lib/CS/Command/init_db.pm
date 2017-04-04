@@ -20,6 +20,21 @@ sub run {
     $db->insert(vulns => {service_id => $id, n => $_}) for 1 .. $n;
   }
 
+  # Bots
+  my $team_id = 0;
+  for my $team (@{$app->config->{teams}}) {
+    ++$team_id;
+    if (my $bot = $team->{bot}) {
+      my $service_id = 0;
+      for (@$bot) {
+        ++$service_id;
+        next unless keys %$_;
+        my $data = {%$_, team_id => $team_id, service_id => $service_id};
+        $db->insert(bots => $data);
+      }
+    }
+  }
+
   # Scores
   $db->insert(rounds => {n => 0});
   $db->query('

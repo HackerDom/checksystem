@@ -1,23 +1,27 @@
 { hypnotoad => {listen => ['http://127.0.0.1:8080'], workers => 8},
   pg        => {uri    => 'postgresql://cs:qwer@127.0.0.1:5432/cs'},
   cs        => {
-    base_url => 'https://example.com:8080/ructfe/1988/',
-    time => {
-      start => '2015-04-18 17:00:00',
-      end   => '2015-04-18 17:25:00',
+    base_url => 'https://example.com:8080/',
+    time     => {
+      start => '2017-01-18 17:00:00',
+      end   => '2020-04-18 17:25:00',
       break => ['2015-04-18 17:15:00', '2015-04-18 17:20:00']
     },
     admin          => {auth => 'root:qwer'},
     ctf            => {name => 'RuCTF 2015'},
-    round_length   => 20,
+    round_length   => 8,
     flag_life_time => 15,
-    flags          => {port => 31337, timeout => 5 * 60, secret => 'ohKai2eepi'},
-    checkers       => {
+    flags    => {port => 31337, timeout => 5 * 60, secret => 'ohKai2eepi'},
+    checkers => {
       hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}" }
     }
   },
   teams => [
-    {name => 'team1', network => '127.0.1.0/24', host => '127.0.1.5'},
+    { name    => 'team1',
+      network => '127.0.1.0/24',
+      host    => '127.0.1.5',
+      bot     => [{sla => 0.66, attack1 => 0.3, attack2 => 0.5, defense => 0.4}]
+    },
     {name => 'team2', network => '127.0.2.0/24', host => '127.0.2.3'},
     {name => 'team3', network => '127.0.3.0/24', host => '127.0.3.3'}
   ],

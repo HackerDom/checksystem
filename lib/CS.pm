@@ -6,7 +6,7 @@ use Fcntl ':flock';
 use InfluxDB::LineProtocol 'data2line';
 use Mojo::Pg;
 
-has [qw/teams services vulns/] => sub { {} };
+has [qw/teams services vulns bots/] => sub { {} };
 
 sub startup {
   my $app = shift;
@@ -113,8 +113,12 @@ sub init {
     $app->services->{$service->{id}} = {id => $service->{id}, %$_, vulns => $vulns};
   }
 
-  $app->vulns(
-    $db->select('vulns')->hashes->reduce(sub { $a->{$b->{service_id}}{$b->{n}} = $b->{id}; $a }, {}));
+  my $bots = $db->select('bots')->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b; $a }, {});
+  $app->bots($bots);
+
+  my $vulns =
+    $db->select('vulns')->hashes->reduce(sub { $a->{$b->{service_id}}{$b->{n}} = $b->{id}; $a }, {});
+  $app->vulns($vulns);
 }
 
 1;

@@ -75,6 +75,15 @@ create table flag_points (
 );
 create index on flag_points (round);
 
+create table bots (
+  team_id    integer not null references teams(id),
+  service_id integer not null references services(id),
+  sla        float8 not null,
+  attack1    float8 not null,
+  attack2    float8 not null,
+  defense    float8 not null
+);
+
 create table monitor (
   round      integer not null references rounds(n),
   ts         timestamptz not null default now(),
@@ -132,4 +141,4 @@ $$ language plpgsql;
 -- 1 down
 drop function if exists accept_flag(integer, text, integer);
 drop table if exists rounds, monitor, scores, teams, vulns, services, flags,
-  stolen_flags, runs, sla, flag_points, scoreboard;
+  stolen_flags, runs, sla, flag_points, scoreboard, bots;

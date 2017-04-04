@@ -32,6 +32,14 @@ sub check {
   my $result = {vuln => $vuln};
   my $db = $job->app->pg->db;
 
+  if (my $bot = $job->app->bots->{$team->{id}}) {
+    if (my $b = $bot->{$service->{id}}) {
+      my $r = $self->_run_bot($b, $team, $service);
+      $result = {%$result, %$r};
+      return $self->_finish($job, $result, $db);
+    }
+  }
+
   my $host = $team->{host};
   if (my $cb = $job->app->config->{cs}{checkers}{hostname}) { $host = $cb->($team, $service) }
 
@@ -153,6 +161,28 @@ sub _run {
   }
 
   $result->{ts} = scalar localtime;
+  return $result;
+}
+
+sub _run_bot {
+  my ($self, $bot, $team, $service) = @_;
+  my $result = {};
+
+  my $exit_code = rand() < $bot->{sla} ? 101 : 104;
+  for my $command (qw/check put get_1 get_2/) {
+    $result->{$command} = {
+      command   => $bot,
+      elapsed   => 0,
+      exception => undef,
+      exit      => {value => 0, code => 0, signal => 0, coredump => 0},
+      stderr    => '',
+      stdout    => '',
+      timeout   => 0,
+      ts        => scalar(localtime),
+      exit_code => $exit_code
+    };
+  }
+
   return $result;
 }
 
