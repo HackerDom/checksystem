@@ -1,11 +1,4 @@
 <div class="container" id="scoreboard_wrapper" style="text-align: center;">
-	<div class="sponsors_score">
-			<img class="sponsor" src="/yandex.png" style="height: 40px; margin-right: 40px;">
-			<img class="sponsor" src="/Kaspersky_png.png" style="height: 45px; margin-right: 40px; margin-bottom: -10px;">
-			<img src="/skbkontur.png" style="margin-right: 40px; height: 40px; margin-bottom: -3px;">
-			<img class="sponsor" src="/targem.png" style="height: 90px;">
-	</div>
-	<img src="/score.png" style="width: 88%; margin-bottom: -1px;">
   <table class="table table-condensed status_descriptions">
     <tr class="text-center">
       % for my $status (@{app->model('checker')->statuses}) {
