@@ -5,7 +5,7 @@ use File::Spec;
 use IPC::Run qw/start timeout/;
 use List::Util qw/all min/;
 use Mojo::Collection 'c';
-use Mojo::Util 'trim';
+use Mojo::Util qw/dumper trim/;
 use Proc::Killfam;
 use Time::HiRes qw/gettimeofday tv_interval/;
 
@@ -32,9 +32,9 @@ sub check {
   my $result = {vuln => $vuln};
   my $db = $job->app->pg->db;
 
-  if (my $bot = $job->app->bots->{$team->{id}}) {
-    if (my $b = $bot->{$service->{id}}) {
-      my $r = $self->_run_bot($b, $team, $service);
+  if (my $bot_info = $job->app->bots->{$team->{id}}) {
+    if (my $bot = $bot_info->{$service->{id}}) {
+      my $r = $self->_run_bot($bot, $team, $service);
       $result = {%$result, %$r};
       return $self->_finish($job, $result, $db);
     }
@@ -171,7 +171,7 @@ sub _run_bot {
   my $exit_code = rand() < $bot->{sla} ? 101 : 104;
   for my $command (qw/check put get_1 get_2/) {
     $result->{$command} = {
-      command   => $bot,
+      command   => dumper($bot),
       elapsed   => 0,
       exception => undef,
       exit      => {value => 0, code => 0, signal => 0, coredump => 0},
