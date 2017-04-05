@@ -44,7 +44,7 @@ $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'check
 $app->model('score')->update;
 
 # Runs
-is $db->query('select count(*) from runs')->array->[0], 8, 'right numbers of runs';
+is $db->query('select count(*) from runs')->array->[0], 12, 'right numbers of runs';
 
 # Down
 $db->select(runs => '*', {service_id => 1})->expand->hashes->map(
@@ -97,13 +97,13 @@ $db->select(runs => '*', {service_id => 4})->expand->hashes->map(
 my ($data, $flag_data);
 
 # SLA
-is $db->query('select count(*) from sla')->array->[0], 8, 'right sla';
+is $db->query('select count(*) from sla')->array->[0], 12, 'right sla';
 
 # FP
-is $db->query('select count(*) from flag_points')->array->[0], 8, 'right fp';
+is $db->query('select count(*) from flag_points')->array->[0], 12, 'right fp';
 
 # Flags
-is $db->query('select count(*) from flags where service_id != 3')->array->[0], 2, 'right numbers of flags';
+is $db->query('select count(*) from flags where service_id != 3')->array->[0], 3, 'right numbers of flags';
 $db->query('select * from flags where service_id != 3')->hashes->map(
   sub {
     is $_->{round},  1,                'right round';
@@ -141,7 +141,7 @@ $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'check
 $app->model('score')->update;
 
 # SLA
-is $db->query('select count(*) from sla')->array->[0], 16, 'right sla';
+is $db->query('select count(*) from sla')->array->[0], 24, 'right sla';
 for my $team_id (1, 2) {
   $data = $db->select(sla => '*', {team_id => $team_id, service_id => 2, round => 1})->hash;
   is $data->{successed}, 1, 'right sla';
@@ -152,9 +152,10 @@ for my $team_id (1, 2) {
 }
 
 # FP
-is $db->query('select count(*) from flag_points')->array->[0], 16, 'right fp';
-$data = $db->select(flag_points => 'team_id, service_id, amount', {round => 1}, \'1, 2')->arrays;
-is_deeply $data, [[1, 1, 2], [1, 2, 0], [1, 3, 2], [1, 4, 2], [2, 1, 2], [2, 2, 4], [2, 3, 2], [2, 4, 2]];
+is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
+$data =
+  $db->select(flag_points => 'team_id, service_id, amount', {round => 1, team_id => [1, 2]}, \'1, 2')->arrays;
+is_deeply $data, [[1, 1, 3], [1, 2, 0], [1, 3, 3], [1, 4, 3], [2, 1, 3], [2, 2, 6], [2, 3, 3], [2, 4, 3]];
 
 # New round (#3)
 $manager->start_round;
@@ -163,7 +164,7 @@ $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'check
 $app->model('score')->update;
 
 # SLA
-is $db->query('select count(*) from sla')->array->[0], 24, 'right sla';
+is $db->query('select count(*) from sla')->array->[0], 36, 'right sla';
 for my $team_id (1, 2) {
   $data = $db->select(sla => '*', {team_id => $team_id, service_id => 2, round => 2})->hash;
   is $data->{successed}, 2, 'right sla';
@@ -176,9 +177,10 @@ for my $team_id (1, 2) {
 }
 
 # FP
-is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
-$data = $db->select(flag_points => 'team_id, service_id, amount', {round => 2}, \'1, 2')->arrays;
-is_deeply $data, [[1, 1, 2], [1, 2, 0], [1, 3, 2], [1, 4, 2], [2, 1, 2], [2, 2, 4], [2, 3, 2], [2, 4, 2]];
+is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';
+$data =
+  $db->select(flag_points => 'team_id, service_id, amount', {round => 2, team_id => [1, 2]}, \'1, 2')->arrays;
+is_deeply $data, [[1, 1, 3], [1, 2, 0], [1, 3, 3], [1, 4, 3], [2, 1, 3], [2, 2, 6], [2, 3, 3], [2, 4, 3]];
 
 $app->model('score')->update(3);
 
