@@ -47,7 +47,7 @@ $app->model('score')->update;
 is $db->query('select count(*) from runs')->array->[0], 12, 'right numbers of runs';
 
 # Down
-$db->select(runs => '*', {service_id => 1})->expand->hashes->map(
+$db->select(runs => '*', {service_id => 1, team_id => 1})->expand->hashes->map(
   sub {
     is $_->{round},  1,               'right round';
     is $_->{status}, 104,             'right status';
@@ -63,7 +63,7 @@ $db->select(runs => '*', {service_id => 1})->expand->hashes->map(
 );
 
 # Up
-$db->select(runs => '*', {service_id => 2})->expand->hashes->map(
+$db->select(runs => '*', {service_id => 2, team_id => 1})->expand->hashes->map(
   sub {
     is $_->{round},  1,   'right round';
     is $_->{status}, 101, 'right status';
@@ -79,7 +79,7 @@ $db->select(runs => '*', {service_id => 2})->expand->hashes->map(
 );
 
 # Timeout
-$db->select(runs => '*', {service_id => 4})->expand->hashes->map(
+$db->select(runs => '*', {service_id => 4, team_id => 1})->expand->hashes->map(
   sub {
     is $_->{round},  1,   'right round';
     is $_->{status}, 104, 'right status';
@@ -103,7 +103,7 @@ is $db->query('select count(*) from sla')->array->[0], 12, 'right sla';
 is $db->query('select count(*) from flag_points')->array->[0], 12, 'right fp';
 
 # Flags
-is $db->query('select count(*) from flags where service_id != 3')->array->[0], 3, 'right numbers of flags';
+is $db->query('select count(*) from flags where service_id != 3')->array->[0], 1, 'right numbers of flags';
 $db->query('select * from flags where service_id != 3')->hashes->map(
   sub {
     is $_->{round},  1,                'right round';
@@ -142,14 +142,12 @@ $app->model('score')->update;
 
 # SLA
 is $db->query('select count(*) from sla')->array->[0], 24, 'right sla';
-for my $team_id (1, 2) {
-  $data = $db->select(sla => '*', {team_id => $team_id, service_id => 2, round => 1})->hash;
-  is $data->{successed}, 1, 'right sla';
-  is $data->{failed},    0, 'right sla';
-  $data = $db->select(sla => '*', {team_id => $team_id, service_id => 1, round => 1})->hash;
-  is $data->{successed}, 0, 'right sla';
-  is $data->{failed},    1, 'right sla';
-}
+$data = $db->select(sla => '*', {team_id => 1, service_id => 2, round => 1})->hash;
+is $data->{successed}, 1, 'right sla';
+is $data->{failed},    0, 'right sla';
+$data = $db->select(sla => '*', {team_id => 1, service_id => 1, round => 1})->hash;
+is $data->{successed}, 0, 'right sla';
+is $data->{failed},    1, 'right sla';
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
@@ -165,16 +163,14 @@ $app->model('score')->update;
 
 # SLA
 is $db->query('select count(*) from sla')->array->[0], 36, 'right sla';
-for my $team_id (1, 2) {
-  $data = $db->select(sla => '*', {team_id => $team_id, service_id => 2, round => 2})->hash;
-  is $data->{successed}, 2, 'right sla';
-  is $data->{failed},    0, 'right sla';
-  $data = $db->select(sla => '*', {team_id => $team_id, service_id => 1, round => 2})->hash;
-  is $data->{successed}, 0, 'right sla';
-  is $data->{failed},    2, 'right sla';
-  $data = $db->select(sla => '*', {team_id => $team_id, service_id => 3, round => 2})->hash;
-  is $data->{successed} + $data->{failed}, 2, 'right sla';
-}
+$data = $db->select(sla => '*', {team_id => 1, service_id => 2, round => 2})->hash;
+is $data->{successed}, 2, 'right sla';
+is $data->{failed},    0, 'right sla';
+$data = $db->select(sla => '*', {team_id => 1, service_id => 1, round => 2})->hash;
+is $data->{successed}, 0, 'right sla';
+is $data->{failed},    2, 'right sla';
+$data = $db->select(sla => '*', {team_id => 1, service_id => 3, round => 2})->hash;
+is $data->{successed} + $data->{failed}, 2, 'right sla';
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';

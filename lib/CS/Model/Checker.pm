@@ -33,11 +33,13 @@ sub check {
   my $db = $job->app->pg->db;
 
   if (my $bot_info = $job->app->bots->{$team->{id}}) {
+    my $r;
     if (my $bot = $bot_info->{$service->{id}}) {
-      my $r = $self->_run_bot($bot, $team, $service);
-      $result = {%$result, %$r};
-      return $self->_finish($job, $result, $db);
+      $r = $self->_run_bot($bot, $team, $service);
+    } else {
+      $r = $self->_run_bot({sla => 0}, $team, $service);
     }
+    return $self->_finish($job, {%$result, %$r}, $db);
   }
 
   my $host = $team->{host};
