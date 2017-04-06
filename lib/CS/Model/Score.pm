@@ -94,7 +94,7 @@ sub sla {
 
   for my $team_id (keys %$state) {
     for my $service_id (keys %{$state->{$team_id}}) {
-      my $s = $state->{$team_id}{$service_id};
+      my $s   = $state->{$team_id}{$service_id};
       my $sql = 'insert into sla (round, team_id, service_id, successed, failed) values (?, ?, ?, ?, ?)';
       $db->query($sql, $r, $team_id, $service_id, $s->{successed}, $s->{failed});
     }
@@ -103,7 +103,9 @@ sub sla {
 
 sub flag_points {
   my ($self, $db, $r) = @_;
-  $self->app->log->debug("Calc FP for round #$r");
+  my $app = $self->app;
+  my $log = $app->log;
+  $log->debug("Calc FP for round #$r");
 
   my $state = $db->query('select * from flag_points where round = ?', $r - 1)
     ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b->{amount}; $a; }, {});
@@ -118,6 +120,11 @@ sub flag_points {
 
   for my $flag (@$flags) {
     my $amount = $self->app->model('flag')->amount($scoreboard, @{$flag}{qw/victim_id team_id/});
+    if ($log->is_level('debug')) {
+      my $team_name        = $app->teams->{$flag->{team_id}}{name};
+      my $victim_team_name = $app->teams->{$flag->{victim_id}}{name};
+      $log->debug("[fp] $team_name steal $amount point from $victim_team_name");
+    }
     $state->{$flag->{team_id}}{$flag->{service_id}} += $amount;
     $state->{$flag->{victim_id}}{$flag->{service_id}} -=
       min($amount, $state->{$flag->{victim_id}}{$flag->{service_id}});
