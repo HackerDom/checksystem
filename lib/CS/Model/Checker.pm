@@ -33,12 +33,8 @@ sub check {
   my $db = $job->app->pg->db;
 
   if (my $bot_info = $job->app->bots->{$team->{id}}) {
-    my $r;
-    if (my $bot = $bot_info->{$service->{id}}) {
-      $r = $self->_run_bot($bot, $team, $service);
-    } else {
-      $r = $self->_run_bot({sla => 0}, $team, $service);
-    }
+    my $bot = $bot_info->{$service->{id}} // {sla => 0};
+    my $r = $self->_run_bot($db, $bot, $team, $service, $round);
     return $self->_finish($job, {%$result, %$r}, $db);
   }
 
@@ -167,7 +163,7 @@ sub _run {
 }
 
 sub _run_bot {
-  my ($self, $bot, $team, $service) = @_;
+  my ($self, $db, $bot, $team, $service, $round) = @_;
   my $result = {};
 
   my $exit_code = rand() < $bot->{sla} ? 101 : 104;
@@ -183,6 +179,19 @@ sub _run_bot {
       ts        => scalar(localtime),
       exit_code => $exit_code
     };
+  }
+
+  # Hack
+  if ($exit_code == 101) {
+    my $flags = $db->query(
+      'select data from flags where service_id = $1 and round < $3 and team_id in
+        (select team_id from bots where service_id = $1 and team_id != $2)', $service->{id}, $team->{id},
+      $round
+    )->arrays;
+    my $scoreboard_info = $self->app->model('score')->scoreboard_info;
+    for my $flag (@$flags) {
+      $self->app->model('flag')->accept($team->{id}, $flag->[0], $scoreboard_info, sub { });
+    }
   }
 
   return $result;
