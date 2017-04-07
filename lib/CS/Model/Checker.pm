@@ -8,6 +8,7 @@ use Mojo::Collection 'c';
 use Mojo::Util qw/dumper trim/;
 use Proc::Killfam;
 use Time::HiRes qw/gettimeofday tv_interval/;
+use Time::Piece;
 
 has statuses => sub { [[up => 101], [corrupt => 102], [mumble => 103], [down => 104]] };
 has status2name => sub {
@@ -33,7 +34,7 @@ sub check {
   my $db = $job->app->pg->db;
 
   if (my $bot_info = $job->app->bots->{$team->{id}}) {
-    my $bot = $bot_info->{$service->{id}} // {sla => 0};
+    my $bot = $bot_info->{$service->{id}} // {sla => 0, attack => 1};
     my $r = $self->_run_bot($db, $bot, $team, $service, $round);
     return $self->_finish($job, {%$result, %$r}, $db);
   }
@@ -164,6 +165,7 @@ sub _run {
 
 sub _run_bot {
   my ($self, $db, $bot, $team, $service, $round) = @_;
+  my $app = $self->app;
   my $result = {};
 
   my $exit_code = rand() < $bot->{sla} ? 101 : 104;
@@ -181,6 +183,11 @@ sub _run_bot {
     };
   }
 
+  my $game_time = $app->model('util')->game_time;
+  my $now = localtime->epoch;
+  my $current = ($now - $game_time->{start}) / ($game_time->{end} - $game_time->{start});
+  return $result unless $bot->{attack} < $current;
+
   # Hack
   if ($exit_code == 101) {
     my $flags = $db->query(
@@ -188,9 +195,9 @@ sub _run_bot {
         (select team_id from bots where service_id = $1 and team_id != $2)', $service->{id}, $team->{id},
       $round
     )->arrays;
-    my $scoreboard_info = $self->app->model('score')->scoreboard_info;
+    my $scoreboard_info = $app->model('score')->scoreboard_info;
     for my $flag (@$flags) {
-      $self->app->model('flag')->accept($team->{id}, $flag->[0], $scoreboard_info, sub { });
+      $app->model('flag')->accept($team->{id}, $flag->[0], $scoreboard_info, sub { });
     }
   }
 

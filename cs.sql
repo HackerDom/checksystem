@@ -79,8 +79,7 @@ create table bots (
   team_id    integer not null references teams(id),
   service_id integer not null references services(id),
   sla        float8 not null,
-  attack1    float8 not null,
-  attack2    float8 not null,
+  attack     float8 not null,
   defense    float8 not null
 );
 
