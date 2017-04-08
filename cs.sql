@@ -134,7 +134,7 @@ begin
   if flag.round <= round - flag_life_time then return row(false, 'Denied: flag is too old'); end if;
 
   insert into stolen_flags (data, team_id, round) values (flag_data, team_id, round);
-  return row(true, null, round, flag.team_id);
+  return row(true, null, round, flag.team_id, flag.service_id);
 end;
 $$ language plpgsql;
 -- 1 down

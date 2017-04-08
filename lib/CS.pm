@@ -68,10 +68,8 @@ sub startup {
   $r->get('/scoreboard' => [format => 'json'])->to('main#scoreboard')->name('scoreboard');
 
   # API
-  my $api = $r->route('/api');
-  $api->get('/info')->to('api#info')->name('api_info');
-  $api->get('/scoreboard')->to('api#scoreboard')->name('api_scoreboard');
-  $api->get('/events')->to('api#events')->name('api_events');
+  $r->websocket('/api/events')->to('api#events')->name('api_events');
+  $r->get('/api/info')->to('api#info')->name('api_info');
 
   # Admin
   my $admin = $r->under('/admin')->to('admin#auth');

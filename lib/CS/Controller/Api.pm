@@ -11,27 +11,30 @@ sub info {
   $c->render(json => {%$info, %$time});
 }
 
-sub scoreboard {
-  my $c  = shift;
-  my $pg = $c->pg;
-
-  my $round = $pg->db->query('select max(round) from scores')->array->[0];
-  my $table = $pg->db->query('select team_id, score from scoreboard where round = ?', $round)
-    ->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{score}; $a; }, {});
-
-  $c->render(json => {round => $round, table => $table});
-}
-
 sub events {
-  my $c  = shift;
-  my $pg = $c->pg;
+  my $c = shift;
+  $c->tx->with_compression;
+  $c->inactivity_timeout(300);
 
-  my $round = $c->param('from') // 0;
-  my $events = $pg->db->query(
-    'select sf.round, (1000 * extract(epoch from sf.ts))::bigint, f.service_id, sf.team_id, f.team_id
-    from stolen_flags as sf join flags as f using(data) where sf.round >= ?', $round
-  )->arrays;
-  $c->render(json => $events->to_array);
+  my $cb1 = $c->pg->pubsub->json('scoreboard')->listen(
+    scoreboard => sub {
+      my $data = pop;
+      $c->send({json => {type => 'state', value => {round => $data->{round}, table => $data->{rank}}}});
+    }
+  );
+
+  my $cb2 = $c->pg->pubsub->json('flag')->listen(
+    flag => sub {
+      my $data = pop;
+      $data->{attacker_id} = delete $data->{team_id};
+      $c->send({json => {type => 'attack', value => $data}});
+    }
+  );
+
+  $c->on(finish => sub { $c->pg->pubsub->unlisten(scoreboard => $cb1)->unlisten(flag => $cb2); });
+
+  my $data = $c->model('score')->scoreboard_info;
+  $c->send({json => {type => 'state', value => {round => $data->{round}, table => $data->{rank}}}});
 }
 
 1;

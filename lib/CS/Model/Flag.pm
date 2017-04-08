@@ -37,7 +37,7 @@ sub accept {
     },
     sub {
       my ($d, undef, $result) = @_;
-      my ($ok, $msg, $round, $victim_id) = @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4/};
+      my ($ok, $msg, $round, $victim_id, $service_id) = @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4 f5/};
 
       unless ($ok) {
         $metric[2]{state} = 'reject';
@@ -51,6 +51,10 @@ sub accept {
       my $amount = $self->amount($scoreboard_info->{scoreboard}, $victim_id, $team_id);
       $msg = "Accepted. $flag_data cost $amount flag points";
       $msg .= ' about' if $round != $scoreboard_info->{round} + 1;
+
+      my $data = {round => $round, service_id => $service_id, team_id => $team_id, vitcim_id => $victim_id};
+      $app->pg->pubsub->json('flag')->notify(flag => $data);
+
       return $cb->({ok => 1, message => $msg});
     }
     )->catch(
