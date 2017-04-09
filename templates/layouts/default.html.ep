@@ -18,7 +18,9 @@
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/viz">Visualization</a></li>
+            % for my $link (@{app->config->{cs}{links}}) {
+              <li><a href="<%= $link->{ref} %>"><%= $link->{name} %></a></li>
+            % }
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><div id="round" class="navbar-text"><%= content_for 'r' %></div></li>

@@ -14,7 +14,8 @@
     flags    => {port => 31337, timeout => 5 * 60, secret => 'ohKai2eepi'},
     checkers => {
       hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}" }
-    }
+    },
+    links => [{name => 'Visualization', ref => '/viz'}]
   },
   teams => [
     { name    => 'team1',
