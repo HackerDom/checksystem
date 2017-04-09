@@ -26,7 +26,7 @@ sub accept {
       unless ($self->validate($flag_data)) {
         $metric[2]{state} = 'invalid';
         $app->metric->write(@metric);
-        return $cb->({ok => 0, error => 'Denied: invalid flag'});
+        return $cb->({ok => 0, error => "[$flag_data] Denied: invalid flag"});
       }
 
       $app->pg->db->query(
@@ -42,15 +42,14 @@ sub accept {
       unless ($ok) {
         $metric[2]{state} = 'reject';
         $app->metric->write(@metric);
-        return $cb->({ok => 0, error => $msg});
+        return $cb->({ok => 0, error => "[$flag_data] $msg"});
       }
 
       $metric[2]{state} = 'accept';
       $app->metric->write(@metric);
 
       my $amount = $self->amount($scoreboard_info->{scoreboard}, $victim_id, $team_id);
-      $msg = "Accepted. $flag_data cost $amount flag points";
-      $msg .= ' about' if $round != $scoreboard_info->{round} + 1;
+      $msg = "[$flag_data] Accepted. About $amount flag points";
 
       my $data = {round => $round, service_id => $service_id, team_id => $team_id, vitcim_id => $victim_id};
       $app->pg->pubsub->json('flag')->notify(flag => $data);
