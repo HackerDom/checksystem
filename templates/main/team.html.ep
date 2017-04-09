@@ -16,7 +16,7 @@
     </tr>
   </table>
 
-  <div id="scoreboard">
+  <div id="scoreboard" style="text-align: center;">
     <table class="table table-bordered table-condensed">
       <thead>
         <tr class="team">
