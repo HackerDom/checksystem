@@ -16,12 +16,8 @@ sub events {
   $c->tx->with_compression;
   $c->inactivity_timeout(300);
 
-  my $cb1 = $c->pg->pubsub->json('scoreboard')->listen(
-    scoreboard => sub {
-      my $data = pop;
-      $c->send({json => {type => 'state', value => {round => $data->{round}, table => $data->{rank}}}});
-    }
-  );
+  my $cb1 = $c->pg->pubsub->json('scoreboard')
+    ->listen(scoreboard => sub { $c->send({json => {type => 'state', value => pop}}); });
 
   my $cb2 = $c->pg->pubsub->json('flag')->listen(
     flag => sub {
@@ -33,8 +29,8 @@ sub events {
 
   $c->on(finish => sub { $c->pg->pubsub->unlisten(scoreboard => $cb1)->unlisten(flag => $cb2); });
 
-  my $data = $c->model('score')->scoreboard_info;
-  $c->send({json => {type => 'state', value => {round => $data->{round}, table => $data->{rank}}}});
+  my $data = $c->model('scoreboard')->generate;
+  $c->send({json => {type => 'state', value => $data}});
 }
 
 1;

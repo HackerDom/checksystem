@@ -8,7 +8,7 @@ sub run {
   my $app  = $self->app;
 
   my $scoreboard_info = $app->model('score')->scoreboard_info;
-  $app->pg->pubsub->json('scoreboard')->listen(scoreboard => sub { $scoreboard_info = $_[1] });
+  $app->pg->pubsub->json('scoreboard_info')->listen(scoreboard_info => sub { $scoreboard_info = $_[1] });
 
   Mojo::IOLoop->server(
     {port => $app->config->{cs}{flags}{port}, reuse => 1} => sub {
