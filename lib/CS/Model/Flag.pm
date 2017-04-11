@@ -51,7 +51,7 @@ sub accept {
       my $amount = $self->amount($scoreboard_info->{scoreboard}, $victim_id, $team_id);
       $msg = "[$flag_data] Accepted. About $amount flag points";
 
-      my $data = {round => $round, service_id => $service_id, team_id => $team_id, vitcim_id => $victim_id};
+      my $data = {round => $round, service_id => $service_id, team_id => $team_id, victim_id => $victim_id};
       $app->pg->pubsub->json('flag')->notify(flag => $data);
 
       return $cb->({ok => 1, message => $msg});
