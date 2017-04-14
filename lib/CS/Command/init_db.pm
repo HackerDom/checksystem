@@ -45,6 +45,16 @@ sub run {
     select 0, teams.id, services.id, 0, 0 from teams cross join services'
   );
   $app->model('score')->scoreboard($db, 0);
+
+  # Flags
+  if (open my $f, '<', 'flags.csv') {
+    my $dbh = $db->dbh;
+    $dbh->do("copy flags(data,id,round,team_id,service_id,vuln_id) from stdin with delimiter ','");
+    while (my $line = $f->getline) {
+      $dbh->pg_putcopydata($line);
+    }
+    $dbh->pg_putcopyend;
+  }
 }
 
 1;

@@ -27,12 +27,11 @@ create table rounds (
 create table flags (
   data       text primary key,
   id         text not null,
-  round      integer not null references rounds(n),
+  round      integer not null,
   ts         timestamptz not null default now(),
   team_id    integer not null references teams(id),
   service_id integer not null references services(id),
-  vuln_id    integer not null references vulns(id),
-  unique (round, team_id, service_id)
+  vuln_id    integer not null references vulns(id)
 );
 
 create table stolen_flags (
