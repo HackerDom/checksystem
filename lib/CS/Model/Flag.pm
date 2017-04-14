@@ -29,7 +29,7 @@ sub accept {
         return $cb->({ok => 0, error => "[$flag_data] Denied: invalid flag"});
       }
 
-      my $flag_life_time = $app->bots->{$team_id} ? 1000 : $app->config->{cs}{flag_life_time};
+      my $flag_life_time = $app->config->{cs}{flag_life_time};
       $app->pg->db->query('select row_to_json(accept_flag(?, ?, ?)) as r',
         $team_id, $flag_data, $flag_life_time, shift->begin);
     },
