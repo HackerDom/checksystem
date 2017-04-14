@@ -29,11 +29,9 @@ sub accept {
         return $cb->({ok => 0, error => "[$flag_data] Denied: invalid flag"});
       }
 
-      $app->pg->db->query(
-        'select row_to_json(accept_flag(?, ?, ?)) as r',
-        $team_id, $flag_data, $app->config->{cs}{flag_life_time},
-        shift->begin
-      );
+      my $flag_life_time = $app->bots->{$team_id} ? 1000 : $app->config->{cs}{flag_life_time};
+      $app->pg->db->query('select row_to_json(accept_flag(?, ?, ?)) as r',
+        $team_id, $flag_data, $flag_life_time, shift->begin);
     },
     sub {
       my ($d, undef, $result) = @_;
@@ -68,6 +66,8 @@ sub accept {
 
 sub amount {
   my ($self, $scoreboard, $victim_id, $team_id) = @_;
+
+  return 1 if $self->app->bots->{$team_id};
 
   my $jackpot = 0 + keys %{$self->app->teams};
   my ($v, $t) = @{$scoreboard}{$victim_id, $team_id};
