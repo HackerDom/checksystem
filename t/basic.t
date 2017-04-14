@@ -103,8 +103,8 @@ is $db->query('select count(*) from sla')->array->[0], 12, 'right sla';
 is $db->query('select count(*) from flag_points')->array->[0], 12, 'right fp';
 
 # Flags
-is $db->query('select count(*) from flags where service_id != 3')->array->[0], 1, 'right numbers of flags';
-$db->query('select * from flags where service_id != 3')->hashes->map(
+is $db->query('select count(*) from flags where service_id != 3 and round > 0')->array->[0], 1, 'right numbers of flags';
+$db->query('select * from flags where service_id != 3 and round = 1')->hashes->map(
   sub {
     is $_->{round},  1,                'right round';
     is $_->{id},     911,              'right id';
