@@ -4,7 +4,7 @@ use Mojo::Base 'MojoX::Model';
 use Digest::SHA 'hmac_sha1_hex';
 use String::Random 'random_regex';
 
-my $format = '[A-Z0-9]{31}=';
+my $format = '[A-GI-WY-Z0-9]{31}=';
 
 sub create {
   my $self = shift;
