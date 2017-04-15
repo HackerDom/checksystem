@@ -18,7 +18,7 @@ sub events {
 
   my $cb1 = $c->pg->pubsub->json('scoreboard')->listen(
     scoreboard => sub {
-      my $value = $app->model('scoreboard')->generate;
+      my $value = $c->model('scoreboard')->generate;
       $c->send({json => {type => 'state', value => $value}});
     }
   );
