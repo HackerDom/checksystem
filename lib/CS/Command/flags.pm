@@ -43,7 +43,7 @@ sub run {
             $scoreboard_info,
             sub {
               my $msg = $_[0]->{ok} ? $_[0]->{message} : $_[0]->{error};
-              $app->log->info("[flags] [$id] input flag '$flag' result '$msg'");
+              $app->log->info("[flags] [$team_id:$id] input flag '$flag' result '$msg'");
               $stream->write("$msg\n");
               undef $lock;
               $do->() if $do;
