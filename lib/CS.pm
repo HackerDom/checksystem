@@ -55,7 +55,7 @@ sub startup {
 
       $app->model('score')->update(@_);
       $pg->pubsub->json('scoreboard_info')->notify(scoreboard_info => $app->model('score')->scoreboard_info);
-      $pg->pubsub->json('scoreboard')->notify(scoreboard => $app->model('scoreboard')->generate);
+      $pg->pubsub->json('scoreboard')->notify('scoreboard');
     }
   );
 
