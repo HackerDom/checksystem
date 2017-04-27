@@ -12,4 +12,5 @@ requires 'Mojolicious'                => '7.26';
 requires 'Mojolicious::Plugin::Model' => '0.07';
 requires 'Net::DNS::Native'           => '0.15';
 requires 'Proc::Killfam'              => '0.53';
+requires 'Sereal::Dclone'             => '0.003';
 requires 'String::Random'             => '0.29';

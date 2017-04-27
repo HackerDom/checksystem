@@ -1,6 +1,8 @@
 package CS::Controller::Api;
 use Mojo::Base 'Mojolicious::Controller';
 
+use Sereal::Dclone 'dclone';
+
 sub info {
   my $c = shift;
 
@@ -25,7 +27,8 @@ sub events {
 
   my $cb2 = $c->pg->pubsub->json('flag')->listen(
     flag => sub {
-      my $data = pop;
+      my $data = dclone(pop);
+      $c->app->log($c->app->dumper($data));
       $data->{attacker_id} = delete $data->{team_id};
       $c->send({json => {type => 'attack', value => $data}});
     }
