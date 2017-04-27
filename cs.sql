@@ -39,7 +39,8 @@ create table stolen_flags (
   data    text not null references flags(data),
   ts      timestamptz not null default now(),
   round   integer not null references rounds(n),
-  team_id integer not null references teams(id)
+  team_id integer not null references teams(id),
+  amount  float8 not null
 );
 create index on stolen_flags (data, team_id);
 
@@ -118,9 +119,15 @@ create index on scoreboard (round);
 create index on scoreboard (team_id);
 
 create function accept_flag(team_id integer, flag_data text, flag_life_time integer) returns record as $$
+<<my>>
 declare
-  flag  flags%rowtype;
-  round rounds.n%type;
+  flag   flags%rowtype;
+  round  rounds.n%type;
+  amount stolen_flags.amount%type;
+
+  attacker_pos smallint;
+  victim_pos   smallint;
+  amount_max   smallint;
 begin
   select * from flags where data = flag_data into flag;
 
@@ -133,8 +140,17 @@ begin
   select max(n) into round from rounds;
   if flag.round <= round - flag_life_time then return row(false, 'Denied: flag is too old'); end if;
 
-  insert into stolen_flags (data, team_id, round) values (flag_data, team_id, round);
-  return row(true, null, round, flag.team_id, flag.service_id);
+  select n from scoreboard as s where s.round = my.round - 1 and s.team_id = accept_flag.team_id into attacker_pos;
+  select n from scoreboard as s where s.round = my.round - 1 and s.team_id = flag.team_id into victim_pos;
+  select count(*) from teams into amount_max;
+
+  amount = case when attacker_pos >= victim_pos
+    then amount_max
+    else exp(ln(amount_max) * (victim_pos - amount_max) / (attacker_pos - amount_max))
+  end;
+
+  insert into stolen_flags (data, team_id, round, amount) values (flag_data, team_id, round, amount);
+  return row(true, null, round, flag.team_id, flag.service_id, amount);
 end;
 $$ language plpgsql;
 -- 1 down

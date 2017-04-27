@@ -17,7 +17,7 @@ sub create {
 }
 
 sub accept {
-  my ($self, $team_id, $flag_data, $scoreboard_info, $cb) = @_;
+  my ($self, $team_id, $flag_data, $cb) = @_;
   my $app = $self->app;
   my @metric = ('flags', {data => $flag_data}, {team => $team_id});
 
@@ -37,7 +37,7 @@ sub accept {
     },
     sub {
       my ($d, undef, $result) = @_;
-      my ($ok, $msg, $round, $victim_id, $service_id) = @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4 f5/};
+      my ($ok, $msg, $round, $victim_id, $service_id, $amount) = @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4 f5 f6/};
 
       unless ($ok) {
         $metric[2]{state} = 'reject';
@@ -48,12 +48,10 @@ sub accept {
       $metric[2]{state} = 'accept';
       $app->metric->write(@metric);
 
-      my $amount = $self->amount($scoreboard_info->{scoreboard}, $victim_id, $team_id);
-      $msg = "[$flag_data] Accepted. About $amount flag points";
-
       my $data = {round => $round, service_id => $service_id, team_id => $team_id, victim_id => $victim_id};
       $app->pg->pubsub->json('flag')->notify(flag => $data);
 
+      $msg = "[$flag_data] Accepted. $amount flag points";
       return $cb->({ok => 1, message => $msg});
     }
     )->catch(
@@ -64,15 +62,6 @@ sub accept {
       return $cb->({ok => 0, error => 'Please try again later'});
     }
     )->wait;
-}
-
-sub amount {
-  my ($self, $scoreboard, $victim_id, $team_id) = @_;
-
-  my $jackpot = 0 + keys %{$self->app->teams};
-  my ($v, $t) = @{$scoreboard}{$victim_id, $team_id};
-
-  return $t >= $v ? $jackpot : exp(log($jackpot) * ($v - $jackpot) / ($t - $jackpot));
 }
 
 sub validate {

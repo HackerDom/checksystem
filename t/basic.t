@@ -112,23 +112,22 @@ $db->query('select * from flags where service_id != 3')->hashes->map(
   }
 );
 
-my $scoreboard_info = $app->model('score')->scoreboard_info;
 my $flag_cb = sub { $data = $_[0] };
-$app->model('flag')->accept(2, 'flag', $scoreboard_info, $flag_cb);
+$app->model('flag')->accept(2, 'flag', $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/invalid flag/, 'right error';
 
 $flag_data = $db->select(flags => 'data', {team_id => 2})->hash->{data};
-$app->model('flag')->accept(2, $flag_data, $scoreboard_info, $flag_cb);
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/flag is your own/, 'right error';
 
 $flag_data = $db->select(flags => 'data', {team_id => 1})->hash->{data};
-$app->model('flag')->accept(2, $flag_data, $scoreboard_info, $flag_cb);
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 1, 'right status';
 is $db->select(stolen_flags => 'data', {team_id => 2})->hash->{data}, $flag_data, 'right flag';
 
-$app->model('flag')->accept(2, $flag_data, $scoreboard_info, $flag_cb);
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/you already submitted this flag/, 'right error';
 

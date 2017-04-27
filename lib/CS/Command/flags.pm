@@ -7,9 +7,6 @@ sub run {
   my $self = shift;
   my $app  = $self->app;
 
-  my $scoreboard_info = $app->model('score')->scoreboard_info;
-  $app->pg->pubsub->json('scoreboard_info')->listen(scoreboard_info => sub { $scoreboard_info = $_[1] });
-
   Mojo::IOLoop->server(
     {port => $app->config->{cs}{flags}{port}, reuse => 1} => sub {
       my ($loop, $stream, $id, $do, $lock) = @_;
@@ -40,7 +37,6 @@ sub run {
           $lock = 1;
           $app->model('flag')->accept(
             $team_id, $flag,
-            $scoreboard_info,
             sub {
               my $msg = $_[0]->{ok} ? $_[0]->{message} : $_[0]->{error};
               $app->log->info("[flags] [$team_id:$id] input flag '$flag' result '$msg'");

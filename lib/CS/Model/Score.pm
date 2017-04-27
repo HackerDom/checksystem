@@ -110,7 +110,7 @@ sub flag_points {
   my $state = $db->query('select * from flag_points where round = ?', $r - 1)
     ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b->{amount}; $a; }, {});
   my $flags = $db->query('
-    select f.data, f.service_id, f.team_id as victim_id, sf.team_id
+    select f.data, f.service_id, f.team_id as victim_id, sf.team_id, sf.amount
     from flags as f join stolen_flags as sf using (data) where sf.round = ?
     ', $r)->hashes;
   my $scoreboard = $db->query('
@@ -119,15 +119,9 @@ sub flag_points {
     ', $r - 1)->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
 
   for my $flag (@$flags) {
-    my $amount = $self->app->model('flag')->amount($scoreboard, @{$flag}{qw/victim_id team_id/});
-    if ($log->is_level('debug')) {
-      my $team_name        = $app->teams->{$flag->{team_id}}{name};
-      my $victim_team_name = $app->teams->{$flag->{victim_id}}{name};
-      $log->debug("[fp] $team_name steal $amount point from $victim_team_name");
-    }
-    $state->{$flag->{team_id}}{$flag->{service_id}} += $amount;
+    $state->{$flag->{team_id}}{$flag->{service_id}} += $flag->{amount};
     $state->{$flag->{victim_id}}{$flag->{service_id}} -=
-      min($amount, $state->{$flag->{victim_id}}{$flag->{service_id}});
+      min($flag->{amount}, $state->{$flag->{victim_id}}{$flag->{service_id}});
   }
 
   for my $team_id (keys %$state) {
@@ -136,18 +130,6 @@ sub flag_points {
       $db->query($sql, $r, $team_id, $service_id, $state->{$team_id}{$service_id});
     }
   }
-}
-
-sub scoreboard_info {
-  my $self = shift;
-  my $db   = $self->app->pg->db;
-
-  my $round      = $db->query('select max(round) from scores')->array->[0];
-  my $s          = $db->query('select team_id, n, score from scoreboard where round = ?', $round)->hashes;
-  my $scoreboard = $s->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
-  my $rank       = $s->reduce(sub { $a->{$b->{team_id}} = $b->{score}; $a; }, {});
-
-  return {scoreboard => $scoreboard, rank => $rank, round => $round};
 }
 
 1;

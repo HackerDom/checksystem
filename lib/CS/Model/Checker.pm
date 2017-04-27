@@ -195,9 +195,8 @@ sub _run_bot {
       (select team_id from bots where service_id = $1 and team_id != $2 and defense > $4)', $service->{id},
     $team->{id}, $round, $current
   )->arrays;
-  my $scoreboard_info = $app->model('score')->scoreboard_info;
   for my $flag (@$flags) {
-    $app->model('flag')->accept($team->{id}, $flag->[0], $scoreboard_info, sub { });
+    $app->model('flag')->accept($team->{id}, $flag->[0], sub { });
   }
 
   return $result;
