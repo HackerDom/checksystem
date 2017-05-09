@@ -24,7 +24,7 @@
         <tr class="team">
           % my $suffix = $team->{d} ? ($team->{d} > 0 ? "(+$team->{d})" : "($team->{d})") : '';
           <td class="place"><%== $team->{n} %><%== $suffix %></td>
-          <td class="team_logo"><img width="64px" class="img" src="<%= app->teams->{$team->{team_id}}{logo} // '/logo.png' %>"></td>
+          <td class="team_logo"></td>
           <td class="team_info">
             <div class="team_name"><a href="/team/<%== $team->{team_id} %>">
               <%= $team->{name} %></a>
