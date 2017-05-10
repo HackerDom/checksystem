@@ -19,14 +19,11 @@ sub create {
 sub accept {
   my ($self, $team_id, $flag_data, $cb) = @_;
   my $app = $self->app;
-  my @metric = ('flags', {data => $flag_data}, {team => $team_id});
 
   Mojo::IOLoop->delay(
     sub {
       unless ($self->validate($flag_data)) {
-        $metric[2]{state} = 'invalid';
-        $app->metric->write(@metric);
-        return $cb->({ok => 0, error => "[$flag_data] Denied: invalid flag"});
+        return $cb->({ok => 0, error => "[$flag_data] Denied: invalid flag", status => 'invalid'});
       }
 
       $app->pg->db->query(
@@ -37,29 +34,23 @@ sub accept {
     },
     sub {
       my ($d, undef, $result) = @_;
-      my ($ok, $msg, $round, $victim_id, $service_id, $amount) = @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4 f5 f6/};
+      my ($ok, $msg, $round, $victim_id, $service_id, $amount) =
+        @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4 f5 f6/};
 
       unless ($ok) {
-        $metric[2]{state} = 'reject';
-        $app->metric->write(@metric);
-        return $cb->({ok => 0, error => "[$flag_data] $msg"});
+        return $cb->({ok => 0, error => "[$flag_data] $msg", status => 'reject'});
       }
-
-      $metric[2]{state} = 'accept';
-      $app->metric->write(@metric);
 
       my $data = {round => $round, service_id => $service_id, team_id => $team_id, victim_id => $victim_id};
       $app->pg->pubsub->json('flag')->notify(flag => $data);
 
       $msg = "[$flag_data] Accepted. $amount flag points";
-      return $cb->({ok => 1, message => $msg});
+      return $cb->({ok => 1, message => $msg, status => 'accept'});
     }
     )->catch(
     sub {
       $app->log->error("[flags] Error while accept: $_[1]");
-      $metric[2]{state} = 'error';
-      $app->metric->write(@metric);
-      return $cb->({ok => 0, error => 'Please try again later'});
+      return $cb->({ok => 0, error => 'Please try again later', status => 'error'});
     }
     )->wait;
 }
