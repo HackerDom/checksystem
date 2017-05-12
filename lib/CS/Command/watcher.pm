@@ -30,7 +30,7 @@ sub check {
               team_id    => $team->{id},
               service_id => $service->{id},
               status     => ($err ? 'f' : 't'),
-              round      => \'select max(n) from rounds',
+              round      => \'(select max(n) from rounds)',
               error      => $err
             },
             sub { my ($db, $err) = @_; $app->log->error("[monitor] insert error: $err") if $err }
