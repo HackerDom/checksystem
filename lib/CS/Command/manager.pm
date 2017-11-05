@@ -14,7 +14,7 @@ sub run {
   my $app  = $self->app;
 
   my $now = localtime;
-  my $start = localtime(Time::Piece->strptime($app->config->{cs}{time}{start}, $app->model('util')->format));
+  my $start = $app->model('util')->game_time->{start};
   my $round_length = $app->config->{cs}{round_length};
 
   my $sleep;

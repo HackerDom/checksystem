@@ -9,7 +9,11 @@ sub info {
   my $info = {};
   $info->{teams}{$_->{id}}    = $_->{name} for values %{$c->app->teams};
   $info->{services}{$_->{id}} = $_->{name} for values %{$c->app->services};
+
   my $time = $c->model('util')->game_time;
+  $time->{start} += localtime->tzoffset;
+  $time->{end}   += localtime->tzoffset;
+
   $c->render(json => {%$info, %$time});
 }
 
