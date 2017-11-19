@@ -54,16 +54,24 @@ sub startup {
       my $pg  = $app->pg;
 
       $app->model('score')->update(@_);
-      my $pubsub = $pg->pubsub->json('scoreboard')->json('team_change_position')->json('scoreboard_updated');
+      my $pubsub = $pg->pubsub->json('scoreboard')->json('team_position_changed')->json('scoreboard_updated');
       $pubsub->notify('scoreboard');
 
       my $scoreboard = $app->model('scoreboard')->generate;
       for my $item (@{$scoreboard->{scoreboard}}) {
         if ($item->{d}) {
-          $pubsub->notify(team_change_position => {team_id => $item->{team_id}, d => $item->{d}, round => $item->{round}});
+          $pubsub->notify(
+            team_position_changed => {team_id => $item->{team_id}, d => $item->{d}, round => $item->{round}});
         }
 
-        my $data = {team_id => $item->{team_id}, d => $item->{d}, score => $item->{score}, old_score => $item->{old_score}, services => $item->{services}, old_services => $item->{old_services}};
+        my $data = {
+          team_id      => $item->{team_id},
+          d            => $item->{d},
+          score        => $item->{score},
+          old_score    => $item->{old_score},
+          services     => $item->{services},
+          old_services => $item->{old_services}
+        };
         $pubsub->notify(scoreboard_updated => $data);
       }
     }
