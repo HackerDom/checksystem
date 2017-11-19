@@ -55,7 +55,7 @@ sub accept {
     }
     )->catch(
     sub {
-      $app->log->error("[flags] Error while accept: $_[1]");
+      $app->log->error("[flags] Error while accept: $_[0]");
       $self->_metric('error');
       return $cb->({ok => 0, error => 'Please try again later'});
     }

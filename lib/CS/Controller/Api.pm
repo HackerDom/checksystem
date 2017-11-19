@@ -2,6 +2,7 @@ package CS::Controller::Api;
 use Mojo::Base 'Mojolicious::Controller';
 
 use Sereal::Dclone 'dclone';
+use Time::Piece;
 
 sub info {
   my $c = shift;
@@ -21,27 +22,86 @@ sub events {
   my $c = shift;
   $c->tx->with_compression;
   $c->inactivity_timeout(300);
+  my $pubsub = $c->pg->pubsub;
 
-  my $cb1 = $c->pg->pubsub->json('scoreboard')->listen(
+  my $cb1 = $pubsub->json('scoreboard')->listen(
     scoreboard => sub {
       my $value = $c->model('scoreboard')->generate;
       $c->send({json => {type => 'state', value => $value}});
     }
   );
 
-  my $cb2 = $c->pg->pubsub->json('flag')->listen(
+  my $cb2 = $pubsub->json('flag')->listen(
     flag => sub {
       my $data = dclone(pop);
-      $c->app->log($c->app->dumper($data));
       $data->{attacker_id} = delete $data->{team_id};
       $c->send({json => {type => 'attack', value => $data}});
     }
   );
 
-  $c->on(finish => sub { $c->pg->pubsub->unlisten(scoreboard => $cb1)->unlisten(flag => $cb2); });
+  $c->on(finish => sub { $pubsub->unlisten(scoreboard => $cb1)->unlisten(flag => $cb2); });
 
   my $data = $c->model('scoreboard')->generate;
   $c->send({json => {type => 'state', value => $data}});
+}
+
+sub notifications {
+  my $c = shift;
+  $c->tx->with_compression;
+  $c->inactivity_timeout(300);
+  my $pubsub =
+    $c->pg->pubsub->json('team_position_changed')->json('scoreboard_updated')->json('service_status_changed');
+
+  my $opts = {};
+
+  my $cb1 = $pubsub->listen(
+    team_position_changed => sub {
+      my $data = pop;
+
+      if ($opts->{team_position_changed}{$data->{team_id}}) {
+        $c->send({json => {event => 'team_position_changed', team_id => $data->{team_id}, data => $data}});
+      }
+    }
+  );
+
+  my $cb2 = $pubsub->listen(
+    scoreboard_updated => sub {
+      my $data = pop;
+
+      if ($opts->{scoreboard_updated}{$data->{team_id}}) {
+        $c->send({json => {event => 'scoreboard_updated', team_id => $data->{team_id}, data => $data}});
+      }
+    }
+  );
+
+  my $cb3 = $pubsub->listen(
+    service_status_changed => sub {
+      my $data = pop;
+
+      if ($opts->{service_status_changed}{$data->{team_id}}) {
+        $c->send({json => {event => 'service_status_changed', team_id => $data->{team_id}, data => $data}});
+      }
+    }
+  );
+
+  # {"subscribe": "team_position_changed", "team_id": 1}
+  # {"subscribe": "scoreboard_updated", "team_id": 1}
+  $c->on(
+    json => sub {
+      my $commad = pop;
+      return unless my $event   = $commad->{subscribe};
+      return unless my $team_id = $commad->{team_id};
+
+      $opts->{$event}{$team_id} = 1;
+    }
+  );
+
+  $c->on(
+    finish => sub {
+      $pubsub->unlisten(team_position_changed => $cb1)->unlisten(scoreboard_updated => $cb2)
+        ->unlisten(service_status_changed => $cb3);
+    }
+  );
 }
 
 1;

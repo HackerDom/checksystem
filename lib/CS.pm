@@ -67,6 +67,8 @@ sub startup {
         my $data = {
           team_id      => $item->{team_id},
           d            => $item->{d},
+          n            => $item->{n},
+          round        => $item->{round},
           score        => $item->{score},
           old_score    => $item->{old_score},
           services     => $item->{services},
@@ -89,6 +91,7 @@ sub startup {
   # API
   $r->websocket('/api/events')->to('api#events')->name('api_events');
   $r->get('/api/info')->to('api#info')->name('api_info');
+  $r->websocket('/api/notifications')->to('api#notifications')->name('api_notifications');
 
   # Admin
   my $admin = $r->under('/admin')->to('admin#auth');
