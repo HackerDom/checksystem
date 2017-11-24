@@ -1,0 +1,9 @@
+- name: systemd config
+  template: src=cs.manager.service.j2 dest=/etc/systemd/system/cs.manager.service
+  notify:
+    - reload systemd
+
+- name: systemd config
+  template: src=cs.worker-default.service.j2 dest=/etc/systemd/system/cs.worker-default.service
+  notify:
+    - reload systemd

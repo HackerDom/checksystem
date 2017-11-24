@@ -1,0 +1,16 @@
+[Unit]
+Description=CS default worker
+After=network.target
+
+[Service]
+Type=simple
+User={{cs_user}}
+WorkingDirectory={{cs_dir}}
+Environment=MOJO_MODE=production
+Environment=LANG=en_US.UTF-8
+ExecStart=/usr/bin/perl script/cs minion worker -q default -j {{cs_worker_default_jobs}}
+Restart=always
+RestartSec=15s
+
+[Install]
+WantedBy=multi-user.target

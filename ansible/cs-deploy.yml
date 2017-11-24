@@ -1,0 +1,21 @@
+- hosts: all
+  roles:
+    - common
+
+- hosts: db
+  roles:
+    - db
+
+- hosts: manager
+  roles:
+    - manager
+    - web
+    - watcher
+
+- hosts: flags
+  roles:
+    - flags
+
+- hosts: checkers
+  roles:
+    - checkers

@@ -1,0 +1,31 @@
+- name: pg repo source
+  shell: echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+- name: apt keys
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+- name: pg
+  apt: name=postgresql state=latest update_cache=yes
+
+- name: pg user
+  shell: psql -c "create role {{pg_cs_user}} login password '{{pg_cs_pass}}'"
+  become: yes
+  become_user: postgres
+  register: r
+  failed_when: r.rc > 1
+  changed_when: "'CREATE ROLE' in r.stdout"
+
+- name: pg db
+  shell: createdb -O {{pg_cs_user}} {{pg_cs_db}}
+  become: yes
+  become_user: postgres
+  register: r
+  failed_when: r.rc > 1
+  changed_when: r.rc == 0
+
+#- name: pg_hba
+
+- name: influxdb
+  apt:
+    deb: https://dl.influxdata.com/influxdb/releases/influxdb_1.3.7_amd64.deb

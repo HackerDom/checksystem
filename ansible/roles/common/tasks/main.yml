@@ -1,0 +1,35 @@
+- name: user
+  user: name={{cs_user}} state=present
+
+- name: system requirements
+  apt: name={{item}} state=latest update_cache=yes
+  with_items:
+    - build-essential
+    - cpanminus
+    - gcc
+    - git
+    - libpq-dev
+    - libssl-dev
+    - make
+    - sudo
+    - zlib1g-dev
+
+- name: repo
+  git: repo=https://github.com/HackerDom/checksystem.git dest={{cs_dir}}
+  become: yes
+  become_user: "{{cs_user}}"
+
+- name: config
+  template: src=c_s.conf.j2 dest={{cs_dir}}/c_s.conf owner={{cs_user}} group={{cs_user}}
+
+- name: perl modules
+  command: cpanm -n --installdeps {{cs_dir}}
+  register: r
+  changed_when: "r.stdout.find('Found dependencies') != -1"
+
+- name: telegraf
+  apt:
+    deb: https://dl.influxdata.com/telegraf/releases/telegraf_1.4.3-1_amd64.deb
+
+- name: telegraf config
+  template: src=telegraf.conf.j2 dest=/etc/telegraf/telegraf.conf

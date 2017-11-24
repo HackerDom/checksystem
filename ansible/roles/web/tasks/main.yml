@@ -1,0 +1,19 @@
+- name: systemd config
+  template: src=cs.web.service.j2 dest=/etc/systemd/system/cs.web.service
+  notify:
+    - reload systemd
+
+- name: nginx repo source
+  shell: echo "deb http://nginx.org/packages/debian/ $(lsb_release -cs) nginx" > /etc/apt/sources.list.d/nginx.list
+
+- name: apt keys
+  apt_key:
+    url: https://nginx.ru/keys/nginx_signing.key
+
+- name: nginx
+  apt: name=nginx state=latest
+
+- name: nginx config
+  template: src=cs.nginx.conf.j2 dest=/etc/nginx/conf.d/cs.conf
+  notify:
+    - restart nginx

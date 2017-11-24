@@ -1,0 +1,17 @@
+[Unit]
+Description=CS Watcher
+After=network.target
+
+[Service]
+Type=simple
+User={{cs_user}}
+LimitNOFILE={{cs_limit_nofile}}
+WorkingDirectory={{cs_dir}}
+Environment=MOJO_MODE=production
+Environment=LANG=en_US.UTF-8
+ExecStart=/usr/bin/perl script/cs watcher
+Restart=always
+RestartSec=15s
+
+[Install]
+WantedBy=multi-user.target

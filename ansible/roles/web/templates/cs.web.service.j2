@@ -1,0 +1,15 @@
+[Unit]
+Description=CS web
+After=network.target
+
+[Service]
+Type=forking
+User={{cs_user}}
+WorkingDirectory={{cs_dir}}
+PIDFile={{cs_dir}}/script/hypnotoad.pid
+ExecStart=/usr/local/bin/hypnotoad script/cs
+ExecStop=/usr/local/bin/hypnotoad -s script/cs
+ExecReload=/usr/local/bin/hypnotoad script/cs
+
+[Install]
+WantedBy=multi-user.target
