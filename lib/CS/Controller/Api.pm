@@ -88,11 +88,21 @@ sub notifications {
   # {"subscribe": "scoreboard_updated", "team_id": 1}
   $c->on(
     json => sub {
-      my $commad = pop;
-      return unless my $event   = $commad->{subscribe};
-      return unless my $team_id = $commad->{team_id};
+      my $message = pop;
 
-      $opts->{$event}{$team_id} = 1;
+      if (my $event = $message->{subscribe}) {
+        my $team_id = $message->{team_id};
+        $opts->{$event}{$team_id} = 1;
+      } elsif (my $command = $message->{command}) {
+        my $response = {command => $command, id => $message->{id}};
+
+        if ($command eq 'scoreboard') {
+          my $top = $message->{top};
+          $response->{data} = $c->model('scoreboard')->generate(undef, $top);
+        }
+
+        $c->send({json => $response});
+      }
     }
   );
 
