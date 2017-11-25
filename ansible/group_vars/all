@@ -4,8 +4,11 @@ cs_dir:  /home/cs/checksystem
 pg_cs_user: cs
 pg_cs_pass: qwer
 pg_cs_db: cs
-pg_cs_host: 192.168.88.246
+pg_cs_host: 127.0.0.1
 pg_cs_port: 5432
+pg_max_connections: 1024
+pg_shared_buffers: 1GB
+pg_work_mem: 256MB
 
 influx_db: checksystem
 

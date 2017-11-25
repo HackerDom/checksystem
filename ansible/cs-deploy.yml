@@ -1,21 +1,23 @@
-- hosts: all
+- hosts: cs-master, cs-db, cs-checker, cs-flags
   roles:
     - common
 
-- hosts: db
+- hosts: cs-db
   roles:
     - db
+  tags:
+    - db
 
-- hosts: manager
+- hosts: cs-master
   roles:
     - manager
     - web
     - watcher
 
-- hosts: flags
+- hosts: cs-flags
   roles:
     - flags
 
-- hosts: checkers
+- hosts: cs-checker
   roles:
     - checkers

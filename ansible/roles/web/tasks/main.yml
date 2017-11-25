@@ -4,7 +4,7 @@
     - reload systemd
 
 - name: nginx repo source
-  shell: echo "deb http://nginx.org/packages/debian/ $(lsb_release -cs) nginx" > /etc/apt/sources.list.d/nginx.list
+  shell: echo "deb http://nginx.org/packages/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/ $(lsb_release -cs) nginx" > /etc/apt/sources.list.d/nginx.list
 
 - name: apt keys
   apt_key:
