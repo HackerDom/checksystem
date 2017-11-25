@@ -10,6 +10,8 @@ pg_max_connections: 1024
 pg_shared_buffers: 1GB
 pg_work_mem: 256MB
 
+cs_flags_instance: 4
+
 influx_db: checksystem
 
 cs_limit_nofile: 10000

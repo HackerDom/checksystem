@@ -1,0 +1,21 @@
+- hosts: cs-master
+  tasks:
+    - name: start manager
+      systemd: name=cs.manager state=started
+    - name: start worker
+      systemd: name=cs.worker-default state=started
+    - name: start web
+      systemd: name=cs.web state=started
+    - name: start watcher
+      systemd: name=cs.watcher state=started
+
+- hosts: cs-flags
+  tasks:
+    - name: start flags
+      systemd: name="cs.flags@{{item}}" state=started
+      with_sequence: count={{cs_flags_instance}}
+
+- hosts: cs-checker
+  tasks:
+    - name: start checkers
+      systemd: name=cs.worker-checkers state=started

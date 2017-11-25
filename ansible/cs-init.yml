@@ -1,0 +1,11 @@
+- hosts: cs-master
+  tasks:
+    - name: reset db
+      command: ./script/cs reset_db chdir="{{cs_dir}}"
+      become: yes
+      become_user: "{{cs_user}}"
+
+    - name: init db
+      command: ./script/cs init_db chdir="{{cs_dir}}"
+      become: yes
+      become_user: "{{cs_user}}"
