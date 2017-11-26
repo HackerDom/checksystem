@@ -86,7 +86,9 @@ sub startup {
   $r->get('/')->to('main#index')->name('index');
   $r->get('/team/:team_id')->to('main#team')->name('team');
   $r->websocket('/update')->to('main#update')->name('update');
-  $r->get('/scoreboard' => [format => 'json'])->to('main#scoreboard')->name('scoreboard');
+  $r->get('/scoreboard'         => [format => 'json'])->to('main#scoreboard')->name('scoreboard');
+  $r->get('/history/scoreboard' => [format => 'json'])->to('main#scoreboard_history')
+    ->name('scoreboard_history');
 
   # API
   $r->websocket('/api/events')->to('api#events')->name('api_events');

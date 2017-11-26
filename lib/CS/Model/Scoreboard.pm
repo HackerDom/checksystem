@@ -19,6 +19,25 @@ sub generate {
   return {scoreboard => $scoreboard->to_array, round => $round};
 }
 
+sub generate_history {
+  my ($self, $round) = @_;
+  my $db = $self->app->pg->db;
+
+  $round //= $db->query('select max(round) from scores')->array->[0];
+
+  my $scoreboard = $db->query(q{
+    select round, json_agg(json_build_object(
+        'host', t.host, 'name', t.name, 'n', s.n, 'score', s.score, 'services', s.services
+      )) as scoreboard
+    from scoreboard as s
+    join teams as t on s.team_id = t.id
+    where s.round <= $1
+    group by round order by round;
+    }, $round)->expand->hashes;
+
+  return $scoreboard->to_array;
+}
+
 sub generate_for_team {
   my ($self, $team_id) = @_;
   my $db = $self->app->pg->db;

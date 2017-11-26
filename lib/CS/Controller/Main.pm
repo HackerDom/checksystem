@@ -15,6 +15,11 @@ sub scoreboard {
   $c->render(json => $c->model('scoreboard')->generate);
 }
 
+sub scoreboard_history {
+  my $c = shift;
+  $c->render(json => $c->model('scoreboard')->generate_history);
+}
+
 sub update {
   my $c = shift->render_later;
   $c->tx->with_compression;
