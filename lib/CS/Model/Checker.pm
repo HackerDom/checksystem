@@ -205,7 +205,7 @@ sub _run_bot {
 
   # Hack
   my $flags = $db->query(
-    'select data from flags where service_id = $1 and round < $3 and team_id in
+    'select data from flags where service_id = $1 and round between $3 - 3 and $3 and team_id in
       (select team_id from bots where service_id = $1 and team_id != $2 and defense > $4)', $service->{id},
     $team->{id}, $round, $current
   )->arrays;
