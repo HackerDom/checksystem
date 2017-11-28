@@ -20,7 +20,7 @@
   omit_hostname = true
 
 [[outputs.influxdb]]
-  urls = ["http://localhost:8086"]
+  urls = ["http://{{influx_host}}:8086"]
   database = "{{influx_db}}"
 
   retention_policy = ""

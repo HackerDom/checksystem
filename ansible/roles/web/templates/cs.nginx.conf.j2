@@ -9,7 +9,7 @@ map $http_upgrade $connection_upgrade {
 }
 
 server {
-  listen 80;
+  listen {{cs_nginx_listen}};
   access_log /var/log/nginx/cs.access.log;
 
   gzip on;
@@ -27,5 +27,12 @@ server {
 
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection $connection_upgrade;
+  }
+
+  location /nginx/status {
+    stub_status;
+
+    allow 127.0.0.1/32;
+    deny all;
   }
 }
