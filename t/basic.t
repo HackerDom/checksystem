@@ -94,8 +94,6 @@ $db->select(runs => '*', {service_id => 4, team_id => 1})->expand->hashes->map(
   }
 );
 
-my ($data, $flag_data);
-
 # SLA
 is $db->query('select count(*) from sla')->array->[0], 12, 'right sla';
 
@@ -111,6 +109,14 @@ $db->query('select * from flags where service_id != 3')->hashes->map(
     like $_->{data}, qr/[A-Z\d]{31}=/, 'right flag';
   }
 );
+
+# New round (#2)
+$manager->start_round;
+is $manager->round, 2, 'right round';
+$app->model('score')->update;
+
+# Stolen flags
+my ($data, $flag_data);
 
 my $flag_cb = sub { $data = $_[0] };
 $app->model('flag')->accept(2, 'flag', $flag_cb);
@@ -133,12 +139,6 @@ like $data->{error}, qr/you already submitted this flag/, 'right error';
 
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 
-# New round (#2)
-$manager->start_round;
-is $manager->round, 2, 'right round';
-$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
-$app->model('score')->update;
-
 # SLA
 is $db->query('select count(*) from sla')->array->[0], 24, 'right sla';
 $data = $db->select(sla => '*', {team_id => 1, service_id => 2, round => 1})->hash;
@@ -152,7 +152,7 @@ is $data->{failed},    1, 'right sla';
 is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
 $data =
   $db->select(flag_points => 'team_id, service_id, amount', {round => 1, team_id => [1, 2]}, \'1, 2')->arrays;
-is_deeply $data, [[1, 1, 3], [1, 2, 0], [1, 3, 3], [1, 4, 3], [2, 1, 3], [2, 2, 6], [2, 3, 3], [2, 4, 3]];
+is_deeply $data, [[1, 1, 3], [1, 2, 3], [1, 3, 3], [1, 4, 3], [2, 1, 3], [2, 2, 3], [2, 3, 3], [2, 4, 3]];
 
 # New round (#3)
 $manager->start_round;
@@ -175,7 +175,7 @@ is $data->{successed} + $data->{failed}, 2, 'right sla';
 is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';
 $data =
   $db->select(flag_points => 'team_id, service_id, amount', {round => 2, team_id => [1, 2]}, \'1, 2')->arrays;
-is_deeply $data, [[1, 1, 3], [1, 2, 0], [1, 3, 3], [1, 4, 3], [2, 1, 3], [2, 2, 6], [2, 3, 6], [2, 4, 3]];
+is_deeply $data, [[1, 1, 3], [1, 2, 3], [1, 3, 3], [1, 4, 3], [2, 1, 3], [2, 2, 3], [2, 3, 3], [2, 4, 3]];
 
 $app->model('score')->update(3);
 

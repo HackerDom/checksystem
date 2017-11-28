@@ -3,7 +3,8 @@ create table teams (
   id      serial primary key,
   name    text not null unique,
   network cidr not null,
-  host    text not null
+  host    text not null,
+  token   text unique
 );
 
 create table services (
@@ -137,7 +138,7 @@ begin
   perform * from stolen_flags as sf where sf.data = flag_data and sf.team_id = accept_flag.team_id;
   if found then return row(false, 'Denied: you already submitted this flag'); end if;
 
-  select max(round) into round from scoreboard;
+  select max(s.round) into round from scoreboard as s;
   if flag.round <= round - flag_life_time then return row(false, 'Denied: flag is too old'); end if;
 
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = accept_flag.team_id into attacker_pos;
