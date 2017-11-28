@@ -6,7 +6,7 @@ use Fcntl ':flock';
 use InfluxDB::LineProtocol 'data2line';
 use Mojo::Pg;
 
-has [qw/teams services vulns bots/] => sub { {} };
+has [qw/teams services vulns bots tokens/] => sub { {} };
 
 sub startup {
   my $app = shift;
@@ -90,6 +90,9 @@ sub startup {
   $r->get('/history/scoreboard' => [format => 'json'])->to('main#scoreboard_history')
     ->name('scoreboard_history');
 
+  # Flags
+  $r->put('/flags')->to('flags#put')->name('flags');
+
   # API
   $r->websocket('/api/events')->to('api#events')->name('api_events');
   $r->get('/api/info')->to('api#info')->name('api_info');
@@ -124,6 +127,7 @@ sub init {
   for (@{$app->config->{teams}}) {
     next unless my $team = $teams->{$_->{name}};
     $app->teams->{$team->{id}} = {id => $team->{id}, %$_};
+    $app->tokens->{$team->{token}} = $team->{id} if $team->{token};
   }
 
   my $services = $db->select('services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});

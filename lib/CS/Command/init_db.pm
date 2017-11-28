@@ -9,7 +9,7 @@ sub run {
 
   # Teams
   for my $team (@{$app->config->{teams}}) {
-    $db->insert(teams => {%{$team}{qw/name network host/}});
+    $db->insert(teams => {%{$team}{qw/name network host token/}});
   }
 
   # Services
