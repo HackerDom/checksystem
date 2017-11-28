@@ -21,12 +21,6 @@
 {% include 'teams.conf' %}
   ],
   services => [
-    {name => 'service1', path => 't/checkers/up.pl', timeout => 1},
-    {name => 'service2', path => 't/checkers/up.pl', timeout => 1},
-    {name => 'service3', path => 't/checkers/up.pl', timeout => 1},
-    {name => 'service4', path => 't/checkers/up.pl', timeout => 1},
-    {name => 'service5', path => 't/checkers/up.pl', timeout => 1},
-    {name => 'service6', path => 't/checkers/up.pl', timeout => 1},
-    {name => 'service7', path => 't/checkers/up.pl', timeout => 1}
+{% include 'services.conf' %}
   ]
 }
