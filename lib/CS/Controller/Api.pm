@@ -8,7 +8,11 @@ sub info {
   my $c = shift;
 
   my $info = {};
-  $info->{teams}{$_->{id}}    = $_->{name} for values %{$c->app->teams};
+  for (values %{$c->app->teams}) {
+    my $team = dclone $_;
+    delete $team->{token};
+    $info->{teams}{$_->{id}} = $team;
+  }
   $info->{services}{$_->{id}} = $_->{name} for values %{$c->app->services};
 
   my $time = $c->model('util')->game_time;
