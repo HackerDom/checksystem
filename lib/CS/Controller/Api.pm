@@ -88,8 +88,6 @@ sub notifications {
     }
   );
 
-  # {"subscribe": "team_position_changed", "team_id": 1}
-  # {"subscribe": "scoreboard_updated", "team_id": 1}
   $c->on(
     json => sub {
       my $message = pop;
@@ -103,6 +101,9 @@ sub notifications {
         if ($command eq 'scoreboard') {
           my $top = $message->{top};
           $response->{data} = $c->model('scoreboard')->generate(undef, $top);
+        } elsif ($command eq 'status') {
+          my $team_id = $message->{team_id};
+          $response->{data} = $c->model('scoreboard')->generate(undef, undef, $team_id);
         }
 
         $c->send({json => $response});
