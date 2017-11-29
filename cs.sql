@@ -150,6 +150,7 @@ begin
     else exp(ln(amount_max) * (victim_pos - amount_max) / (attacker_pos - amount_max))
   end;
 
+  select max(n) into round from rounds;
   insert into stolen_flags (data, team_id, round, amount) values (flag_data, team_id, round, amount);
   return row(true, null, round, flag.team_id, flag.service_id, amount);
 end;
