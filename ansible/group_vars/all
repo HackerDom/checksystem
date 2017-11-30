@@ -32,3 +32,7 @@ cs_ctf_name: RuCTF 2008
 cs_flags_secret: ohKai2eepi
 cs_round_length: 35
 cs_flag_life_time: 15
+cs_time_start: 2017-11-30 02:00:00
+cs_time_stop: 2017-12-03 14:00:00
+cs_time_break_start: 2016-12-03 14:00:00
+cs_time_break_end: 2016-12-03 14:00:00
