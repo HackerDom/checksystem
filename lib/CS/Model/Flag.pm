@@ -38,6 +38,7 @@ sub accept {
     },
     sub {
       my ($d, undef, $result) = @_;
+      my $end = $d->begin; # https://github.com/kraih/mojo/issues/1160
       my ($ok, $msg, $round, $victim_id, $service_id, $amount) =
         @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4 f5 f6/};
 
