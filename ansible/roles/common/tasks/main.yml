@@ -18,9 +18,11 @@
   git: repo=https://github.com/HackerDom/checksystem.git dest={{cs_dir}}
   become: yes
   become_user: "{{cs_user}}"
+  tags: update
 
 - name: config
   template: src=c_s.conf.j2 dest={{cs_dir}}/c_s.conf owner={{cs_user}} group={{cs_user}}
+  tags: update
 
 - name: perl modules
   command: cpanm -n --installdeps {{cs_dir}}

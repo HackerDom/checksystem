@@ -2,3 +2,8 @@
   template: src=cs.flags@.service.j2 dest=/etc/systemd/system/cs.flags@.service
   notify:
     - reload systemd
+
+- name: systemd web config
+  template: src=cs.web.service.j2 dest=/etc/systemd/system/cs.web.service
+  notify:
+    - reload systemd
