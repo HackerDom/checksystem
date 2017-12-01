@@ -14,10 +14,20 @@
     - sudo
     - zlib1g-dev
 
+- name: repo stash
+  command: git stash chdir="{{cs_dir}}"
+  ignore_errors: yes
+  tags: update
+
 - name: repo
   git: repo=https://github.com/HackerDom/checksystem.git dest={{cs_dir}}
   become: yes
   become_user: "{{cs_user}}"
+  tags: update
+
+- name: repo unstash
+  command: git stash pop chdir="{{cs_dir}}"
+  ignore_errors: yes
   tags: update
 
 - name: config

@@ -18,4 +18,5 @@
 - hosts: cs-checker
   tasks:
     - name: stop checkers
-      systemd: name=cs.worker-checkers state=stopped
+      systemd: name="cs.worker-checkers@{{item}}" state=stopped
+      with_sequence: count={{cs_worker_instance}}

@@ -20,4 +20,5 @@
 - hosts: cs-checker
   tasks:
     - name: start checkers
-      systemd: name=cs.worker-checkers state=started
+      systemd: name="cs.worker-checkers@{{item}}" state=started
+      with_sequence: count={{cs_worker_instance}}
