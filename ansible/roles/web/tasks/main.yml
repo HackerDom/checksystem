@@ -2,6 +2,7 @@
   template: src=cs.web.service.j2 dest=/etc/systemd/system/cs.web.service
   notify:
     - reload systemd
+  tags: update
 
 - name: nginx repo source
   shell: echo "deb http://nginx.org/packages/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/ $(lsb_release -cs) nginx" > /etc/apt/sources.list.d/nginx.list
