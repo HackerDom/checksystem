@@ -94,7 +94,7 @@ sub sla {
 
   for my $team_id (keys %$state) {
     for my $service_id (keys %{$state->{$team_id}}) {
-      my $s   = $state->{$team_id}{$service_id};
+      my $s   = $state->{$team_id}{$service_id} // 0;
       my $sql = 'insert into sla (round, team_id, service_id, successed, failed) values (?, ?, ?, ?, ?)';
       $db->query($sql, $r, $team_id, $service_id, $s->{successed}, $s->{failed});
     }
