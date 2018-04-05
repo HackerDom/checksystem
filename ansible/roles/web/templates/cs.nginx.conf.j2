@@ -45,7 +45,10 @@ server {
 
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection $connection_upgrade;
+  }
 
+  location /data {
+    alias /var/www;
   }
 
   location /nginx/status {

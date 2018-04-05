@@ -12,9 +12,10 @@
     url: https://nginx.ru/keys/nginx_signing.key
 
 - name: nginx
-  apt: name=nginx state=latest
+  apt: name=nginx state=latest update_cache=yes
 
 - name: nginx config
   template: src=cs.nginx.conf.j2 dest=/etc/nginx/conf.d/cs.conf
   notify:
     - restart nginx
+  tags: update
