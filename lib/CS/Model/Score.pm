@@ -22,7 +22,7 @@ sub update {
 
 sub scoreboard {
   my ($self, $db, $r) = @_;
-  $self->app->log->debug("Calc scoreboard for round #$r");
+  $self->app->log->info("Calc scoreboard for round #$r");
   $db->query(
     q{
     insert into scores
@@ -74,7 +74,7 @@ sub scoreboard {
 
 sub sla {
   my ($self, $db, $r) = @_;
-  $self->app->log->debug("Calc SLA for round #$r");
+  $self->app->log->info("Calc SLA for round #$r");
 
   my $state = $db->query('select * from sla where round = ?', $r - 1)
     ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b; $a; }, {});
@@ -105,7 +105,7 @@ sub flag_points {
   my ($self, $db, $r) = @_;
   my $app = $self->app;
   my $log = $app->log;
-  $log->debug("Calc FP for round #$r");
+  $log->info("Calc FP for round #$r");
 
   my $state = $db->query('select * from flag_points where round = ?', $r - 1)
     ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b->{amount}; $a; }, {});

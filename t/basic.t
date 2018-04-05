@@ -23,7 +23,7 @@ is $u->game_status(0 + localtime(Time::Piece->strptime('2013-01-01 00:00:00', $f
 is $u->game_status(0 + localtime(Time::Piece->strptime('2013-01-01 00:00:01', $f))), 1,  'right status';
 is $u->game_status(0 + localtime(Time::Piece->strptime('2015-01-01 00:00:00', $f))), 1,  'right status';
 is $u->game_status(0 + localtime(Time::Piece->strptime('2016-01-01 00:00:00', $f))), 1,  'right status';
-is $u->game_status(0 + localtime(Time::Piece->strptime('2019-01-01 00:00:00', $f))), -1, 'right status';
+is $u->game_status(0 + localtime(Time::Piece->strptime('2029-01-01 00:00:00', $f))), -1, 'right status';
 
 # Break
 $app->config->{cs}{time}{break} = ['2014-01-01 00:00:00', '2015-01-01 00:00:00'];
@@ -150,9 +150,6 @@ is $data->{failed},    1, 'right sla';
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
-$data =
-  $db->select(flag_points => 'team_id, service_id, amount', {round => 1, team_id => [1, 2]}, \'1, 2')->arrays;
-is_deeply $data, [[1, 1, 3], [1, 2, 3], [1, 3, 3], [1, 4, 3], [2, 1, 3], [2, 2, 3], [2, 3, 3], [2, 4, 3]];
 
 # New round (#3)
 $manager->start_round;
@@ -173,9 +170,6 @@ is $data->{successed} + $data->{failed}, 2, 'right sla';
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';
-$data =
-  $db->select(flag_points => 'team_id, service_id, amount', {round => 2, team_id => [1, 2]}, \'1, 2')->arrays;
-is_deeply $data, [[1, 1, 3], [1, 2, 0], [1, 3, 3], [1, 4, 3], [2, 1, 3], [2, 2, 6], [2, 3, 9], [2, 4, 3]];
 
 $app->model('score')->update(3);
 
