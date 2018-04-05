@@ -14,7 +14,7 @@ sub run {
   my $app  = $self->app;
 
   my $now = localtime;
-  my $start = $app->model('util')->game_time->{start};
+  my $start = localtime($app->model('util')->game_time->{start});
   my $round_length = $app->config->{cs}{round_length};
 
   my $sleep;
@@ -81,7 +81,7 @@ sub start_round {
         check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}],
         {queue => $app->config->{queues}{$team->{name}}{$service->{name}} // 'checker'}
       );
-      $app->log->debug("Enqueue new job for $team->{name}/$service->{name}/$n: $id");
+      $app->log->info("Enqueue new job for $team->{name}/$service->{name}/$n: $id");
     }
   }
 }
