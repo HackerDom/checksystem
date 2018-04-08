@@ -21,7 +21,7 @@ create table vulns (
 );
 
 create table rounds (
-  n  serial primary key,
+  n  integer primary key,
   ts timestamptz not null default now()
 );
 

@@ -43,7 +43,7 @@ sub start_round {
   return unless $app->model('util')->game_status == 1;
 
   my $db = $app->pg->db;
-  my $round = $db->insert('rounds', \'default values', {returning => 'n'})->hash->{n};
+  my $round = $db->insert('rounds', {n => \'(select max(n)+1 from rounds)'}, {returning => 'n'})->hash->{n};
   $self->round($round);
   $app->minion->enqueue('scoreboard');
   $app->log->info("Start new round #$round");
