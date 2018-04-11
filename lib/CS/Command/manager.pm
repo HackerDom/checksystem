@@ -94,7 +94,6 @@ sub skip_check {
       'insert into runs (round, team_id, service_id, vuln_id, status, result) values (?, ?, ?, ?, ?, ?)',
       $info->{round}, $info->{team_id}, $info->{service_id}, $info->{vuln_id}, 104,
       {json => {error => 'Checker did not run, connect on port was failed.'}}
-
     );
   };
   $self->app->log->error("Error while insert check result: $@") if $@;
