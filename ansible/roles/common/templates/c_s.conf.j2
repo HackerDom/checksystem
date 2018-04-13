@@ -14,10 +14,6 @@
     flags    => {port => 31337, timeout => 5 * 60, secret => '{{cs_flags_secret}}'},
     links => [{name => '', ref => ''}]
   },
-  teams => [
-{% include 'teams.conf' %}
-  ],
-  services => [
-{% include 'services.conf' %}
-  ]
+  teams => [{{teams}}],
+  services => [{{services}}]
 }
