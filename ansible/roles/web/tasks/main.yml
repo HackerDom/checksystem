@@ -14,6 +14,14 @@
 - name: nginx
   apt: name=nginx state=latest update_cache=yes
 
+- name: nginx cache catalog
+  file:
+    path: /var/cache/nginx/cs
+    state: directory
+    owner: nginx
+    group: root
+    mode: 0700
+
 - name: nginx config
   template: src=cs.nginx.conf.j2 dest=/etc/nginx/conf.d/cs.conf
   notify:

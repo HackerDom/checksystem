@@ -1,3 +1,5 @@
+proxy_cache_path /var/cache/nginx/cs keys_zone=cs:10m max_size=512m inactive=300s;
+
 upstream cs {
   server {{cs_hypnotoad_listen}};
   keepalive {{cs_nginx_upstream_keepalive}};
@@ -13,6 +15,11 @@ map $http_upgrade $connection_upgrade {
   default upgrade;
 }
 
+map $request_uri $do_not_cache {
+  "~*scoreboard.json" "0";
+  default             "1";
+}
+
 server {
   listen {{cs_nginx_listen}};
   access_log /var/log/nginx/cs.access.log;
@@ -25,6 +32,10 @@ server {
     proxy_pass http://cs;
 
     proxy_http_version 1.1;
+
+    proxy_cache cs;
+    proxy_no_cache $do_not_cache;
+    proxy_cache_valid 10s;
 
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header Host $http_host;
