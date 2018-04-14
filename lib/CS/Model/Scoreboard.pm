@@ -26,25 +26,21 @@ sub generate_history {
 
   $round //= $db->query('select max(round) from scores')->array->[0];
 
-  my $scoreboard = $db->query(
-    q{
-    select round, json_agg(json_build_object(
-        'id', t.id, 'score', s.score, 'services', s.services
-      )) as scoreboard
-    from scoreboard as s
-    join teams as t on s.team_id = t.id
-    where s.round <= $1
+  my $scoreboard = $db->query(q{
+    with a as (
+      select *, jsonb_array_elements(services) s
+      from scoreboard where round <= $1
+    ),
+    b as (
+      select round, team_id, max(score) score,
+        json_agg(json_build_object('flags', s->'flags', 'sflags', s->'sflags', 'status', s->'status') order by s->'id') services
+      from a
+      group by round, team_id
+    )
+    select round, json_agg(json_build_object('id', team_id, 'score', score, 'services', services)) scoreboard
+    from b
     group by round order by round
-    }, $round
-  )->expand->hashes;
-
-  $scoreboard->each(
-    sub {
-      map {
-        map { delete @{$_}{qw/fp id sflags sla stdout/} } @{$_->{services}};
-      } @{$_->{scoreboard}};
-    }
-  );
+  }, $round)->expand->hashes;
 
   return $scoreboard->to_array;
 }
@@ -57,7 +53,8 @@ sub generate_for_team {
   my $scoreboard = $db->query(
     q{
     select t.host, t.name, s.*
-    from scoreboard as s join teams as t on s.team_id = t.id
+    from scoreboard as s
+    join teams as t on s.team_id = t.id
     where team_id = $1 order by round desc
   }, $team_id
   )->expand->hashes;
