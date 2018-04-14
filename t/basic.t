@@ -173,4 +173,35 @@ is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';
 
 $app->model('score')->update(3);
 
+$t->get_ok('/scoreboard.json')
+  ->json_has('/round')
+  ->json_has('/scoreboard')
+  ->json_has('/scoreboard/0/d')
+  ->json_has('/scoreboard/0/round')
+  ->json_has('/scoreboard/0/host')
+  ->json_has('/scoreboard/0/team_id')
+  ->json_has('/scoreboard/0/score')
+  ->json_has('/scoreboard/0/old_score')
+  ->json_has('/scoreboard/0/n')
+  ->json_has('/scoreboard/0/name')
+  ->json_has('/scoreboard/0/services')
+  ->json_has('/scoreboard/0/old_services')
+  ->json_has('/scoreboard/0/services/0/stdout')
+  ->json_has('/scoreboard/0/services/0/id')
+  ->json_has('/scoreboard/0/services/0/sflags')
+  ->json_has('/scoreboard/0/services/0/flags')
+  ->json_has('/scoreboard/0/services/0/sla')
+  ->json_has('/scoreboard/0/services/0/fp')
+  ->json_has('/scoreboard/0/services/0/status');
+
+$t->get_ok('/history/scoreboard.json')
+  ->json_has('/0/round')
+  ->json_has('/0/scoreboard')
+  ->json_has('/0/scoreboard/0/id')
+  ->json_has('/0/scoreboard/0/score')
+  ->json_has('/0/scoreboard/0/services')
+  ->json_has('/0/scoreboard/0/services/0/sflags')
+  ->json_has('/0/scoreboard/0/services/0/flags')
+  ->json_has('/0/scoreboard/0/services/0/status');
+
 done_testing;
