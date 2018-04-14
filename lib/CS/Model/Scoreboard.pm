@@ -33,7 +33,7 @@ sub generate_history {
     ),
     b as (
       select round, team_id, max(score) score,
-        json_agg(json_build_object('flags', s->'flags', 'sflags', s->'sflags', 'status', s->'status') order by s->'id') services
+        json_agg(json_build_object('flags', s->'flags', 'sflags', s->'sflags', 'fp', s->'fp', 'status', s->'status') order by s->'id') services
       from a
       group by round, team_id
     )

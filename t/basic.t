@@ -202,6 +202,7 @@ $t->get_ok('/history/scoreboard.json')
   ->json_has('/0/scoreboard/0/services')
   ->json_has('/0/scoreboard/0/services/0/sflags')
   ->json_has('/0/scoreboard/0/services/0/flags')
+  ->json_has('/0/scoreboard/0/services/0/fp')
   ->json_has('/0/scoreboard/0/services/0/status');
 
 done_testing;
