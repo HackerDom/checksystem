@@ -2,7 +2,6 @@ package CS::Controller::Api;
 use Mojo::Base 'Mojolicious::Controller';
 
 use Sereal::Dclone 'dclone';
-use Time::Piece;
 
 sub info {
   my $c = shift;
@@ -16,8 +15,6 @@ sub info {
   $info->{services}{$_->{id}} = $_->{name} for values %{$c->app->services};
 
   my $time = $c->model('util')->game_time;
-  $time->{start} += localtime->tzoffset;
-  $time->{end}   += localtime->tzoffset;
 
   $c->render(json => {%$info, %$time});
 }

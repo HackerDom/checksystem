@@ -173,6 +173,17 @@ is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';
 
 $app->model('score')->update(3);
 
+# API
+$t->get_ok('/api/info')
+  ->json_has('/start')
+  ->json_has('/end')
+  ->json_has('/services')
+  ->json_has('/teams')
+  ->json_has('/teams/1/host')
+  ->json_has('/teams/1/id')
+  ->json_has('/teams/1/name')
+  ->json_has('/teams/1/network');
+
 $t->get_ok('/scoreboard.json')
   ->json_has('/round')
   ->json_has('/scoreboard')
