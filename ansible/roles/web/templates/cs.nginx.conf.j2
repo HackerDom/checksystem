@@ -1,5 +1,10 @@
 proxy_cache_path /var/cache/nginx/cs keys_zone=cs:10m max_size=512m inactive=300s;
 
+log_format cs '$remote_addr - $remote_user [$time_local] "$request" '
+              '$status $body_bytes_sent "$http_referer" '
+              '"$http_user_agent" "$http_x_forwarded_for" '
+              '$request_time $upstream_response_time $pipe';
+
 upstream cs {
   server {{cs_hypnotoad_listen}};
   keepalive {{cs_nginx_upstream_keepalive}};
@@ -22,7 +27,7 @@ map $request_uri $do_not_cache {
 
 server {
   listen {{cs_nginx_listen}};
-  access_log /var/log/nginx/cs.access.log;
+  access_log /var/log/nginx/cs.access.log cs;
 
   gzip on;
   gzip_types text/plain text/css application/javascript application/json;
