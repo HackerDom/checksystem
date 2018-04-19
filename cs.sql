@@ -33,6 +33,7 @@ create table flags (
   team_id    integer not null references teams(id),
   service_id integer not null references services(id),
   vuln_id    integer not null references vulns(id),
+  ack        boolean not null default false,
   unique (round, team_id, service_id)
 );
 

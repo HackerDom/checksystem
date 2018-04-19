@@ -16,7 +16,7 @@ sub run {
     select
       percentile_disc($1::float[]) within group (order by latency) as latency,
       percentile_disc($1::float[]) within group (order by d) as d
-		from
+    from
       (select started-created as latency, finished-started as d
       from minion_jobs where queue = 'checker' and state = 'finished') j;
     }, \@percentile

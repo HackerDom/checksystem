@@ -35,7 +35,7 @@ sub check {
 
   if (my $bot_info = $job->app->bots->{$team->{id}}) {
     my $bot = $bot_info->{$service->{id}} // {sla => 0, attack => 1, defense => 0};
-    my $r = $self->_run_bot($db, $bot, $team, $service, $round);
+    my $r = $self->_run_bot($db, $bot, $team, $service, $flag, $vuln, $round);
     return $self->_finish($job, {%$result, %$r}, $db);
   }
 
@@ -47,12 +47,25 @@ sub check {
   $result->{check} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
   return $self->_finish($job, $result, $db) if $result->{check}{slow} || $result->{check}{exit_code} != 101;
 
+  my $flag_row = {
+    data       => $flag->{data},
+    id         => $flag->{id},
+    round      => $round,
+    team_id    => $team->{id},
+    service_id => $service->{id},
+    vuln_id    => $vuln->{id}
+  };
+  $db->insert(flags => $flag_row);
+
   # Put
   $cmd = [$service->{path}, 'put', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
   $result->{put} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
   return $self->_finish($job, $result, $db) if $result->{put}{slow} || $result->{put}{exit_code} != 101;
+
+  $flag_row = {ack => 'true'};
   (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
-  $flag->{id} = $result->{put}{fid} = $id if $id;
+  $flag_row->{id} = $flag->{id} = $result->{put}{fid} = $id if $id;
+  $db->update(flags => $flag_row => {data => $flag->{data}});
 
   # Get 1
   $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
@@ -102,32 +115,11 @@ sub _finish {
     }
   }
 
-  # Save result
-  eval {
-    $db->query(
-      'insert into runs (round, team_id, service_id, vuln_id, status, result, stdout)
+  $db->query(
+    'insert into runs (round, team_id, service_id, vuln_id, status, result, stdout)
       values (?, ?, ?, ?, ?, ?, ?)', $round, $team->{id}, $service->{id}, $vuln->{id}, $status,
-      {json => $result}, $stdout
-    );
-  };
-  $self->app->log->error("Error while insert check result: $@") if $@;
-
-  # Check, put and get was ok, save flag
-  return unless ($result->{get_1}{exit_code} // 0) == 101;
-  my $id = $result->{put}{fid} // $flag->{id};
-  eval {
-    $db->insert(
-      flags => {
-        data       => $flag->{data},
-        id         => $id,
-        round      => $round,
-        team_id    => $team->{id},
-        service_id => $service->{id},
-        vuln_id    => $vuln->{id}
-      }
-    );
-  };
-  $self->app->log->error("Error while insert flag: $@") if $@;
+    {json => $result}, $stdout
+  );
 }
 
 sub _next_round_start {
@@ -178,7 +170,7 @@ sub _run {
 }
 
 sub _run_bot {
-  my ($self, $db, $bot, $team, $service, $round) = @_;
+  my ($self, $db, $bot, $team, $service, $flag, $vuln, $round) = @_;
   my $app    = $self->app;
   my $result = {};
 
@@ -197,6 +189,16 @@ sub _run_bot {
     };
   }
   return $result unless $exit_code == 101;
+  my $flag_row = {
+    data       => $flag->{data},
+    id         => $flag->{id},
+    round      => $round,
+    team_id    => $team->{id},
+    service_id => $service->{id},
+    vuln_id    => $vuln->{id},
+    ack        => 'true'
+  };
+  $db->insert(flags => $flag_row);
 
   my $game_time = $app->model('util')->game_time;
   my $now       = localtime->epoch;
