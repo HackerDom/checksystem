@@ -1,10 +1,11 @@
 package CS::Model::Checker;
 use Mojo::Base 'MojoX::Model';
 
-use File::Spec;
 use IPC::Run qw/start timeout/;
 use List::Util qw/all min/;
 use Mojo::Collection 'c';
+use Mojo::File 'path';
+use Mojo::JSON 'j';
 use Mojo::Util qw/dumper trim/;
 use Proc::Killfam;
 use Time::HiRes qw/gettimeofday tv_interval/;
@@ -115,11 +116,16 @@ sub _finish {
     }
   }
 
-  $db->query(
-    'insert into runs (round, team_id, service_id, vuln_id, status, result, stdout)
-      values (?, ?, ?, ?, ?, ?, ?)', $round, $team->{id}, $service->{id}, $vuln->{id}, $status,
-    {json => $result}, $stdout
-  );
+  my $run = {
+    round      => $round,
+    team_id    => $team->{id},
+    service_id => $service->{id},
+    vuln_id    => $vuln->{id},
+    status     => $status,
+    result     => j($result),
+    stdout     => $stdout
+  };
+  $db->insert(runs => $run);
 }
 
 sub _next_round_start {
@@ -135,15 +141,14 @@ sub _run {
 
   return {slow => 1} if $timeout <= 0;
 
-  my $path = File::Spec->rel2abs($cmd->[0]);
-  my (undef, $cwd) = File::Spec->splitpath($path);
-  $cmd->[0] = $path;
+  my $path = path($cmd->[0])->to_abs;
+  $cmd->[0] = $path->to_string;
 
   $self->app->log->debug("Run '@$cmd' with timeout $timeout");
   my ($t, $h) = timeout($timeout);
   my $start = [gettimeofday];
   eval {
-    $h = start $cmd, \undef, \$stdout, \$stderr, 'init', sub { chdir $cwd }, $t;
+    $h = start $cmd, \undef, \$stdout, \$stderr, 'init', sub { chdir $path->dirname }, $t;
     $h->finish;
   };
   my $result = {

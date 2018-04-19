@@ -77,7 +77,7 @@ sub sla {
   $self->app->log->info("Calc SLA for round #$r");
 
   my $state = $db->query('select * from sla where round = ?', $r - 1)
-    ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b; $a; }, {});
+    ->hashes->reduce(sub { ++$b->{round}; $a->{$b->{team_id}}{$b->{service_id}} = $b; $a; }, {});
 
   $db->query('
     with r as (select team_id, service_id, status from runs where round = ?),
@@ -94,40 +94,31 @@ sub sla {
 
   for my $team_id (keys %$state) {
     for my $service_id (keys %{$state->{$team_id}}) {
-      my $s   = $state->{$team_id}{$service_id} // 0;
-      my $sql = 'insert into sla (round, team_id, service_id, successed, failed) values (?, ?, ?, ?, ?)';
-      $db->query($sql, $r, $team_id, $service_id, $s->{successed}, $s->{failed});
+      $db->insert(sla => $state->{$team_id}{$service_id});
     }
   }
 }
 
 sub flag_points {
   my ($self, $db, $r) = @_;
-  my $app = $self->app;
-  my $log = $app->log;
-  $log->info("Calc FP for round #$r");
+  $self->app->log->info("Calc FP for round #$r");
 
   my $state = $db->query('select * from flag_points where round = ?', $r - 1)
-    ->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b->{amount}; $a; }, {});
+    ->hashes->reduce(sub { ++$b->{round}; $a->{$b->{team_id}}{$b->{service_id}} = $b; $a; }, {});
   my $flags = $db->query('
     select f.data, f.service_id, f.team_id as victim_id, sf.team_id, sf.amount
     from flags as f join stolen_flags as sf using (data) where sf.round = ?
     ', $r)->hashes;
-  my $scoreboard = $db->query('
-    select team_id, rank() over(order by sum(sla * fp) desc) as n
-    from scores where round = ? group by team_id
-    ', $r - 1)->hashes->reduce(sub { $a->{$b->{team_id}} = $b->{n}; $a; }, {});
 
   for my $flag (@$flags) {
-    $state->{$flag->{team_id}}{$flag->{service_id}} += $flag->{amount};
-    $state->{$flag->{victim_id}}{$flag->{service_id}} -=
-      min($flag->{amount}, $state->{$flag->{victim_id}}{$flag->{service_id}});
+    $state->{$flag->{team_id}}{$flag->{service_id}}{amount} += $flag->{amount};
+    $state->{$flag->{victim_id}}{$flag->{service_id}}{amount} -=
+      min($flag->{amount}, $state->{$flag->{victim_id}}{$flag->{service_id}}{amount});
   }
 
   for my $team_id (keys %$state) {
     for my $service_id (keys %{$state->{$team_id}}) {
-      my $sql = 'insert into flag_points (round, team_id, service_id, amount) values (?, ?, ?, ?)';
-      $db->query($sql, $r, $team_id, $service_id, $state->{$team_id}{$service_id});
+      $db->insert(flag_points => $state->{$team_id}{$service_id});
     }
   }
 }
