@@ -1,5 +1,4 @@
 package CS;
-use Mojo::JSON::MaybeXS;
 use Mojo::Base 'Mojolicious';
 
 use Fcntl ':flock';
