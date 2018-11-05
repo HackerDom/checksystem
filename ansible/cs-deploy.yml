@@ -1,4 +1,4 @@
-- hosts: cs-master, cs-db, cs-db-standby, cs-checker, cs-flags
+- hosts: cs
   roles:
     - common
 
@@ -18,6 +18,6 @@
   roles:
     - flags
 
-- hosts: cs-checker
+- hosts: cs-checker, cs-master
   roles:
     - checkers
