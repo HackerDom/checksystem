@@ -33,34 +33,25 @@ server {
   gzip_types text/plain text/css application/javascript application/json;
   client_max_body_size 50m;
 
+  proxy_http_version 1.1;
+
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header Host $http_host;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+  proxy_set_header Upgrade $http_upgrade;
+  proxy_set_header Connection $connection_upgrade;
+
   location / {
     proxy_pass http://cs;
-
-    proxy_http_version 1.1;
 
     proxy_cache cs;
     proxy_no_cache $do_not_cache;
     proxy_cache_valid 10s;
-
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header Host $http_host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection $connection_upgrade;
   }
 
   location /flags {
     proxy_pass http://cs_flags;
-
-    proxy_http_version 1.1;
-
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header Host $http_host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection $connection_upgrade;
   }
 
   location /data {

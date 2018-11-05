@@ -9,7 +9,7 @@
 
 - name: apt keys
   apt_key:
-    url: https://nginx.ru/keys/nginx_signing.key
+    url: https://nginx.org/keys/nginx_signing.key
 
 - name: nginx
   apt: name=nginx state=latest update_cache=yes
@@ -23,6 +23,19 @@
     mode: 0700
 
 - name: nginx config
+  template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf
+  notify:
+    - restart nginx
+  tags: update
+
+- name: nginx remove default.conf
+  file:
+    path: /etc/nginx/conf.d/default.conf
+    state: absent
+  notify:
+    - restart nginx
+
+- name: nginx cs config
   template: src=cs.nginx.conf.j2 dest=/etc/nginx/conf.d/cs.conf
   notify:
     - restart nginx
