@@ -125,7 +125,7 @@ sub init {
   my $teams = $db->select('teams')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
   for (@{$app->config->{teams}}) {
     next unless my $team = $teams->{$_->{name}};
-    $app->teams->{$team->{id}} = {id => $team->{id}, %$_};
+    $app->teams->{$team->{id}} = {%$_, %$team};
     $app->tokens->{$team->{token}} = $team->{id} if $team->{token};
   }
 
@@ -135,7 +135,7 @@ sub init {
     my @vulns = split /:/, $service->{vulns};
     my $vulns;
     for my $n (0 .. $#vulns) { push @$vulns, $n + 1 for 1 .. $vulns[$n] }
-    $app->services->{$service->{id}} = {id => $service->{id}, %$_, vulns => $vulns};
+    $app->services->{$service->{id}} = {%$_, %$service, vulns => $vulns};
   }
 
   my $bots = $db->select('bots')->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b; $a }, {});
