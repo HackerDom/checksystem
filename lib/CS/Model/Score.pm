@@ -107,7 +107,7 @@ sub flag_points {
     ->hashes->reduce(sub { ++$b->{round}; $a->{$b->{team_id}}{$b->{service_id}} = $b; $a; }, {});
   my $flags = $db->query('
     select f.data, f.service_id, f.team_id as victim_id, sf.team_id, sf.amount
-    from flags as f join stolen_flags as sf using (data) where sf.round = ?', $r)->hashes;
+    from flags as f join stolen_flags as sf using (data) where sf.round = ? order by sf.ts asc', $r)->hashes;
 
   for my $flag (@$flags) {
     $state->{$flag->{team_id}}{$flag->{service_id}}{amount} += $flag->{amount};
