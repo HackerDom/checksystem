@@ -12,6 +12,10 @@ sub startup {
 
   push @{$app->commands->namespaces}, 'CS::Command';
 
+  if (my $static = $app->config->{cs}{static}) {
+    push @{$app->static->paths}, @$static;
+  }
+
   $app->plugin('Config');
   $app->plugin('Model');
 
@@ -82,7 +86,14 @@ sub startup {
 
   # Routes
   my $r = $app->routes;
-  $r->get('/')->to('main#index')->name('index');
+
+  # Optional frontend app from index.html
+  if ($app->static->file('index.html')) {
+    $r->get('/')->to(sub { shift->reply->static('index.html'); });
+    $r->get('/board')->to('main#index')->name('index');
+  } else {
+    $r->get('/')->to('main#index')->name('index');
+  }
   $r->get('/team/:team_id')->to('main#team')->name('team');
   $r->websocket('/update')->to('main#update')->name('update');
   $r->get('/scoreboard'         => [format => 'json'])->to('main#scoreboard')->name('scoreboard');

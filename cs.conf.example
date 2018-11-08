@@ -15,7 +15,8 @@
     checkers => {
       hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}" }
     },
-    links => [{name => 'Visualization', ref => '/viz'}]
+    links => [{name => 'Visualization', ref => '/viz'}],
+    static => ['/path/to/add/static']
   },
   teams => [
     { name    => 'team1',
