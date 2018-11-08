@@ -29,6 +29,7 @@ cs_hypnotoad_accepts: 1024
 cs_nginx_workers: 1
 cs_nginx_upstream_keepalive: 32
 cs_nginx_listen: 80
+cs_static_path: /home/cs/logos
 
 cs_base_url: https://example.com:8080/
 cs_admin_auth: root:qwer

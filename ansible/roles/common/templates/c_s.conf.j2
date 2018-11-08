@@ -12,7 +12,8 @@
     round_length   => {{cs_round_length}},
     flag_life_time => {{cs_flag_life_time}},
     flags    => {port => 31337, timeout => 5 * 60, secret => '{{cs_flags_secret}}'},
-    links => [{name => '', ref => ''}]
+    links => [{name => '', ref => ''}],
+    static => ['{{cs_static_path}}']
   },
   teams => [{{teams}}],
   services => [{{services}}]
