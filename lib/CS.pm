@@ -89,7 +89,7 @@ sub startup {
 
   # Optional frontend app from index.html
   if ($app->static->file('index.html')) {
-    $r->get('/')->to(sub { shift->reply->static('index.html'); });
+    $r->get('/')->to(cb => sub { shift->reply->static('index.html') });
     $r->get('/board')->to('main#index')->name('index');
   } else {
     $r->get('/')->to('main#index')->name('index');
