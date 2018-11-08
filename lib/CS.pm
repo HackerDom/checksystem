@@ -102,6 +102,9 @@ sub startup {
   $admin->get('/')->to('admin#index')->name('admin_index');
   $admin->get('/view/:team_id/:service_id')->to('admin#view')->name('admin_view');
 
+  # Minion Admin
+  $app->plugin('Minion::Admin' => {route => $admin->route('/minion')});
+
   $app->hook(
     before_dispatch => sub {
       my $c = shift;
