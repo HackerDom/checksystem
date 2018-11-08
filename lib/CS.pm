@@ -12,12 +12,12 @@ sub startup {
 
   push @{$app->commands->namespaces}, 'CS::Command';
 
+  $app->plugin('Config');
+  $app->plugin('Model');
+
   if (my $static = $app->config->{cs}{static}) {
     push @{$app->static->paths}, @$static;
   }
-
-  $app->plugin('Config');
-  $app->plugin('Model');
 
   my $pg_uri = $ENV{TEST_ONLINE} // $app->config->{pg}{uri};
   $app->plugin(Minion => {Pg => $pg_uri});
