@@ -15,6 +15,7 @@ sub run {
 
 sub check {
   my $app = shift->app;
+  my $db  = $app->pg->db;
 
   for my $team (values %{$app->teams}) {
     for my $service (values %{$app->services}) {
@@ -25,16 +26,14 @@ sub check {
       Mojo::IOLoop->client(
         {address => $address, port => $port, timeout => 10} => sub {
           my ($loop, $err, $stream) = @_;
-          $app->pg->db->insert(
-            monitor => {
-              team_id    => $team->{id},
-              service_id => $service->{id},
-              status     => ($err ? 'f' : 't'),
-              round      => \'(select max(n) from rounds)',
-              error      => $err
-            },
-            sub { my ($db, $err) = @_; $app->log->error("[monitor] insert error: $err") if $err }
-          );
+          my $row = {
+            team_id    => $team->{id},
+            service_id => $service->{id},
+            status     => ($err ? 'f' : 't'),
+            round      => \'(select max(n) from rounds)',
+            error      => $err
+          };
+          $db->insert(monitor => $row);
           $stream->close if $stream;
         }
       );
