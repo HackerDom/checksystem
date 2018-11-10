@@ -42,7 +42,8 @@ create table stolen_flags (
   ts      timestamptz not null default now(),
   round   integer not null references rounds(n),
   team_id integer not null references teams(id),
-  amount  float8 not null
+  amount  float8 not null,
+  unique (data, team_id)
 );
 create index on stolen_flags (data, team_id);
 
@@ -152,7 +153,10 @@ begin
   end;
 
   select max(n) into round from rounds;
-  insert into stolen_flags (data, team_id, round, amount) values (flag_data, team_id, round, amount);
+  insert into stolen_flags (data, team_id, round, amount)
+    values (flag_data, team_id, round, amount) on conflict do nothing;
+  if not found then return row(false, 'Denied: you already submitted this flag'); end if;
+
   return row(true, null, round, flag.team_id, flag.service_id, amount);
 end;
 $$ language plpgsql;
