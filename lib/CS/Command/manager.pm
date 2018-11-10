@@ -57,7 +57,7 @@ sub start_round {
     sub { $a->{$b->{team_id}}{$b->{service_id}} = {round => $b->{round}, status => $b->{status}}; $a; }, {});
   my $flags = $db->query(
     "select team_id, vuln_id, json_agg(json_build_object('id', id, 'data', data)) as flags
-    from flags where round >= ? group by team_id, vuln_id", $round - $app->config->{cs}{flag_life_time}
+    from flags where ack = true and round >= ? group by team_id, vuln_id", $round - $app->config->{cs}{flag_life_time}
   )->expand->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{vuln_id}} = $b->{flags}; $a; }, {});
 
   for my $team (values %{$app->teams}) {
