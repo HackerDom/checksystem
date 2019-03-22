@@ -16,7 +16,7 @@ c2 ansible_host=127.0.0.6 ansible_user=root
 c3 ansible_host=127.0.0.7 ansible_user=root
 
 [cs:children]
-cs-master
+cs-manager
 cs-flags
 cs-db
 cs-db-standby
