@@ -42,10 +42,3 @@
   command: cpanm -n --installdeps {{cs_dir}}
   register: r
   changed_when: "r.stdout.find('Found dependencies') != -1"
-
-- name: telegraf
-  apt:
-    deb: https://dl.influxdata.com/telegraf/releases/telegraf_1.8.3-1_amd64.deb
-
-- name: telegraf config
-  template: src=telegraf.conf.j2 dest=/etc/telegraf/telegraf.conf

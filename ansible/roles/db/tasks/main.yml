@@ -38,16 +38,3 @@
     line: "host\tcs\tcs\t0.0.0.0/0\tmd5"
   notify:
     - restart postgresql
-
-- name: influxdb
-  apt:
-    deb: https://dl.influxdata.com/influxdb/releases/influxdb_1.6.4_amd64.deb
-
-- name: influx config
-  lineinfile:
-    path: /etc/influxdb/influxdb.conf
-    insertafter: '# The bind address used by the HTTP service.'
-    regexp: 'bind-address.*8086'
-    line: '  bind-address = "{{influx_host}}:8086"'
-  notify:
-    - restart influxdb

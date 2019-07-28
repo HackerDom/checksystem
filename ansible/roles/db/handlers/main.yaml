@@ -1,5 +1,2 @@
 - name: restart postgresql
   command: systemctl restart postgresql@11-main
-
-- name: restart influxdb
-  command: systemctl restart influxdb

@@ -12,9 +12,6 @@ pg_work_mem: 256MB
 
 cs_flags_instance: 1
 
-influx_host: 127.0.0.1
-influx_db: checksystem
-
 cs_limit_nofile: 10000
 
 cs_worker_default_jobs: 4
