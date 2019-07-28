@@ -1,3 +1,5 @@
+# {{ ansible_managed }}
+
 { hypnotoad => {listen => ['http://{{cs_hypnotoad_listen}}'], workers => {{cs_hypnotoad_workers}}, accepts => {{cs_hypnotoad_accepts}}},
   pg        => {uri    => 'postgresql://{{pg_cs_user}}:{{pg_cs_pass}}@{{pg_cs_host}}:{{pg_cs_port}}/cs'},
   cs        => {
@@ -12,6 +14,9 @@
     round_length   => {{cs_round_length}},
     flag_life_time => {{cs_flag_life_time}},
     flags    => {port => 31337, timeout => 5 * 60, secret => '{{cs_flags_secret}}'},
+    checkers => {
+      hostname => {{cs_checkers_hostname_cb}}
+    },
     links => [{name => '', ref => ''}],
     static => ['{{cs_static_path}}']
   },
