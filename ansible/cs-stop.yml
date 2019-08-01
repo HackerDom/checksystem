@@ -1,22 +1,22 @@
-- hosts: cs-master
+- hosts: master
   tasks:
-    - name: stop manager
-      systemd: name=cs.manager state=stopped
-    - name: stop worker
-      systemd: name=cs.worker-default state=stopped
-    - name: stop web
-      systemd: name=cs.web state=stopped
-    - name: stop watcher
-      systemd: name=cs.watcher state=stopped
+  - name: stop manager
+    systemd: name=cs.manager state=stopped
+  - name: stop worker
+    systemd: name=cs.worker-default state=stopped
+  - name: stop web
+    systemd: name=cs.web state=stopped
+  - name: stop watcher
+    systemd: name=cs.watcher state=stopped
 
-- hosts: cs-flags
+- hosts: flags
   tasks:
-    - name: stop flags
-      systemd: name="cs.flags@{{item}}" state=stopped
-      with_sequence: count={{cs_flags_instance}}
+  - name: stop flags
+    systemd: name="cs.flags@{{item}}" state=stopped
+    with_sequence: count={{cs_flags_instance}}
 
-- hosts: cs-checker
+- hosts: checkers
   tasks:
-    - name: stop checkers
-      systemd: name="cs.worker-checkers@{{item}}" state=stopped
-      with_sequence: count={{cs_worker_instance}}
+  - name: stop checkers
+    systemd: name="cs.worker-checkers@{{item}}" state=stopped
+    with_sequence: count={{cs_worker_instance}}

@@ -1,23 +1,19 @@
-[cs-manager]
+[manager]
 manager ansible_host=127.0.0.2 ansible_user=root
 
-[cs-flags]
+[flags]
 flags ansible_host=127.0.0.3 ansible_user=root
 
-[cs-db]
+[db]
 db ansible_host=127.0.0.4 ansible_user=root
 
-[cs-db-standby]
-db2 ansible_host=127.0.0.8 ansible_user=root
-
-[cs-checker]
+[checkers]
 c1 ansible_host=127.0.0.5 ansible_user=root
 c2 ansible_host=127.0.0.6 ansible_user=root
 c3 ansible_host=127.0.0.7 ansible_user=root
 
 [cs:children]
-cs-manager
-cs-flags
-cs-db
-cs-db-standby
-cs-checker
+manager
+flags
+db
+checkers

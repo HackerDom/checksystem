@@ -1,24 +1,24 @@
-- hosts: cs-master
+- hosts: master
   tasks:
-    - name: start manager
-      systemd: name=cs.manager state=started
-    - name: start worker
-      systemd: name=cs.worker-default state=started
-    - name: start web
-      systemd: name=cs.web state=started
-    - name: start watcher
-      systemd: name=cs.watcher state=started
+  - name: start manager
+    systemd: name=cs.manager state=started
+  - name: start worker
+    systemd: name=cs.worker-default state=started
+  - name: start web
+    systemd: name=cs.web state=started
+  - name: start watcher
+    systemd: name=cs.watcher state=started
 
-- hosts: cs-flags
+- hosts: flags
   tasks:
-    - name: start flags
-      systemd: name="cs.flags@{{item}}" state=started
-      with_sequence: count={{cs_flags_instance}}
-    - name: start web flags
-      systemd: name=cs.web state=started
+  - name: start flags
+    systemd: name="cs.flags@{{item}}" state=started
+    with_sequence: count={{cs_flags_instance}}
+  - name: start web flags
+    systemd: name=cs.web state=started
 
-- hosts: cs-checker
+- hosts: checkers
   tasks:
-    - name: start checkers
-      systemd: name="cs.worker-checkers@{{item}}" state=started
-      with_sequence: count={{cs_worker_instance}}
+  - name: start checkers
+    systemd: name="cs.worker-checkers@{{item}}" state=started
+    with_sequence: count={{cs_worker_instance}}
