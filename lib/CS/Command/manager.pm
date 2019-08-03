@@ -69,7 +69,6 @@ sub start_round {
         if ($self->round - $s->{round} <= 1 && !$s->{status}) {
           $self->skip_check(
             {round => $self->round, team_id => $team_id, service_id => $service_id, vuln_id => $vuln_id});
-          $app->log->debug("Skip job for $team->{name}/$service->{name}/$n");
           next;
         }
       }
@@ -80,7 +79,6 @@ sub start_round {
         check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}],
         {queue => $app->config->{queues}{$team->{name}}{$service->{name}} // 'checker'}
       );
-      $app->log->info("Enqueue new job for $team->{name}/$service->{name}/$n: $id");
     }
   }
 }
