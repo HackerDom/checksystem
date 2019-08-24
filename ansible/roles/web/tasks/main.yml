@@ -5,7 +5,9 @@
   tags: update
 
 - name: nginx repo source
-  shell: echo "deb http://nginx.org/packages/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/ $(lsb_release -cs) nginx" > /etc/apt/sources.list.d/nginx.list
+  apt_repository:
+    repo: deb http://nginx.org/packages/{{ ansible_distribution|lower }}/ {{ ansible_distribution_release }} nginx
+    filename: nginx
 
 - name: apt keys
   apt_key:

@@ -1,5 +1,7 @@
 - name: pg repo source
-  shell: echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+  apt_repository:
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main
+    filename: pgdg
 
 - name: apt keys
   apt_key:
