@@ -5,8 +5,6 @@
 - hosts: db
   roles:
     - db
-  tags:
-    - db
 
 - hosts: master
   roles:

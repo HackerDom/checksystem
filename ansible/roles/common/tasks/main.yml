@@ -2,23 +2,33 @@
   user: name={{cs_user}} state=present
 
 - name: system requirements
-  apt: name={{item}} state=latest update_cache=yes
-  with_items:
-    - build-essential
-    - cpanminus
-    - gcc
-    - git
-    - libpq-dev
-    - libssl-dev
-    - make
-    - sudo
-    - zlib1g-dev
+  apt:
+    name:
+      - build-essential
+      - cpanminus
+      - gcc
+      - git
+      - libpq-dev
+      - libssl-dev
+      - make
+      - sudo
+      - zlib1g-dev
+    state: latest
+    update_cache: yes
+
+- name: git name
+  git_config: name="user.name" value="{{cs_user}}" scope="global"
+
+- name: git email
+  git_config: name="user.email" value="{{cs_user}}@hackerdom.ru" scope="global"
 
 - name: repo stash
   command: git stash chdir="{{cs_dir}}"
-  ignore_errors: yes
   become: yes
   become_user: "{{cs_user}}"
+  ignore_errors: yes
+  register: g
+  changed_when: "g.stdout.find('No local changes') == -1"
   tags: update
 
 - name: repo
@@ -29,9 +39,10 @@
 
 - name: repo unstash
   command: git stash pop chdir="{{cs_dir}}"
-  ignore_errors: yes
   become: yes
   become_user: "{{cs_user}}"
+  ignore_errors: yes
+  when: "g.stdout.find('No local changes') == -1"
   tags: update
 
 - name: config
