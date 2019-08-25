@@ -15,9 +15,15 @@ sub run {
   # Services
   for my $service (@{$app->config->{services}}) {
     my ($n, $vulns) = $app->model('checker')->vulns($service);
-    my $name = $service->{name};
-    my $id = $db->insert(services => {name => $name, vulns => $vulns}, {returning => 'id'})->hash->{id};
-    $db->insert(vulns => {service_id => $id, n => $_}) for 1 .. $n;
+
+    my $service_data = {name => $service->{name}, vulns => $vulns};
+    if (my $active = $service->{active}) {
+      $service_data->{ts_start} = $active->[0];
+      $service_data->{ts_end} = $active->[1];
+    }
+    my $service_id = $db->insert(services => $service_data, {returning => 'id'})->hash->{id};
+
+    $db->insert(vulns => {service_id => $service_id, n => $_}) for 1 .. $n;
   }
 
   # Bots

@@ -46,14 +46,10 @@ sub start_round {
   my $round = $db->insert('rounds', {n => \'(select max(n)+1 from rounds)'}, {returning => 'n'})->hash->{n};
   $self->round($round);
   $app->minion->enqueue('scoreboard');
-  $app->log->info("Start new round #$round");
+  $app->log->debug("Start new round #$round");
 
-  my $status = $db->query(
-    'select distinct on (team_id, service_id) *
-    from monitor order by team_id, service_id, ts desc'
-    )
-    ->hashes->reduce(
-    sub { $a->{$b->{team_id}}{$b->{service_id}} = {round => $b->{round}, status => $b->{status}}; $a; }, {});
+  my $status = $self->get_monitor_status;
+  my $active_services = $self->get_active_services;
   my $flags = $db->query(
     "select team_id, vuln_id, json_agg(json_build_object('id', id, 'data', data)) as flags
     from flags where ack = true and round >= ? group by team_id, vuln_id", $round - $app->config->{cs}{flag_life_time}
@@ -61,14 +57,19 @@ sub start_round {
 
   for my $team (values %{$app->teams}) {
     for my $service (values %{$app->services}) {
-      my $n       = $service->{vulns}->[$round % @{$service->{vulns}}];
-      my $vuln_id = $app->vulns->{$service->{id}}{$n};
       my ($team_id, $service_id) = ($team->{id}, $service->{id});
 
+      if (!exists $active_services->{$service_id}) {
+        $app->log->debug("Skip service #$service_id in round #$round for team #$team_id");
+        next;
+      }
+
+      my $n       = $service->{vulns}->[$round % @{$service->{vulns}}];
+      my $vuln_id = $app->vulns->{$service_id}{$n};
+
       if (my $s = $status->{$team_id}{$service_id}) {
-        if ($self->round - $s->{round} <= 1 && !$s->{status}) {
-          $self->skip_check(
-            {round => $self->round, team_id => $team_id, service_id => $service_id, vuln_id => $vuln_id});
+        if ($round - $s->{round} <= 1 && !$s->{status}) {
+          $self->skip_check({team_id => $team_id, service_id => $service_id, vuln_id => $vuln_id});
           next;
         }
       }
@@ -83,13 +84,34 @@ sub start_round {
   }
 }
 
+sub get_monitor_status {
+  my $self = shift;
+
+  return $self->app->pg->db->query(
+    'select distinct on (team_id, service_id) *
+    from monitor order by team_id, service_id, ts desc'
+  )->hashes->reduce(
+    sub { $a->{$b->{team_id}}{$b->{service_id}} = {round => $b->{round}, status => $b->{status}}; $a }, {}
+  );
+}
+
+sub get_active_services {
+  my $self = shift;
+
+  return $self->app->pg->db->query(q{
+    select id
+    from services
+    where now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')
+  })->hashes->reduce(sub { $a->{$b->{id}} ++; $a }, {});
+}
+
 sub skip_check {
   my ($self, $info) = @_;
 
   eval {
     $self->app->pg->db->query(
       'insert into runs (round, team_id, service_id, vuln_id, status, result) values (?, ?, ?, ?, ?, ?)',
-      $info->{round}, $info->{team_id}, $info->{service_id}, $info->{vuln_id}, 104,
+      $self->round, $info->{team_id}, $info->{service_id}, $info->{vuln_id}, 104,
       {json => {error => 'Checker did not run, connect on port was failed.'}}
     );
   };
