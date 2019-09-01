@@ -10,8 +10,8 @@ sub update {
   my $tx = $db->begin;
   return unless $db->query('select pg_try_advisory_xact_lock(1)')->array->[0];
 
-  my $r = $db->query('select max(round) + 1 from scores')->array->[0] // 0;
-  $round //= $db->query('select max(n) - 1 from rounds')->array->[0];
+  my $r = $db->select(scores => 'max(round) + 1')->array->[0] // 0;
+  $round //= $db->select(rounds => 'max(n) - 1')->array->[0];
   for ($r .. $round) {
     $self->sla($db, $_);
     $self->flag_points($db, $_);
@@ -76,7 +76,9 @@ sub sla {
   my ($self, $db, $r) = @_;
   $self->app->log->info("Calc SLA for round #$r");
 
-  my $state = $db->query('select * from sla where round = ?', $r - 1)
+  my $active_services = $self->app->model('util')->get_active_services($r);
+
+  my $state = $db->select(sla => '*', {round => $r - 1})
     ->hashes->reduce(sub { ++$b->{round}; $a->{$b->{team_id}}{$b->{service_id}} = $b; $a; }, {});
 
   $db->query('
@@ -87,6 +89,8 @@ sub sla {
     )
     select * from teams_x_services left join r using (team_id, service_id)', $r)->hashes->map(
     sub {
+      return unless exists $active_services->{$_->{service_id}};
+
       my $field = ($_->{status} // 110) == 101 ? 'successed' : 'failed';
       ++$state->{$_->{team_id}}{$_->{service_id}}{$field};
     }
@@ -103,7 +107,7 @@ sub flag_points {
   my ($self, $db, $r) = @_;
   $self->app->log->info("Calc FP for round #$r");
 
-  my $state = $db->query('select * from flag_points where round = ?', $r - 1)
+  my $state = $db->select(flag_points => '*', {round => $r - 1})
     ->hashes->reduce(sub { ++$b->{round}; $a->{$b->{team_id}}{$b->{service_id}} = $b; $a; }, {});
   my $flags = $db->query('
     select f.data, f.service_id, f.team_id as victim_id, sf.team_id, sf.amount
