@@ -2,7 +2,6 @@ use Mojo::Base -strict;
 
 use Test::Mojo;
 use Test::More;
-use Time::Piece;
 
 use CS::Command::manager;
 
@@ -16,37 +15,22 @@ $app->commands->run('reset_db');
 $app->commands->run('init_db');
 $app->init;
 
-my $u = $app->model('util');
-my $f = $u->format;
-is $u->game_status(0 + localtime(Time::Piece->strptime('2012-10-24 13:00:00', $f))), 0,  'right status';
-is $u->game_status(0 + localtime(Time::Piece->strptime('2013-01-01 00:00:00', $f))), 1,  'right status';
-is $u->game_status(0 + localtime(Time::Piece->strptime('2013-01-01 00:00:01', $f))), 1,  'right status';
-is $u->game_status(0 + localtime(Time::Piece->strptime('2015-01-01 00:00:00', $f))), 1,  'right status';
-is $u->game_status(0 + localtime(Time::Piece->strptime('2016-01-01 00:00:00', $f))), 1,  'right status';
-is $u->game_status(0 + localtime(Time::Piece->strptime('2029-01-01 00:00:00', $f))), -1, 'right status';
-
-# Break
-$app->config->{cs}{time}{break} = ['2014-01-01 00:00:00', '2015-01-01 00:00:00'];
-is $u->game_status(0 + localtime(Time::Piece->strptime('2014-01-01 00:00:00', $f))), 0, 'right status';
-is $u->game_status(0 + localtime(Time::Piece->strptime('2014-12-31 23:59:59', $f))), 0, 'right status';
-delete $app->config->{cs}{time}{break};
-is $u->game_status(0 + localtime(Time::Piece->strptime('2014-01-01 00:00:00', $f))), 1, 'right status';
-
-is $u->team_id_by_address('127.0.2.213'),  2,     'right id';
-is $u->team_id_by_address('127.0.23.127'), undef, 'right id';
-
 my $manager = CS::Command::manager->new(app => $app);
 
-# New round (#1)
+diag('New round #1');
+
+# Disable up2
+$db->update('services', {ts_start => \"now() + interval '10 minutes'", ts_end => undef}, {name => 'up2'});
+
 $manager->start_round;
 is $manager->round, 1, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 $app->model('score')->update;
 
-# Runs
+# Runs (3 avtive services * 3 teams)
 is $db->query('select count(*) from runs')->array->[0], 12, 'right numbers of runs';
 
-# Down
+# Service down1
 $db->select(runs => '*', {service_id => 1, team_id => 1})->expand->hashes->map(
   sub {
     is $_->{round},  1,               'right round';
@@ -62,24 +46,8 @@ $db->select(runs => '*', {service_id => 1, team_id => 1})->expand->hashes->map(
   }
 );
 
-# Up
+# Service down2
 $db->select(runs => '*', {service_id => 2, team_id => 1})->expand->hashes->map(
-  sub {
-    is $_->{round},  1,   'right round';
-    is $_->{status}, 101, 'right status';
-    is $_->{stdout}, '',  'right stdout';
-    for my $step (qw/check put get_1/) {
-      is $_->{result}{$step}{stderr},    '',  'right stderr';
-      is $_->{result}{$step}{stdout},    911, 'right stdout';
-      is $_->{result}{$step}{exception}, '',  'right exception';
-      is $_->{result}{$step}{timeout},   0,   'right timeout';
-    }
-    is keys %{$_->{result}{get_2}}, 0, 'right get_2';
-  }
-);
-
-# Timeout
-$db->select(runs => '*', {service_id => 4, team_id => 1})->expand->hashes->map(
   sub {
     is $_->{round},  1,   'right round';
     is $_->{status}, 104, 'right status';
@@ -94,15 +62,46 @@ $db->select(runs => '*', {service_id => 4, team_id => 1})->expand->hashes->map(
   }
 );
 
+# Service up1
+$db->select(runs => '*', {service_id => 3, team_id => 1})->expand->hashes->map(
+  sub {
+    is $_->{round},  1,   'right round';
+    is $_->{status}, 101, 'right status';
+    is $_->{stdout}, '',  'right stdout';
+    for my $step (qw/check put get_1/) {
+      is $_->{result}{$step}{stderr},    '',  'right stderr';
+      is $_->{result}{$step}{stdout},    911, 'right stdout';
+      is $_->{result}{$step}{exception}, '',  'right exception';
+      is $_->{result}{$step}{timeout},   0,   'right timeout';
+    }
+    is keys %{$_->{result}{get_2}}, 0, 'right get_2';
+  }
+);
+
+# Service up2
+$db->select(runs => '*', {service_id => 4, team_id => 1})->expand->hashes->map(
+  sub {
+    is $_->{round},  1,   'right round';
+    is $_->{status}, 111, 'right status';
+    is $_->{stdout}, undef,  'right stdout';
+    is keys %{$_->{result}{check}},   0, 'right check';
+    is keys %{$_->{result}{put}},   0, 'right put';
+    is keys %{$_->{result}{get_1}}, 0, 'right get_1';
+    is keys %{$_->{result}{get_2}}, 0, 'right get_2';
+    is keys %{$_->{result}{get_2}}, 0, 'right get_2';
+    like $_->{result}{error}, qr/Service was disabled/i, 'right error';
+  }
+);
+
 # SLA
 is $db->query('select count(*) from sla')->array->[0], 12, 'right sla';
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 12, 'right fp';
 
-# Flags
-is $db->query('select count(*) from flags where service_id != 3')->array->[0], 1, 'right numbers of flags';
-$db->query('select * from flags where service_id != 3')->hashes->map(
+# Flags (only for service up1)
+is $db->query('select count(*) from flags')->array->[0], 3, 'right numbers of flags';
+$db->query('select * from flags')->hashes->map(
   sub {
     is $_->{round},  1,                'right round';
     is $_->{id},     911,              'right id';
@@ -110,9 +109,13 @@ $db->query('select * from flags where service_id != 3')->hashes->map(
   }
 );
 
-# New round (#2)
+# Enable up2
+$db->update('services', {ts_start => undef, ts_end => undef}, {name => 'up2'});
+
+diag('New round #2');
 $manager->start_round;
 is $manager->round, 2, 'right round';
+$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 $app->model('score')->update;
 
 # Stolen flags
@@ -131,27 +134,35 @@ like $data->{error}, qr/flag is your own/, 'right error';
 $flag_data = $db->select(flags => 'data', {team_id => 1})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 1, 'right status';
-is $db->select(stolen_flags => 'data', {team_id => 2})->hash->{data}, $flag_data, 'right flag';
+my $stolen_flag = $db->select(stolen_flags => undef, {team_id => 2})->hash;
+is $stolen_flag->{data}, $flag_data, 'right flag';
+is $stolen_flag->{amount}, 3, 'right amount';
 
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/you already submitted this flag/, 'right error';
 
-$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
-
 # SLA
 is $db->query('select count(*) from sla')->array->[0], 24, 'right sla';
-$data = $db->select(sla => '*', {team_id => 1, service_id => 2, round => 1})->hash;
-is $data->{successed}, 1, 'right sla';
-is $data->{failed},    0, 'right sla';
-$data = $db->select(sla => '*', {team_id => 1, service_id => 1, round => 1})->hash;
+$data = $db->select(sla => '*', {team_id => 1, service_id => 1, round => 1})->hash; # down1
 is $data->{successed}, 0, 'right sla';
 is $data->{failed},    1, 'right sla';
+$data = $db->select(sla => '*', {team_id => 1, service_id => 2, round => 1})->hash; # down2
+is $data->{successed}, 0, 'right sla';
+is $data->{failed},    1, 'right sla';
+$data = $db->select(sla => '*', {team_id => 1, service_id => 3, round => 1})->hash; # up1
+is $data->{successed}, 1, 'right sla';
+is $data->{failed},    0, 'right sla';
+$data = $db->select(sla => '*', {team_id => 1, service_id => 4, round => 1})->hash; # up2
+is $data->{successed}, 0, 'right sla';
+is $data->{failed},    0, 'right sla';
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
+$db->query('select * from flag_points where round = 1')->hashes->map(sub { is $_->{amount}, 3, 'right fp' });
 
-# New round (#3)
+diag('New round #3');
+
 $manager->start_round;
 is $manager->round, 3, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
@@ -159,14 +170,19 @@ $app->model('score')->update;
 
 # SLA
 is $db->query('select count(*) from sla')->array->[0], 36, 'right sla';
-$data = $db->select(sla => '*', {team_id => 1, service_id => 2, round => 2})->hash;
-is $data->{successed}, 2, 'right sla';
-is $data->{failed},    0, 'right sla';
-$data = $db->select(sla => '*', {team_id => 1, service_id => 1, round => 2})->hash;
+
+$data = $db->select(sla => '*', {team_id => 1, service_id => 1, round => 2})->hash; # down1
 is $data->{successed}, 0, 'right sla';
 is $data->{failed},    2, 'right sla';
-$data = $db->select(sla => '*', {team_id => 1, service_id => 3, round => 2})->hash;
-is $data->{successed} + $data->{failed}, 2, 'right sla';
+$data = $db->select(sla => '*', {team_id => 1, service_id => 2, round => 2})->hash; # down2
+is $data->{successed}, 0, 'right sla';
+is $data->{failed},    2, 'right sla';
+$data = $db->select(sla => '*', {team_id => 1, service_id => 3, round => 2})->hash; # up1
+is $data->{successed}, 2, 'right sla';
+is $data->{failed},    0, 'right sla';
+$data = $db->select(sla => '*', {team_id => 1, service_id => 4, round => 2})->hash; # up2
+is $data->{successed}, 1, 'right sla';
+is $data->{failed},    0, 'right sla';
 
 # FP
 is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';

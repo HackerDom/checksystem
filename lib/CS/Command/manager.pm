@@ -58,14 +58,14 @@ sub start_round {
   for my $team (values %{$app->teams}) {
     for my $service (values %{$app->services}) {
       my ($team_id, $service_id) = ($team->{id}, $service->{id});
+      my $n       = $service->{vulns}->[$round % @{$service->{vulns}}];
+      my $vuln_id = $app->vulns->{$service_id}{$n};
 
       if (!exists $active_services->{$service_id}) {
+        $self->skip_check({team_id => $team_id, service_id => $service_id, vuln_id => $vuln_id}, 111, 'Service was disabled.');
         $app->log->debug("Skip service #$service_id in round #$round for team #$team_id");
         next;
       }
-
-      my $n       = $service->{vulns}->[$round % @{$service->{vulns}}];
-      my $vuln_id = $app->vulns->{$service_id}{$n};
 
       if (my $s = $status->{$team_id}{$service_id}) {
         if ($round - $s->{round} <= 1 && !$s->{status}) {
@@ -96,16 +96,15 @@ sub get_monitor_status {
 }
 
 sub skip_check {
-  my ($self, $info) = @_;
+  my ($self, $info, $code, $message) = @_;
+  $code //= 104;
+  $message //= 'Checker did not run, connect on port was failed.';
 
-  eval {
-    $self->app->pg->db->query(
-      'insert into runs (round, team_id, service_id, vuln_id, status, result) values (?, ?, ?, ?, ?, ?)',
-      $self->round, $info->{team_id}, $info->{service_id}, $info->{vuln_id}, 104,
-      {json => {error => 'Checker did not run, connect on port was failed.'}}
-    );
-  };
-  $self->app->log->error("Error while insert check result: $@") if $@;
+  $self->app->pg->db->query(
+    'insert into runs (round, team_id, service_id, vuln_id, status, result) values (?, ?, ?, ?, ?, ?)',
+    $self->round, $info->{team_id}, $info->{service_id}, $info->{vuln_id}, $code,
+    {json => {error => $message}}
+  );
 }
 
 1;
