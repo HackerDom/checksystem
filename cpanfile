@@ -1,5 +1,5 @@
 requires 'Cpanel::JSON::XS'           => '4.12';
-requires 'DBD::Pg'                    => '3.8.1';
+requires 'DBD::Pg'                    => '== 3.8.1';
 requires 'EV'                         => '4.27';
 requires 'IO::Socket::SSL'            => '2.066';
 requires 'IPC::Run'                   => '20180523';
