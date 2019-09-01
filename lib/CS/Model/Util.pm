@@ -13,6 +13,16 @@ sub team_id_by_address {
   return $team ? $team->{id} : undef;
 }
 
+sub get_active_services {
+  my $self = shift;
+
+  return $self->app->pg->db->query(q{
+    select id
+    from services
+    where now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')
+  })->hashes->reduce(sub { $a->{$b->{id}} ++; $a }, {});
+}
+
 sub game_time {
   my $self = shift;
 

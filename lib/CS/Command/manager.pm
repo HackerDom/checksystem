@@ -49,7 +49,7 @@ sub start_round {
   $app->log->debug("Start new round #$round");
 
   my $status = $self->get_monitor_status;
-  my $active_services = $self->get_active_services;
+  my $active_services = $app->model('util')->get_active_services;
   my $flags = $db->query(
     "select team_id, vuln_id, json_agg(json_build_object('id', id, 'data', data)) as flags
     from flags where ack = true and round >= ? group by team_id, vuln_id", $round - $app->config->{cs}{flag_life_time}
@@ -93,16 +93,6 @@ sub get_monitor_status {
   )->hashes->reduce(
     sub { $a->{$b->{team_id}}{$b->{service_id}} = {round => $b->{round}, status => $b->{status}}; $a }, {}
   );
-}
-
-sub get_active_services {
-  my $self = shift;
-
-  return $self->app->pg->db->query(q{
-    select id
-    from services
-    where now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')
-  })->hashes->reduce(sub { $a->{$b->{id}} ++; $a }, {});
 }
 
 sub skip_check {
