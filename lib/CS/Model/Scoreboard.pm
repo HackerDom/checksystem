@@ -8,12 +8,13 @@ sub generate {
   $round //= $db->query('select max(round) from scores')->array->[0];
 
   my $scoreboard = $db->query('
-    select t.host, t.name, s1.n - s.n as d, s.*, s1.services as old_services, s1.score as old_score
-      from scoreboard as s
-      join teams as t on s.team_id = t.id
-      join (
-        select * from scoreboard where round = case when $1-1<0 then 0 else $1-1 end
-      ) as s1 using (team_id)
+    select
+      t.host, t.name, s1.n - s.n as d, s.*, s1.services as old_services, s1.score as old_score
+    from scoreboard as s
+    join teams as t on s.team_id = t.id
+    join (
+      select * from scoreboard where round = case when $1-1<0 then 0 else $1-1 end
+    ) as s1 using (team_id)
     where s.round = $1 and ($3::int is null or s.team_id = $3) order by n limit $2', $round, $limit, $team_id)
     ->expand->hashes;
 

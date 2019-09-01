@@ -112,7 +112,7 @@ sub init {
   my $db  = $app->pg->db;
 
   if ($ENV{CS_DEBUG}) {
-    $app->teams($db->select('teams')->hashes->reduce(sub       { $a->{$b->{id}} = $b; $a }, {}));
+    $app->teams($db->select('teams')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
     $app->services($db->select('services')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
     return;
   }
