@@ -118,10 +118,16 @@ is $manager->round, 2, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 $app->model('score')->update;
 
-# Stolen flags
 my ($data, $flag_data);
-
 my $flag_cb = sub { $data = $_[0] };
+
+$db->update('services', {ts_start => \"now() + interval '10 minutes'", ts_end => undef}, {name => 'up2'});
+$flag_data = $db->select(flags => 'data', {team_id => 1, service_id => 4})->hash->{data};
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
+is $data->{ok}, 0, 'right status';
+like $data->{error}, qr/service inactive/, 'right error';
+$db->update('services', {ts_start => undef, ts_end => undef}, {name => 'up2'});
+
 $app->model('flag')->accept(2, 'flag', $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/invalid flag/, 'right error';

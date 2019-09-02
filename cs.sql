@@ -133,11 +133,17 @@ declare
   attacker_pos smallint;
   victim_pos   smallint;
   amount_max   smallint;
+
+  service_active boolean;
 begin
   select * from flags where data = flag_data into flag;
 
   if not found then return row(false, 'Denied: no such flag'); end if;
   if team_id = flag.team_id then return row(false, 'Denied: flag is your own'); end if;
+
+  select now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')
+  from services where id = flag.service_id into service_active;
+  if not service_active then return row(false, 'Denied: service inactive'); end if;
 
   perform * from stolen_flags as sf where sf.data = flag_data and sf.team_id = accept_flag.team_id;
   if found then return row(false, 'Denied: you already submitted this flag'); end if;
