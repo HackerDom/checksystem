@@ -7,8 +7,6 @@ use Time::HiRes 'time';
 
 my $format = '[A-Z0-9]{31}=';
 
-has stats => sub { return {ts => 0} };
-
 sub create {
   my $self = shift;
 
