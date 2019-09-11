@@ -27,6 +27,16 @@ create table rounds (
   ts timestamptz not null default now()
 );
 
+create table service_activity_log (
+  id         serial primary key,
+  ts         timestamptz not null default now(),
+  round      integer not null references rounds(n),
+  service_id integer not null references services(id),
+  active     boolean not null,
+  unique (round, service_id)
+);
+create index on service_activity_log (round);
+
 create table flags (
   data       text primary key,
   id         text not null,
@@ -170,5 +180,5 @@ end;
 $$ language plpgsql;
 -- 1 down
 drop function if exists accept_flag(integer, text, integer);
-drop table if exists rounds, monitor, scores, teams, vulns, services, flags,
+drop table if exists rounds, monitor, scores, teams, vulns, services, service_activity_log, flags,
   stolen_flags, runs, sla, flag_points, scoreboard, bots;

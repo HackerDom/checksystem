@@ -18,7 +18,13 @@ sub generate {
     where s.round = $1 and ($3::int is null or s.team_id = $3) order by n limit $2', $round, $limit, $team_id)
     ->expand->hashes;
 
-  return {scoreboard => $scoreboard->to_array, round => $round};
+  my $services = $db->query('
+    select s.id, name, active
+    from service_activity_log as l join services as s on l.service_id = s.id
+    where round = ?
+  ', $round)->hashes->reduce(sub { $a->{$b->{id}} = {name => $b->{name}, active => $b->{active}}; $a }, {});
+
+  return {scoreboard => $scoreboard->to_array, round => $round, services => $services};
 }
 
 sub generate_history {

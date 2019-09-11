@@ -49,7 +49,7 @@ sub start_round {
   $app->log->debug("Start new round #$round");
 
   my $status = $self->get_monitor_status;
-  my $active_services = $app->model('util')->get_active_services;
+  my $active_services = $app->model('util')->ensure_active_services;
   my $flags = $db->query(
     "select team_id, vuln_id, json_agg(json_build_object('id', id, 'data', data)) as flags
     from flags where ack = true and round >= ? group by team_id, vuln_id", $round - $app->config->{cs}{flag_life_time}
@@ -61,7 +61,7 @@ sub start_round {
       my $n       = $service->{vulns}->[$round % @{$service->{vulns}}];
       my $vuln_id = $app->vulns->{$service_id}{$n};
 
-      if (!exists $active_services->{$service_id}) {
+      if (!$active_services->{$service_id}) {
         $self->skip_check({team_id => $team_id, service_id => $service_id, vuln_id => $vuln_id}, 111, 'Service was disabled.');
         $app->log->debug("Skip service #$service_id in round #$round for team #$team_id");
         next;

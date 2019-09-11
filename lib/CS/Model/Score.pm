@@ -76,8 +76,6 @@ sub sla {
   my ($self, $db, $r) = @_;
   $self->app->log->info("Calc SLA for round #$r");
 
-  # my $active_services = $self->app->model('util')->get_active_services($r);
-
   my $state = $db->select(sla => '*', {round => $r - 1})
     ->hashes->reduce(sub { ++$b->{round}; $a->{$b->{team_id}}{$b->{service_id}} = $b; $a; }, {});
 
@@ -89,9 +87,9 @@ sub sla {
     )
     select * from teams_x_services left join r using (team_id, service_id)', $r)->hashes->map(
     sub {
-      # return unless exists $active_services->{$_->{service_id}};
       my $status = $_->{status} // 110;
 
+      # Skip inactive services
       return if $status == 111;
 
       my $field = ($_->{status} // 110) == 101 ? 'successed' : 'failed';

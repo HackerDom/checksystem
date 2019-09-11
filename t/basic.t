@@ -118,6 +118,20 @@ is $manager->round, 2, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 $app->model('score')->update;
 
+my $value = $app->model('scoreboard')->generate;
+if ($value->{round} == 1) {
+  my $team1 = $value->{scoreboard}[0];
+  is $team1->{team_id}, 1, 'right scoreboard api';
+  is $team1->{round}, 1, 'right scoreboard api';
+  is $team1->{services}[3]{status}, 111, 'right scoreboard api';
+
+  is $value->{services}{1}{active}, 1, 'right scoreboard api';
+  is $value->{services}{1}{name}, 'down1', 'right scoreboard api';
+
+  is $value->{services}{4}{active}, 0, 'right scoreboard api';
+  is $value->{services}{4}{name}, 'up2', 'right scoreboard api';
+}
+
 my ($data, $flag_data);
 my $flag_cb = sub { $data = $_[0] };
 

@@ -44,12 +44,17 @@ sub run {
   # Scores
   $db->insert(rounds => {n => 0});
   $db->query('
+    insert into service_activity_log (round, service_id, active)
+    select 0, id, false from services
+  ');
+  $db->query('
     insert into flag_points (round, team_id, service_id, amount)
-    select 0, teams.id, services.id, ? from teams cross join services', 0 + @{$app->config->{teams}});
+    select 0, teams.id, services.id, ? from teams cross join services
+  ', 0 + @{$app->config->{teams}});
   $db->query('
     insert into sla (round, team_id, service_id, successed, failed)
-    select 0, teams.id, services.id, 0, 0 from teams cross join services'
-  );
+    select 0, teams.id, services.id, 0, 0 from teams cross join services
+  ');
   $app->model('score')->scoreboard($db, 0);
 }
 
