@@ -1,0 +1,14 @@
+% layout 'default';
+% title '[admin] ' . app->config->{cs}{ctf}{name};
+
+<div class="container">
+  <div>
+    <h1>Game Status <small>on <%= $now %></small></h1>
+    <pre><%= $game_status %></pre>
+  </div>
+
+  <div>
+    <h1>Services</h1>
+    <pre><%= $services %></pre>
+  </div>
+</div>

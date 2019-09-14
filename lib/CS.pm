@@ -92,6 +92,7 @@ sub startup {
   # Admin
   my $admin = $r->under('/admin')->to('admin#auth');
   $admin->get('/')->to('admin#index')->name('admin_index');
+  $admin->get('/info')->to('admin#info')->name('admin_info');
   $admin->get('/view/:team_id/:service_id')->to('admin#view')->name('admin_view');
 
   # Minion Admin

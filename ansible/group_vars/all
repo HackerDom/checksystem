@@ -47,5 +47,4 @@ teams: |
 services: |
   {name => 'down',    path => 't/checkers/down.pl',    timeout => 1, tcp_port => 80},
   {name => 'up',      path => 't/checkers/up.pl',      timeout => 1, tcp_port => 8080},
-  {name => 'random',  path => 't/checkers/random.pl',  timeout => 1, tcp_port => 12345},
   {name => 'timeout', path => 't/checkers/timeout.pl', timeout => 1, tcp_port => 80}

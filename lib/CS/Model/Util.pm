@@ -48,7 +48,6 @@ sub game_status {
   my $self = shift;
 
   my $time = $self->app->config->{cs}{time};
-  my ($start, $finish) = ($time->[0][0], $time->[-1][1]);
 
   my $range = join ',', map "'[$_->[0], $_->[1]]'", @$time;
   my $sql = <<"SQL";

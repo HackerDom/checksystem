@@ -23,6 +23,28 @@ sub auth {
   return undef;
 }
 
+sub info {
+  my $c = shift;
+
+  # Game status
+  my $time = $c->config->{cs}{time};
+  my $range = join ',', map "'[$_->[0], $_->[1]]'", @$time;
+  my $sql = <<"SQL";
+    select
+      range,
+      now() <@ range as live,
+      now() < lower(range) as before,
+      now() > upper(range) as finish
+    from (select unnest(array[$range]::tstzrange[]) as range) as tmp
+SQL
+  my $game_status = $c->pg->db->query($sql)->text;
+
+  # Services
+  my $services = $c->pg->db->query('table services')->text;
+
+  $c->render(now => scalar(localtime), game_status => $game_status, services => $services);
+}
+
 sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
 
 sub view {

@@ -29,7 +29,6 @@
     {name => 'service3', path => '/bin/false',            timeout => 5, tcp_port => 80},
     {name => 'down',     path => 't/checkers/down.pl',    timeout => 1, tcp_port => 80},
     {name => 'up',       path => 't/checkers/up.pl',      timeout => 1, tcp_port => 80},
-    {name => 'random',   path => 't/checkers/random.pl',  timeout => 1, tcp_port => 80},
     {name => 'timeout',  path => 't/checkers/timeout.pl', timeout => 1, tcp_port => 80}
   ]
 }
