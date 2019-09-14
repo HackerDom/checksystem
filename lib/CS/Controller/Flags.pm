@@ -5,6 +5,10 @@ sub put {
   my $c = shift;
   $c->render_later;
 
+  unless ($app->model('util')->game_status == 1) {
+    return $c->render(json => {status => \0, msg => 'Game is not active for now'}, status => 400);
+  }
+
   if ($c->req->body_size > 16 * 1024) {
     return $c->render(json => {status => \0, msg => 'Message is too big'}, status => 400);
   }

@@ -2,8 +2,6 @@ package CS::Command::manager;
 use Mojo::Base 'Mojolicious::Command';
 
 use Mojo::Collection 'c';
-use Time::Piece;
-use Time::Seconds;
 
 has description => 'Run CTF game';
 
@@ -13,12 +11,11 @@ sub run {
   my $self = shift;
   my $app  = $self->app;
 
-  my $now = localtime;
-  my $start = localtime($app->model('util')->game_time->{start});
+  my $start = $app->model('util')->game_time->{start};
   my $round_length = $app->config->{cs}{round_length};
 
   my $sleep;
-  if ($now < $start) { $sleep = ($start - $now)->seconds }
+  if (time < $start) { $sleep = $start - time }
   else {
     my $round_start =
       $round_length + $app->pg->db->select(rounds => 'extract(epoch from max(ts))')->array->[0];
@@ -39,8 +36,9 @@ sub start_round {
   my $app  = $self->app;
 
   # Check end of game
-  $app->minion->enqueue(scoreboard => [$self->round]) if $app->model('util')->game_status == -1;
-  return unless $app->model('util')->game_status == 1;
+  my $game_status = $app->model('util')->game_status;
+  $app->minion->enqueue(scoreboard => [$self->round]) if $game_status == -1;
+  return unless $game_status == 1;
 
   my $db = $app->pg->db;
   my $round = $db->insert('rounds', {n => \'(select max(n)+1 from rounds)'}, {returning => 'n'})->hash->{n};

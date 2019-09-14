@@ -1,11 +1,6 @@
 package CS::Model::Util;
 use Mojo::Base 'MojoX::Model';
 
-use Time::Piece;
-use List::Util 'min';
-
-has format => '%Y-%m-%d %H:%M:%S';
-
 sub team_id_by_address {
   my ($self, $address) = @_;
 
@@ -40,26 +35,35 @@ sub game_time {
   my $self = shift;
 
   my $time = $self->app->config->{cs}{time};
-  my ($start, $end) = map { 0 + localtime(Time::Piece->strptime($time->{$_}, $self->format)) } qw/start end/;
-  return {start => $start->epoch, end => $end->epoch};
+  my ($start, $end) = ($time->[0][0], $time->[-1][1]);
+
+  my $result = $self->app->pg->db->query('
+    select extract(epoch from ?::timestamptz) as start, extract(epoch from ?::timestamptz) as end
+  ', $start, $end)->hash;
+
+  return {start => $result->{start}, end => $result->{end}};
 }
 
 sub game_status {
-  my ($self, $now) = @_;
+  my $self = shift;
 
-  $now //= localtime;
   my $time = $self->app->config->{cs}{time};
-  my ($start, $end) = map { 0 + localtime(Time::Piece->strptime($time->{$_}, $self->format)) } qw/start end/;
-  my @break;
-  if (my $break = $time->{break}) {
-    @break = map { 0 + localtime(Time::Piece->strptime($break->[$_], $self->format)) } 0 .. 1;
-  }
+  my ($start, $finish) = ($time->[0][0], $time->[-1][1]);
 
-  return 0 if $now < $start;
-  return 1 if $now >= $start && $now < $break[0];
-  return 0 if @break && $now >= $break[0] && $now < $break[1];
-  return 1 if $now >= $break[1] && $now < $end;
-  return -1;
+  my $range = join ',', map "'[$_->[0], $_->[1]]'", @$time;
+  my $sql = <<"SQL";
+    select
+      bool_or(now() <@ range) as live,
+      bool_and(now() < lower(range)) as before,
+      bool_and(now() > upper(range)) as finish
+    from (select unnest(array[$range]::tstzrange[]) as range) as tmp
+SQL
+  my $result = $self->app->pg->db->query($sql)->hash;
+
+  return -1 if $result->{finish};
+  return 0  if $result->{before};
+  return 1  if $result->{live};
+  return 0; # break
 }
 
 1;

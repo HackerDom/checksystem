@@ -9,7 +9,6 @@ use Mojo::JSON 'j';
 use Mojo::Util qw/dumper trim/;
 use Proc::Killfam;
 use Time::HiRes qw/gettimeofday tv_interval/;
-use Time::Piece;
 
 # Internal statuses
 # 110 -- checker error
@@ -173,7 +172,7 @@ sub _run {
     $self->app->log->debug("Kill all sub process for $pid => $n");
   }
 
-  $result->{ts} = scalar localtime;
+  $result->{ts} = scalar(localtime);
   return $result;
 }
 
@@ -209,7 +208,7 @@ sub _run_bot {
   $db->insert(flags => $flag_row);
 
   my $game_time = $app->model('util')->game_time;
-  my $now       = localtime->epoch;
+  my $now       = time;
   my $current   = ($now - $game_time->{start}) / ($game_time->{end} - $game_time->{start});
   return $result unless $bot->{attack} < $current;
 
