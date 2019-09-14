@@ -4,7 +4,7 @@
   pg        => {uri    => 'postgresql://{{pg_cs_user}}:{{pg_cs_pass}}@{{pg_cs_host}}:{{pg_cs_port}}/cs'},
   cs        => {
     base_url => '{{cs_base_url}}',
-    time     => ['{{cs_time}}'],
+    time     => [{{cs_time}}],
     admin          => {auth => '{{cs_admin_auth}}'},
     ctf            => {name => '{{cs_ctf_name}}'},
     round_length   => {{cs_round_length}},
