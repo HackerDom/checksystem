@@ -195,7 +195,9 @@ sub _run_bot {
       exit_code => $exit_code
     };
   }
+
   return $result unless $exit_code == 101;
+
   my $flag_row = {
     data       => $flag->{data},
     id         => $flag->{id},
@@ -213,11 +215,15 @@ sub _run_bot {
   return $result unless $bot->{attack} < $current;
 
   # Hack
-  my $flags = $db->query(
-    'select data from flags where service_id = $1 and round between $3 - 3 and $3 and team_id in
-      (select team_id from bots where service_id = $1 and team_id != $2 and defense > $4)', $service->{id},
-    $team->{id}, $round, $current
-  )->arrays;
+  my $flags = $db->query('
+    select data from flags
+    where
+      service_id = $1 and round between $3 - 3 and $3 and ack = true and
+      team_id in (
+        select team_id from bots
+        where service_id = $1 and team_id != $2 and defense > $4
+      )
+    ', $service->{id}, $team->{id}, $round, $current)->arrays;
   for my $flag (@$flags) {
     $app->model('flag')->accept($team->{id}, $flag->[0], sub { });
   }
