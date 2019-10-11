@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  cs:
+    build:
+      context: ..
+      dockerfile: ./Dockerfile
+    image: "cs:latest"
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - pg
+    volumes:
+      - "../:/app"
+    environment:
+      - POSTGRES_PASSWORD
+      - TEST_ONLINE
+  pg:
+    image: "postgres:12"
+    volumes:
+      - "dbdata:/var/lib/postgresql/data"
+      - "./create_db.sql:/docker-entrypoint-initdb.d/create_db.sql"
+    environment:
+      - POSTGRES_PASSWORD
+
+volumes:
+  dbdata:
