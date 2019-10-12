@@ -26,7 +26,7 @@
   failed_when: r.rc > 1
   changed_when: r.rc == 0
 
-- name: pg user
+- name: pg stat statements
   shell: psql {{pg_cs_db}} -c "create extension pg_stat_statements"
   become: yes
   become_user: postgres

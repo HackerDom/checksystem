@@ -1,5 +1,5 @@
 % my $checker = app->model('checker');
-<div class="container" id="scoreboard_wrapper" style="text-align: center;">
+<div class="container" id="scoreboard_wrapper" style="<%= param('wide') ? 'width: auto;' : '' %>">
   <table class="table table-condensed status_descriptions">
     <tr class="text-center">
       % for my $status (@{$checker->statuses}) {
