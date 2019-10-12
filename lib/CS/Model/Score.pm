@@ -117,7 +117,7 @@ sub flag_points {
   for my $flag (@$flags) {
     $state->{$flag->{team_id}}{$flag->{service_id}}{amount} += $flag->{amount};
     $state->{$flag->{victim_id}}{$flag->{service_id}}{amount} -=
-      min($flag->{amount}, $state->{$flag->{victim_id}}{$flag->{service_id}}{amount});
+      min($flag->{amount}, $state->{$flag->{victim_id}}{$flag->{service_id}}{amount} - 1);
   }
 
   for my $team_id (keys %$state) {
