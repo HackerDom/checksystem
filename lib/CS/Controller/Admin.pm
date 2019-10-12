@@ -77,7 +77,7 @@ SQL
   )
   select
     (select name from services where id = service_id) as service,
-    (select name from services where id = service_id) as team,
+    (select name from teams where id = team_id) as team,
     flags, round, ts
   from tmp
   where flags in (1, 10, 100, 1000, 10000)
