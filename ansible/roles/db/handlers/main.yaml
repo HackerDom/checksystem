@@ -1,2 +1,2 @@
 - name: restart postgresql
-  command: systemctl restart postgresql@11-main
+  command: systemctl restart postgresql@12-main

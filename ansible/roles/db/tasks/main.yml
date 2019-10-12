@@ -26,6 +26,14 @@
   failed_when: r.rc > 1
   changed_when: r.rc == 0
 
+- name: pg user
+  shell: psql {{pg_cs_db}} -c "create extension pg_stat_statements"
+  become: yes
+  become_user: postgres
+  register: r
+  failed_when: r.rc > 1
+  changed_when: "'CREATE EXTENSION' in r.stdout"
+
 - name: pg config
   template:
     src=pg_cs.conf.j2 dest=/etc/postgresql/12/main/conf.d/cs.conf

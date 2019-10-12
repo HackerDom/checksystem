@@ -2,3 +2,4 @@ listen_addresses = '127.0.0.1, {{pg_cs_host}}'
 max_connections = {{pg_max_connections}}
 shared_buffers = {{pg_shared_buffers}}
 work_mem = {{pg_work_mem}}
+shared_preload_libraries = 'pg_stat_statements'
