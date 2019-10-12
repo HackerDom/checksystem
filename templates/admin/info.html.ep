@@ -7,8 +7,10 @@
     <pre><%= $game_status %></pre>
   </div>
 
-  <div>
-    <h1>Services</h1>
-    <pre><%= $services %></pre>
-  </div>
+  % for my $row (@$tables) {
+    <div>
+      <h1><%= $row->{name} %></h1>
+      <pre><%= $row->{data} %></pre>
+    </div>
+  % }
 </div>

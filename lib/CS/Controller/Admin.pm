@@ -2,7 +2,7 @@ package CS::Controller::Admin;
 use Mojo::Base 'Mojolicious::Controller';
 
 use List::Util 'all';
-use Mojo::Util 'b64_decode';
+use Mojo::Util 'b64_decode', 'tablify';
 
 sub auth {
   my $c = shift;
@@ -25,6 +25,7 @@ sub auth {
 
 sub info {
   my $c = shift;
+  my $db = $c->pg->db;
 
   # Game status
   my $time = $c->config->{cs}{time};
@@ -37,12 +38,63 @@ sub info {
       now() > upper(range) as finish
     from (select unnest(array[$range]::tstzrange[]) as range) as tmp
 SQL
-  my $game_status = $c->pg->db->query($sql)->text;
+  my $game_status = $c->_tablify($db->query($sql));
 
   # Services
-  my $services = $c->pg->db->query('table services')->text;
+  my $services = $c->_tablify($db->query('table services'));
 
-  $c->render(now => scalar(localtime), game_status => $game_status, services => $services);
+  # Installed flags
+  $sql = '
+  select
+    (select name from services where id = service_id) as service, vuln_id, count(*) as flags
+  from flags
+  where ack = true
+  group by service_id, vuln_id order by 1, 2
+';
+  my $installed_flags = $c->_tablify($db->query($sql));
+
+  # Stolen flags
+  $sql = '
+  select
+    (select name from services where id = service_id) as service,
+    vuln_id, grouping(vuln_id), count(*), avg(amount) as avg_amount,
+    percentile_disc(0.99) within group (order by amount) as percentile99,
+    percentile_disc(0.90) within group (order by amount) as percentile90,
+    percentile_disc(0.75) within group (order by amount) as percentile75
+  from stolen_flags join flags using (data)
+  group by grouping sets((service_id), (service_id, vuln_id))
+  order by 3 desc, 4 desc
+';
+  my $stolen_flags = $c->_tablify($db->query($sql));
+
+  # First bloods
+  $sql = '
+  with tmp as (
+    select
+      sf.round, sf.ts, service_id, sf.team_id,
+      row_number() over (partition by service_id order by sf.ts) as flags
+    from stolen_flags as sf join flags as f using(data)
+  )
+  select
+    (select name from services where id = service_id) as service,
+    (select name from services where id = service_id) as team,
+    flags, round, ts
+  from tmp
+  where flags in (1, 10, 100, 1000, 10000)
+  order by service_id
+';
+  my $fb = $c->_tablify($db->query($sql));
+
+  $c->render(
+    now => scalar(localtime),
+    game_status => $game_status,
+    tables => [
+      {name => 'Installed flags', data => $installed_flags},
+      {name => 'Stolen flags',    data => $stolen_flags},
+      {name => 'First bloods',    data => $fb},
+      {name => 'Services',        data => $services}
+    ]
+  );
 }
 
 sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
@@ -84,6 +136,14 @@ sub view {
     order by round desc limit $4 offset $5', $team->{id}, $service->{id}, $status, $limit, $offset
   )->expand->hashes->to_array;
   $c->render(view => $view, page => $page, max => $max);
+}
+
+sub _tablify {
+  my ($c, $result) = @_;
+
+  my $r = $result->arrays;
+  unshift @$r, $result->columns;
+  return tablify($r);
 }
 
 1;
