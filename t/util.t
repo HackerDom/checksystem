@@ -17,8 +17,4 @@ my $game_time = $u->game_time;
 ok $game_time->{start} > 0, 'right game time';
 ok $game_time->{end} > 0, 'right game time';
 
-# id by address
-is $u->team_id_by_address('127.0.2.213'),  2,     'right id';
-is $u->team_id_by_address('127.0.23.127'), undef, 'right id';
-
 done_testing;

@@ -9,12 +9,6 @@
   - name: stop watcher
     systemd: name=cs.watcher state=stopped
 
-- hosts: flags
-  tasks:
-  - name: stop flags
-    systemd: name="cs.flags@{{item}}" state=stopped
-    with_sequence: count={{cs_flags_instance}}
-
 - hosts: checkers
   tasks:
   - name: stop checkers

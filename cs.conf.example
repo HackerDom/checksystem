@@ -7,7 +7,7 @@
     ctf            => {name => 'RuCTF 2015'},
     round_length   => 8,
     flag_life_time => 15,
-    flags    => {port => 31337, timeout => 5 * 60, secret => 'ohKai2eepi'},
+    flags    => {secret => 'ohKai2eepi'},
     checkers => {
       hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}" }
     },

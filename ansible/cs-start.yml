@@ -11,9 +11,6 @@
 
 - hosts: flags
   tasks:
-  - name: start flags
-    systemd: name="cs.flags@{{item}}" state=started
-    with_sequence: count={{cs_flags_instance}}
   - name: start web flags
     systemd: name=cs.web state=started
 
