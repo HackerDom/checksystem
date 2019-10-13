@@ -49,8 +49,8 @@ sub run {
   ');
   $db->query('
     insert into flag_points (round, team_id, service_id, amount)
-    select 0, teams.id, services.id, ? from teams cross join services
-  ', 0 + @{$app->config->{teams}});
+    select 0, teams.id, services.id, 1 from teams cross join services
+  ');
   $db->query('
     insert into sla (round, team_id, service_id, successed, failed)
     select 0, teams.id, services.id, 0, 0 from teams cross join services
