@@ -23,8 +23,7 @@ sub check {
     for my $service (values %{$app->services}) {
       next unless my $port = $service->{tcp_port};
 
-      if (!exists $active_services->{$service_id}) {
-        $app->log->debug("Skip service #$service_id in round #$round for team #$team_id");
+      if (!exists $active_services->{$service->{id}}) {
         next;
       }
 
