@@ -42,44 +42,47 @@ sub check {
     return $self->_finish($job, {%$result, %$r}, $db);
   }
 
+  my $cmd;
   my $host = $team->{host};
   if (my $cb = $job->app->config->{cs}{checkers}{hostname}) { $host = $cb->($team, $service) }
 
-  # Check
-  my $cmd = [$service->{path}, 'check', $host];
-  $result->{check} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
-  return $self->_finish($job, $result, $db) if $result->{check}{slow} || $result->{check}{exit_code} != 101;
+  for (@{c(qw/check put_get get2/)->shuffle}) {
+    if ($_ eq 'check') {
+      $cmd = [$service->{path}, 'check', $host];
+      $result->{check} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+      return $self->_finish($job, $result, $db) if $result->{check}{slow} || $result->{check}{exit_code} != 101;
+    } elsif ($_ eq 'put_get') {
+      my $flag_row = {
+        data       => $flag->{data},
+        id         => $flag->{id},
+        round      => $round,
+        team_id    => $team->{id},
+        service_id => $service->{id},
+        vuln_id    => $vuln->{id}
+      };
+      $db->insert(flags => $flag_row);
 
-  my $flag_row = {
-    data       => $flag->{data},
-    id         => $flag->{id},
-    round      => $round,
-    team_id    => $team->{id},
-    service_id => $service->{id},
-    vuln_id    => $vuln->{id}
-  };
-  $db->insert(flags => $flag_row);
+      $cmd = [$service->{path}, 'put', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
+      $result->{put} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+      return $self->_finish($job, $result, $db) if $result->{put}{slow} || $result->{put}{exit_code} != 101;
 
-  # Put
-  $cmd = [$service->{path}, 'put', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
-  $result->{put} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
-  return $self->_finish($job, $result, $db) if $result->{put}{slow} || $result->{put}{exit_code} != 101;
+      $flag_row = {ack => 'true'};
+      (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
+      $flag_row->{id} = $flag->{id} = $result->{put}{fid} = $id if $id;
+      $db->update(flags => $flag_row => {data => $flag->{data}});
 
-  $flag_row = {ack => 'true'};
-  (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
-  $flag_row->{id} = $flag->{id} = $result->{put}{fid} = $id if $id;
-  $db->update(flags => $flag_row => {data => $flag->{data}});
-
-  # Get 1
-  $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
-  $result->{get_1} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
-  return $self->_finish($job, $result, $db) if $result->{get_1}{slow} || $result->{get_1}{exit_code} != 101;
-
-  # Get 2
-  if ($old_flag) {
-    $cmd = [$service->{path}, 'get', $host, $old_flag->{id}, $old_flag->{data}, $vuln->{n}];
-    $result->{get_2} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+      $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
+      $result->{get_1} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+      return $self->_finish($job, $result, $db) if $result->{get_1}{slow} || $result->{get_1}{exit_code} != 101;
+    } elsif ($_ eq 'get2') {
+      if ($old_flag) {
+        $cmd = [$service->{path}, 'get', $host, $old_flag->{id}, $old_flag->{data}, $vuln->{n}];
+        $result->{get_2} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+        return $self->_finish($job, $result, $db) if $result->{get_2}{slow} || $result->{get_2}{exit_code} != 101;;
+      }
+    }
   }
+
   return $self->_finish($job, $result, $db);
 }
 

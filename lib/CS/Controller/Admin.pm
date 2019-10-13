@@ -36,7 +36,7 @@ sub info {
       from (select unnest(array[$range]::tstzrange[]) as range) as tmp
     )
     select
-      range, r + 1,
+      range, r + 1 as r,
       now() <@ range as live,
       now() < lower(range) as before,
       now() > upper(range) as finish

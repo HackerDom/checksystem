@@ -3,6 +3,8 @@ use Mojo::Base -strict;
 use Test::Mojo;
 use Test::More;
 
+use Mojo::Collection 'c';
+
 use CS::Command::manager;
 
 BEGIN { $ENV{MOJO_CONFIG} = 'cs.test.conf' }
@@ -36,13 +38,6 @@ $db->select(runs => '*', {service_id => 1, team_id => 1})->expand->hashes->map(
     is $_->{round},  1,               'right round';
     is $_->{status}, 104,             'right status';
     is $_->{stdout}, "some error!\n", 'right stdout';
-    is $_->{result}{check}{stderr},    '',              'right stderr';
-    is $_->{result}{check}{stdout},    "some error!\n", 'right stdout';
-    is $_->{result}{check}{exception}, '',              'right exception';
-    is $_->{result}{check}{timeout},   0,               'right timeout';
-    is keys %{$_->{result}{put}},   0, 'right put';
-    is keys %{$_->{result}{get_1}}, 0, 'right get_1';
-    is keys %{$_->{result}{get_2}}, 0, 'right get_2';
   }
 );
 
@@ -52,13 +47,12 @@ $db->select(runs => '*', {service_id => 2, team_id => 1})->expand->hashes->map(
     is $_->{round},  1,   'right round';
     is $_->{status}, 104, 'right status';
     is $_->{stdout}, '',  'right stdout';
-    is $_->{result}{check}{stderr},      '',           'right stderr';
-    is $_->{result}{check}{stdout},      '',           'right stdout';
-    like $_->{result}{check}{exception}, qr/timeout/i, 'right exception';
-    is $_->{result}{check}{timeout},     1,            'right timeout';
-    is keys %{$_->{result}{put}},   0, 'right put';
-    is keys %{$_->{result}{get_1}}, 0, 'right get_1';
-    is keys %{$_->{result}{get_2}}, 0, 'right get_2';
+    my $result = $_->{result};
+    my $state = c(qw/get_2 get_1 put check/)->first(sub { defined $result->{$_}{exception} });
+    is $_->{result}{$state}{stderr},      '',           'right stderr';
+    is $_->{result}{$state}{stdout},      '',           'right stdout';
+    like $_->{result}{$state}{exception}, qr/timeout/i, 'right exception';
+    is $_->{result}{$state}{timeout},     1,            'right timeout';
   }
 );
 
@@ -100,8 +94,8 @@ is $db->query('select count(*) from sla')->array->[0], 12, 'right sla';
 is $db->query('select count(*) from flag_points')->array->[0], 12, 'right fp';
 
 # Flags (only for service up1)
-is $db->query('select count(*) from flags')->array->[0], 3, 'right numbers of flags';
-$db->query('select * from flags')->hashes->map(
+is $db->query('select count(*) from flags where ack = true')->array->[0], 3, 'right numbers of flags';
+$db->query('select * from flags where ack = true')->hashes->map(
   sub {
     is $_->{round},  1,                'right round';
     is $_->{id},     911,              'right id';
@@ -136,7 +130,7 @@ my ($data, $flag_data);
 my $flag_cb = sub { $data = $_[0] };
 
 $db->update('services', {ts_start => \"now() + interval '10 minutes'", ts_end => undef}, {name => 'up2'});
-$flag_data = $db->select(flags => 'data', {team_id => 1, service_id => 4})->hash->{data};
+$flag_data = $db->select(flags => 'data', {team_id => 1, service_id => 4, ack => 'true'})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/service inactive/, 'right error';
@@ -146,12 +140,12 @@ $app->model('flag')->accept(2, 'flag', $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/invalid flag/, 'right error';
 
-$flag_data = $db->select(flags => 'data', {team_id => 2})->hash->{data};
+$flag_data = $db->select(flags => 'data', {team_id => 2, ack => 'true'})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/flag is your own/, 'right error';
 
-$flag_data = $db->select(flags => 'data', {team_id => 1})->hash->{data};
+$flag_data = $db->select(flags => 'data', {team_id => 1, ack => 'true'})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 1, 'right status';
 my $stolen_flag = $db->select(stolen_flags => undef, {team_id => 2})->hash;
