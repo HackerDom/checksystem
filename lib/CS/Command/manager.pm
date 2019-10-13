@@ -1,6 +1,7 @@
 package CS::Command::manager;
 use Mojo::Base 'Mojolicious::Command';
 
+use List::Util 'max';
 use Mojo::Collection 'c';
 
 has description => 'Run CTF game';
@@ -36,7 +37,7 @@ sub start_round {
   my $app  = $self->app;
 
   # Check end of game
-  my $game_status = $app->model('util')->game_status;
+  my ($game_status, $init_round) = $app->model('util')->game_status;
   $app->minion->enqueue(scoreboard => [$self->round]) if $game_status == -1;
   return unless $game_status == 1;
 
@@ -48,9 +49,11 @@ sub start_round {
 
   my $status = $self->get_monitor_status;
   my $active_services = $app->model('util')->ensure_active_services;
+
+  my $check_round = max($round - $app->config->{cs}{flag_life_time}, $init_round // 1);
   my $flags = $db->query(
     "select team_id, vuln_id, json_agg(json_build_object('id', id, 'data', data)) as flags
-    from flags where ack = true and round >= ? group by team_id, vuln_id", $round - $app->config->{cs}{flag_life_time}
+    from flags where ack = true and round >= ? group by team_id, vuln_id", $check_round
   )->expand->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{vuln_id}} = $b->{flags}; $a; }, {});
 
   for my $team (values %{$app->teams}) {

@@ -2,10 +2,10 @@ package CS::Controller::Flags;
 use Mojo::Base 'Mojolicious::Controller';
 
 sub put {
-  my $c = shift;
-  $c->render_later;
+  my $c = shift->render_later;
 
-  unless ($app->model('util')->game_status == 1) {
+  my ($game_status) = $app->model('util')->game_status;
+  unless ($game_status == 1) {
     return $c->render(json => {status => \0, msg => 'Game is not active for now'}, status => 400);
   }
 

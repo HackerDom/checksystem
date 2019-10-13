@@ -10,7 +10,7 @@ my $app = $t->app;
 my $u = $app->model('util');
 
 # game status
-my $status = $u->game_status;
+my ($status) = $u->game_status;
 $status >= 0 ? pass('right status') : fail('right status');
 
 my $game_time = $u->game_time;

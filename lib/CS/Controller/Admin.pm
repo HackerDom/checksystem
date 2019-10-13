@@ -31,12 +31,16 @@ sub info {
   my $time = $c->config->{cs}{time};
   my $range = join ',', map "'[$_->[0], $_->[1]]'", @$time;
   my $sql = <<"SQL";
+    with tmp as (
+      select *, (select max(n) from rounds where ts < lower(range)) as r
+      from (select unnest(array[$range]::tstzrange[]) as range) as tmp
+    )
     select
-      range,
+      range, r + 1,
       now() <@ range as live,
       now() < lower(range) as before,
       now() > upper(range) as finish
-    from (select unnest(array[$range]::tstzrange[]) as range) as tmp
+    from tmp
 SQL
   my $game_status = $c->_tablify($db->query($sql));
 

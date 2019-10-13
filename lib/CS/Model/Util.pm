@@ -44,17 +44,22 @@ sub game_status {
 
   my $range = join ',', map "'[$_->[0], $_->[1]]'", @$time;
   my $sql = <<"SQL";
+    with tmp as (
+      select *, (select max(n) from rounds where ts < lower(range)) as r
+      from (select unnest(array[$range]::tstzrange[]) as range) as tmp
+    )
     select
       bool_or(now() <@ range) as live,
       bool_and(now() < lower(range)) as before,
-      bool_and(now() > upper(range)) as finish
-    from (select unnest(array[$range]::tstzrange[]) as range) as tmp
+      bool_and(now() > upper(range)) as finish,
+      max(r) + 1 as round
+    from tmp
 SQL
   my $result = $self->app->pg->db->query($sql)->hash;
 
   return -1 if $result->{finish};
   return 0  if $result->{before};
-  return 1  if $result->{live};
+  return (1, $result->{round}) if $result->{live};
   return 0; # break
 }
 

@@ -25,7 +25,8 @@ sub update {
   $c->tx->with_compression;
   $c->inactivity_timeout(300);
 
-  return $c->finish if $c->model('util')->game_status == -1;
+  my ($game_status) = $c->model('util')->game_status;
+  return $c->finish if $game_status == -1;
 
   my $id = Mojo::IOLoop->recurring(
     15 => sub {
