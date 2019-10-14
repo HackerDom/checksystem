@@ -41,7 +41,14 @@ sub events {
     }
   );
 
-  $c->on(finish => sub { $pubsub->unlisten(scoreboard => $cb1)->unlisten(flag => $cb2); });
+  my $cb3 => $pubsub->listen(
+    message => sub {
+      my $msg = pop;
+      $c->send({json => {type => 'message', value => $msg}});
+    }
+  );
+
+  $c->on(finish => sub { $pubsub->unlisten(scoreboard => $cb1)->unlisten(flag => $cb2)->unlisten(message => $cb3) });
 
   my $data = $c->model('scoreboard')->generate;
   $c->send({json => {type => 'state', value => $data}});

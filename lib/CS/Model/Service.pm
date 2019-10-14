@@ -24,7 +24,7 @@ SQL
     {id => $services, ts_end => undef},
     {returning => 'id'}
   )->arrays->flatten->to_array;
-  $self->app->log->info("Enqueue services to remove: @{$updates_services}");
+  $self->app->log->info("Enqueue services to remove: @{$updates_services}") if @$updates_services;
 }
 
 1;
