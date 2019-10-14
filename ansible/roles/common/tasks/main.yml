@@ -13,6 +13,8 @@
       - make
       - sudo
       - zlib1g-dev
+      - rsync
+      - atop
     state: latest
     update_cache: yes
 
