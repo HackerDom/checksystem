@@ -62,6 +62,7 @@ sub startup {
       }
     }
   );
+  $app->minion->add_task(update_irrelevant_services => sub { $_[0]->app->model('service')->update_irrelevant });
 
   $app->init;
 

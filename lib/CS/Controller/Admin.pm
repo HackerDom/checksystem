@@ -48,17 +48,17 @@ SQL
   my $services = $c->_tablify($db->query('table services'));
 
   # Installed flags
-  $sql = '
+  $sql = <<SQL;
   select
     (select name from services where id = service_id) as service, vuln_id, count(*) as flags
   from flags
   where ack = true
   group by service_id, vuln_id order by 1, 2
-';
+SQL
   my $installed_flags = $c->_tablify($db->query($sql));
 
   # Stolen flags
-  $sql = '
+  $sql = <<SQL;
   select
     (select name from services where id = service_id) as service,
     vuln_id, grouping(vuln_id), count(*), avg(amount) as avg_amount,
@@ -68,11 +68,11 @@ SQL
   from stolen_flags join flags using (data)
   group by grouping sets((service_id), (service_id, vuln_id))
   order by 3 desc, 4 desc
-';
+SQL
   my $stolen_flags = $c->_tablify($db->query($sql));
 
   # First bloods
-  $sql = '
+  $sql = <<SQL;
   with tmp as (
     select
       sf.round, sf.ts, service_id, sf.team_id,
@@ -86,17 +86,31 @@ SQL
   from tmp
   where flags in (1, 10, 100, 1000, 10000)
   order by service_id
-';
+SQL
   my $fb = $c->_tablify($db->query($sql));
+
+  # Irrelevant services
+  $sql = <<SQL;
+  select
+    (select name from services where id = service_id) as service,
+    (select name from teams where id = sf.team_id) as team,
+    count(*)
+  from stolen_flags as sf join flags as f using(data)
+  group by service_id, sf.team_id
+  having count(*) >= 100
+  order by 1, 3 desc
+SQL
+  my $irrelevant_cervices = $c->_tablify($db->query($sql));
 
   $c->render(
     now => scalar(localtime),
     game_status => $game_status,
     tables => [
-      {name => 'Installed flags', data => $installed_flags},
-      {name => 'Stolen flags',    data => $stolen_flags},
-      {name => 'First bloods',    data => $fb},
-      {name => 'Services',        data => $services}
+      {name => 'Installed flags',     data => $installed_flags},
+      {name => 'Stolen flags',        data => $stolen_flags},
+      {name => 'First bloods',        data => $fb},
+      {name => 'Irrelevant services', data => $irrelevant_cervices},
+      {name => 'Services',            data => $services}
     ]
   );
 }
