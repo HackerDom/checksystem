@@ -97,7 +97,7 @@ sub _finish {
     $result->{error} = 'Job is too old!';
     $status = 104;
   } else {
-    my $state = c(qw/get_2 get_1 put check/)->first(sub { defined $result->{$_}{exit_code} });
+    my $state = c(qw/get_2 get_1 put check/)->grep(sub { defined $result->{$_}{exit_code} })->sort->last;
     $status = $result->{$state}{exit_code};
     $stdout = $result->{$state}{stdout} if $status != 101;
   }
