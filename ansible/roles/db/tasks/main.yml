@@ -2,13 +2,17 @@
   apt_repository:
     repo: deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main
     filename: pgdg
+    validate_certs: no
+  tags: install
 
 - name: apt keys
   apt_key:
     url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+  tags: install
 
 - name: pg
   apt: name=postgresql-12 state=latest update_cache=yes
+  tags: install
 
 - name: pg user
   shell: psql -c "create role {{pg_cs_user}} login password '{{pg_cs_pass}}'"
@@ -39,6 +43,7 @@
     src=pg_cs.conf.j2 dest=/etc/postgresql/12/main/conf.d/cs.conf
   notify:
     - restart postgresql
+  tags: install
 
 - name: pg_hba config
   lineinfile:
@@ -48,3 +53,4 @@
     line: "host\tcs\tcs\t0.0.0.0/0\tmd5"
   notify:
     - restart postgresql
+  tags: install

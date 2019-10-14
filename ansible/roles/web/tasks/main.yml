@@ -8,6 +8,7 @@
   apt_repository:
     repo: deb http://nginx.org/packages/{{ ansible_distribution|lower }}/ {{ ansible_distribution_release }} nginx
     filename: nginx
+    validate_certs: no
 
 - name: apt keys
   apt_key:
