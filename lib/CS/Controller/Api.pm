@@ -41,14 +41,16 @@ sub events {
     }
   );
 
-  my $cb3 => $pubsub->listen(
+  my $cb3 = $pubsub->listen(
     message => sub {
       my $msg = pop;
       $c->send({json => {type => 'message', value => $msg}});
     }
   );
 
-  $c->on(finish => sub { $pubsub->unlisten(scoreboard => $cb1)->unlisten(flag => $cb2)->unlisten(message => $cb3) });
+  my $cb4 = $pubsub->listen(reload => sub { $c->send({json => {type => 'reload'}}) });
+
+  $c->on(finish => sub { $pubsub->unlisten(scoreboard => $cb1)->unlisten(flag => $cb2)->unlisten(message => $cb3)->unlisten(reload => $cb4) });
 
   my $data = $c->model('scoreboard')->generate;
   $c->send({json => {type => 'state', value => $data}});
