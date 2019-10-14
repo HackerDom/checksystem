@@ -22,7 +22,10 @@ sub generate {
     select s.id, name, active, extract(epoch from ts_end - now()) as disable_interval
     from service_activity_log as l join services as s on l.service_id = s.id
     where round = ?
-  ', $round)->hashes->reduce(sub { $a->{$b->{id}} = {name => $b->{name}, active => $b->{active}}; $a }, {});
+  ', $round)->hashes->reduce(sub {
+      $a->{$b->{id}} = {name => $b->{name}, active => $b->{active}, disable_interval => $b->{disable_interval}};
+      $a
+    }, {});
 
   return {scoreboard => $scoreboard->to_array, round => $round, services => $services};
 }
