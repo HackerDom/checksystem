@@ -32,6 +32,7 @@ cs_ctf_name: RuCTF 2008
 cs_flags_secret: ohKai2eepi
 cs_round_length: 35
 cs_flag_life_time: 15
+cs_disable_irrelevant_services: 0
 cs_time: "['2017-11-30 02:00:00', '2017-12-03 14:00:00']"
 
 cs_checkers_hostname_cb: |
