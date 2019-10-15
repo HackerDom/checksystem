@@ -53,17 +53,18 @@
     % for my $result (@$view) {
     <tr>
       <td><%= $result->{round} %></td>
-      <td><%= $result->{status} %> (<%== $checker->status2name->{$result->{status} // ''} // '' %>)</td>
+      <td><%= $result->{status} %></td>
       <td>
         %= $view_line->('Error', $result->{result}{error});
         % for my $state (qw/check put get_1 get_2/) {
           % my $r = $result->{result}{$state};
           % next unless $r->{command};
+          % my $status = $checker->status2name->{$result->{status} // ''} // '';
           <strong><%= $state %> [vuln_<%= $result->{result}{vuln}{n} %>] (<%= $result->{result}{$state}{ts} %>)</strong>
           <dl class="dl-horizontal">
             %= $view_line->('Command',   $r->{command});
             %= $view_line->('Elapsed',   $r->{elapsed});
-            %= $view_line->('Exit code', $r->{exit_code});
+            %= $view_line->('Exit code', "$r->{exit_code} ($status)";
             %= $view_line->('Exit',      join ', ', map { "$_ => $r->{exit}{$_}" } sort keys %{$r->{exit}});
             %= $view_line->('Timeout',   $r->{timeout});
             %= $view_line->('STDOUT',    $r->{stdout});
