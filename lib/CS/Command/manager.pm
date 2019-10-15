@@ -45,7 +45,7 @@ sub start_round {
   my $round = $db->insert('rounds', {n => \'(select max(n)+1 from rounds)'}, {returning => 'n'})->hash->{n};
   $self->round($round);
   $app->minion->enqueue('scoreboard');
-  $app->minion->enqueue('update_irrelevant_services') if $app->config->{disable_irrelevant_services};
+  $app->minion->enqueue('update_irrelevant_services') if $app->config->{cs}{disable_irrelevant_services};
   $app->log->debug("Start new round #$round");
 
   my $status = $self->get_monitor_status;
