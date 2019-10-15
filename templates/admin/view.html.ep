@@ -42,6 +42,8 @@
 
   %= $paging->();
 
+  % my $checker = app->model('checker');
+
   <table class="table table-bordered table-condensed" style="table-layout: fixed">
     <tr>
       <td width="60px"><b>round</b></td>
@@ -51,7 +53,7 @@
     % for my $result (@$view) {
     <tr>
       <td><%= $result->{round} %></td>
-      <td><%= $result->{status} %></td>
+      <td><%= $result->{status} %> (<%== $checker->status2name->{$result->{status} // ''} // '' %>)</td>
       <td>
         %= $view_line->('Error', $result->{result}{error});
         % for my $state (qw/check put get_1 get_2/) {
