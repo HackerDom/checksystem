@@ -64,7 +64,7 @@
           <dl class="dl-horizontal">
             %= $view_line->('Command',   $r->{command});
             %= $view_line->('Elapsed',   $r->{elapsed});
-            %= $view_line->('Exit code', "$r->{exit_code} ($status)";
+            %= $view_line->('Exit code', "$r->{exit_code} ($status)");
             %= $view_line->('Exit',      join ', ', map { "$_ => $r->{exit}{$_}" } sort keys %{$r->{exit}});
             %= $view_line->('Timeout',   $r->{timeout});
             %= $view_line->('STDOUT',    $r->{stdout});
