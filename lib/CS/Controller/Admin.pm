@@ -75,13 +75,14 @@ SQL
   $sql = <<SQL;
   with tmp as (
     select
-      sf.round, sf.ts, service_id, sf.team_id,
+      sf.round, sf.ts, service_id, sf.team_id, f.team_id as victim_id,
       row_number() over (partition by service_id order by sf.ts) as flags
     from stolen_flags as sf join flags as f using(data)
   )
   select
     (select name from services where id = service_id) as service,
     (select name from teams where id = team_id) as team,
+    (select name from teams where id = victim_id) as victim_team,
     flags, round, ts
   from tmp
   where flags in (1, 10, 100, 1000, 10000)
