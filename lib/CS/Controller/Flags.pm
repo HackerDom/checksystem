@@ -4,7 +4,7 @@ use Mojo::Base 'Mojolicious::Controller';
 sub put {
   my $c = shift->render_later;
 
-  my ($game_status) = $app->model('util')->game_status;
+  my ($game_status) = $c->app->model('util')->game_status;
   unless ($game_status == 1) {
     return $c->render(json => {status => \0, msg => 'Game is not active for now'}, status => 400);
   }
