@@ -107,23 +107,6 @@ sub _finish {
 
   $job->finish($result);
 
-  # Check changes
-  my $res = $db->select('runs', 'status',
-    {round => $round - 1, service_id => $service->{id}, team_id => $team->{id}});
-  if ($res->rows && $round > 1) {
-    my $old_status = $res->hash->{status};
-    if ($old_status != $status) {
-      my $data = {
-        round      => $round,
-        team_id    => $team->{id},
-        service_id => $service->{id},
-        status     => $status,
-        old_status => $old_status
-      };
-      $self->app->pg->pubsub->json('service_status_changed')->notify(service_status_changed => $data);
-    }
-  }
-
   my $run = {
     round      => $round,
     team_id    => $team->{id},

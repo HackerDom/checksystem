@@ -2,7 +2,7 @@ package CS::Model::Scoreboard;
 use Mojo::Base 'MojoX::Model';
 
 sub generate {
-  my ($self, $round, $limit, $team_id) = @_;
+  my ($self, $round, $limit) = @_;
   my $db = $self->app->pg->db;
 
   $round //= $db->query('select max(round) from scores')->array->[0];
@@ -15,7 +15,7 @@ sub generate {
     join (
       select * from scoreboard where round = case when $1-1<0 then 0 else $1-1 end
     ) as s1 using (team_id)
-    where s.round = $1 and ($3::int is null or s.team_id = $3) order by n limit $2', $round, $limit, $team_id)
+    where s.round = $1 order by n limit $2', $round, $limit)
     ->expand->hashes;
 
   my $services = $db->query('

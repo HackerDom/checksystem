@@ -38,28 +38,8 @@ sub startup {
       my $pg  = $app->pg;
 
       $app->model('score')->update(@_);
-      my $pubsub = $pg->pubsub->json('scoreboard')->json('team_position_changed')->json('scoreboard_updated');
+      my $pubsub = $pg->pubsub->json('scoreboard');
       $pubsub->notify('scoreboard');
-
-      my $scoreboard = $app->model('scoreboard')->generate;
-      for my $item (@{$scoreboard->{scoreboard}}) {
-        if ($item->{d}) {
-          $pubsub->notify(
-            team_position_changed => {team_id => $item->{team_id}, d => $item->{d}, round => $item->{round}});
-        }
-
-        my $data = {
-          team_id      => $item->{team_id},
-          d            => $item->{d},
-          n            => $item->{n},
-          round        => $item->{round},
-          score        => $item->{score},
-          old_score    => $item->{old_score},
-          services     => $item->{services},
-          old_services => $item->{old_services}
-        };
-        $pubsub->notify(scoreboard_updated => $data);
-      }
     }
   );
   $app->minion->add_task(update_irrelevant_services => sub { $_[0]->app->model('service')->update_irrelevant });
@@ -88,7 +68,6 @@ sub startup {
   # API
   $r->websocket('/api/events')->to('api#events')->name('api_events');
   $r->get('/api/info')->to('api#info')->name('api_info');
-  $r->websocket('/api/notifications')->to('api#notifications')->name('api_notifications');
 
   # Admin
   my $admin = $r->under('/admin')->to('admin#auth');
