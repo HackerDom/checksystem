@@ -44,7 +44,7 @@ sub start_round {
   my $db = $app->pg->db;
   my $round = $db->insert('rounds', {n => \'(select max(n)+1 from rounds)'}, {returning => 'n'})->hash->{n};
   $self->round($round);
-  $app->minion->enqueue('scoreboard');
+  $app->minion->enqueue(scoreboard => [] => {delay => 10});
   $app->minion->enqueue('update_irrelevant_services') if $app->config->{cs}{disable_irrelevant_services};
   $app->log->debug("Start new round #$round");
 
