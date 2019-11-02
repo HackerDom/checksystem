@@ -89,10 +89,10 @@ sub sla {
     sub {
       my $status = $_->{status} // 110;
 
-      # Skip inactive services
-      return if $status == 111;
+      # Skip inactive services or checker errors
+      return if $status == 111 || $status == 110;
 
-      my $field = ($_->{status} // 110) == 101 ? 'successed' : 'failed';
+      my $field = $status == 101 ? 'successed' : 'failed';
       ++$state->{$_->{team_id}}{$_->{service_id}}{$field};
     }
   );
