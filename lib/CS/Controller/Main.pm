@@ -20,6 +20,11 @@ sub scoreboard_history {
   $c->render(json => $c->model('scoreboard')->generate_history);
 }
 
+sub ctftime_scoreboard {
+  my $c = shift;
+  $c->render(json => $c->model('scoreboard')->generate_ctftime);
+}
+
 sub update {
   my $c = shift->render_later;
   $c->tx->with_compression;

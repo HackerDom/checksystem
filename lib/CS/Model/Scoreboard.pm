@@ -72,4 +72,17 @@ sub generate_for_team {
   return {scoreboard => $scoreboard->to_array, round => $round};
 }
 
+sub generate_ctftime {
+  return shift->app->pg->db->query(<<SQL
+    select json_build_object('standings', json_agg(x)::jsonb)
+    from (
+      select n as pos, t.name as team, score
+      from scoreboard as s join teams as t on s.team_id = t.id
+      where round = (select max(round) from scoreboard)
+      order by score desc
+    ) as x
+SQL
+  )->expand->array->[0];
+}
+
 1;

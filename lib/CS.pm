@@ -61,6 +61,7 @@ sub startup {
   $r->get('/scoreboard'         => [format => 'json'])->to('main#scoreboard')->name('scoreboard');
   $r->get('/history/scoreboard' => [format => 'json'])->to('main#scoreboard_history')
     ->name('scoreboard_history');
+  $r->get('/ctftime/scoreboard' => [format => 'json'])->to('main#ctftime_scoreboard');
 
   # Flags
   $r->put('/flags')->to('flags#put')->name('flags');

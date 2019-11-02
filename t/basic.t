@@ -246,4 +246,10 @@ $t->get_ok('/history/scoreboard.json')
   ->json_has('/0/scoreboard/0/services/0/fp')
   ->json_has('/0/scoreboard/0/services/0/status');
 
+$t->get_ok('/ctftime/scoreboard.json')
+  ->json_has('/standings')
+  ->json_has('/standings/0/pos')
+  ->json_has('/standings/0/team')
+  ->json_has('/standings/0/score');
+
 done_testing;

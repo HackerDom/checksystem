@@ -57,11 +57,4 @@ server {
   location /data {
     alias /var/www;
   }
-
-  location /nginx/status {
-    stub_status;
-
-    allow 127.0.0.1/32;
-    deny all;
-  }
 }
