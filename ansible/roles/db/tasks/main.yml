@@ -1,13 +1,12 @@
+- name: apt keys
+  apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc
+  tags: install
+
 - name: pg repo source
   apt_repository:
     repo: deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main
     filename: pgdg
     validate_certs: no
-  tags: install
-
-- name: apt keys
-  apt_key:
-    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
   tags: install
 
 - name: pg
@@ -39,8 +38,7 @@
   changed_when: "'CREATE EXTENSION' in r.stdout"
 
 - name: pg config
-  template:
-    src=pg_cs.conf.j2 dest=/etc/postgresql/12/main/conf.d/cs.conf
+  template: src=pg_cs.conf.j2 dest=/etc/postgresql/12/main/conf.d/cs.conf
   notify:
     - restart postgresql
   tags: install

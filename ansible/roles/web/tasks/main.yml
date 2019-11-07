@@ -4,15 +4,14 @@
     - reload systemd
   tags: update
 
+- name: apt keys
+  apt_key: url=https://nginx.org/keys/nginx_signing.key
+
 - name: nginx repo source
   apt_repository:
     repo: deb http://nginx.org/packages/{{ ansible_distribution|lower }}/ {{ ansible_distribution_release }} nginx
     filename: nginx
     validate_certs: no
-
-- name: apt keys
-  apt_key:
-    url: https://nginx.org/keys/nginx_signing.key
 
 - name: nginx
   apt: name=nginx state=latest update_cache=yes
