@@ -7,7 +7,7 @@ sub run {
   my $app = shift->app;
 
   # Jobs
-  $app->minion->reset;
+  $app->minion->reset({all => 1});
 
   # Migrations
   $app->pg->migrations->active;
