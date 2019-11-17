@@ -1,0 +1,14 @@
+- name: repo
+  git: repo=https://github.com/HackerDom/ctf-scoreboard-client.git dest={{cs_scoreboard_dir}}
+  become: yes
+  become_user: "{{cs_user}}"
+
+- name: npm install
+  command:
+    cmd: docker run --rm -v {{cs_scoreboard_dir}}/scoreboard:/home/build -w /home/build node:current-alpine -- /usr/local/bin/npm install
+    chdir: "{{cs_scoreboard_dir}}"
+
+- name: npm build
+  command:
+    cmd: docker run --rm -v {{cs_scoreboard_dir}}/scoreboard:/home/build -w /home/build node:current-alpine -- /usr/local/bin/npm run build
+    chdir: "{{cs_scoreboard_dir}}"
