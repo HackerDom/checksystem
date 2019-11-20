@@ -212,7 +212,7 @@ $t->get_ok('/api/info')
   ->json_has('/teams/1/id')
   ->json_has('/teams/1/name')
   ->json_hasnt('/teams/1/host')
-  ->json_hasht('/teams/1/network');
+  ->json_hasnt('/teams/1/network');
 
 $t->get_ok('/scoreboard.json')
   ->json_has('/round')
