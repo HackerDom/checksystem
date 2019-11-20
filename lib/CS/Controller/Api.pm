@@ -9,8 +9,7 @@ sub info {
   my $info = {};
   for (values %{$c->app->teams}) {
     my $team = dclone $_;
-    delete $team->{token};
-    delete $team->{bot};
+    delete $team->{$_} for (qw/token bot host network/);
     $info->{teams}{$_->{id}} = $team;
   }
   $info->{services}{$_->{id}} = $_->{name} for values %{$c->app->services};
