@@ -25,6 +25,11 @@ sub ctftime_scoreboard {
   $c->render(json => $c->model('scoreboard')->generate_ctftime);
 }
 
+sub fb {
+  my $c = shift;
+  $c->render(json => $c->model('scoreboard')->generate_fb);
+}
+
 sub update {
   my $c = shift->render_later;
   $c->tx->with_compression;

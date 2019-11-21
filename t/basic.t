@@ -253,4 +253,6 @@ $t->get_ok('/ctftime/scoreboard.json')
   ->json_has('/standings/0/team')
   ->json_has('/standings/0/score');
 
+$t->get_ok('/ctftime/fb.json');
+
 done_testing;

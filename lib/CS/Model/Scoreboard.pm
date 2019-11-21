@@ -85,4 +85,23 @@ SQL
   )->expand->array->[0];
 }
 
+sub generate_fb {
+  return shift->app->pg->db->query(<<SQL
+    select
+      (select name from services where id = service_id) as service,
+      (select name from teams where id = team_id) as team,
+      (select name from teams where id = victim_id) as victim_team,
+      round, ts
+    from (
+      select
+        sf.round, sf.ts, service_id, sf.team_id, f.team_id as victim_id,
+        row_number() over (partition by service_id order by sf.ts) as flags
+      from stolen_flags as sf join flags as f using(data)
+    ) tmp
+    where flags = 1
+    order by service_id
+SQL
+  )->hashes->to_array;
+}
+
 1;
