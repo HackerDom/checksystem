@@ -30,6 +30,20 @@ sub fb {
   $c->render(json => $c->model('scoreboard')->generate_fb);
 }
 
+sub t {
+  my $c = shift;
+
+  my $team_ip = $c->req->headers->header('X-Real-IP') // '127.0.0.1';
+  my $team = $c->pg->db->query("select id from teams where ? <<= network", $team_ip)->hash;
+
+  return $c->reply->not_found unless $team;
+
+  my $token = $c->app->teams->{$team->{id}}->{token};
+  $token =~ /^(\d+)_/;
+
+  $c->render(json => {team_id => $1});
+}
+
 sub update {
   my $c = shift->render_later;
   $c->tx->with_compression;
