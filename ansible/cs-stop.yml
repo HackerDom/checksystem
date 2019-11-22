@@ -9,6 +9,11 @@
   - name: stop watcher
     systemd: name=cs.watcher state=stopped
 
+- hosts: flags
+  tasks:
+  - name: stop web flags
+    systemd: name=cs.web state=stopped
+
 - hosts: checkers
   tasks:
   - name: stop checkers
