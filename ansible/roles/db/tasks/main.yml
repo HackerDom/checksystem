@@ -9,12 +9,12 @@
     validate_certs: no
   tags: install
 
-- name: pg
+- name: pg install
   apt: name=postgresql-12 state=latest update_cache=yes
   tags: install
 
 - name: pg user
-  shell: psql -c "create role {{pg_cs_user}} login password '{{pg_cs_pass}}'"
+  shell: psql -c "create role {{ pg_cs_user }} login password '{{ pg_cs_pass }}'"
   become: yes
   become_user: postgres
   register: r
@@ -22,7 +22,7 @@
   changed_when: "'CREATE ROLE' in r.stdout"
 
 - name: pg db
-  shell: createdb -O {{pg_cs_user}} {{pg_cs_db}}
+  shell: createdb -O {{ pg_cs_user }} {{ pg_cs_db }}
   become: yes
   become_user: postgres
   register: r
@@ -30,7 +30,7 @@
   changed_when: r.rc == 0
 
 - name: pg stat statements
-  shell: psql {{pg_cs_db}} -c "create extension pg_stat_statements"
+  shell: psql {{ pg_cs_db }} -c "create extension pg_stat_statements"
   become: yes
   become_user: postgres
   register: r

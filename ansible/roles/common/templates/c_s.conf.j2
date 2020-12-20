@@ -1,23 +1,23 @@
 # {{ ansible_managed }}
 
-{ hypnotoad => {listen => ['http://{{cs_hypnotoad_listen}}'], workers => {{cs_hypnotoad_workers}}, accepts => {{cs_hypnotoad_accepts}}},
-  pg        => {uri    => 'postgresql://{{pg_cs_user}}:{{pg_cs_pass}}@{{pg_cs_host}}:{{pg_cs_port}}/cs'},
+{ hypnotoad => {listen => ['http://{{ cs_hypnotoad_listen }}'], workers => {{ cs_hypnotoad_workers }}, accepts => {{ cs_hypnotoad_accepts }}},
+  pg        => {uri    => 'postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}:{{ pg_cs_port }}/cs'},
   cs        => {
-    base_url => '{{cs_base_url}}',
-    time     => [{{cs_time}}],
-    admin          => {auth => '{{cs_admin_auth}}'},
-    ctf            => {name => '{{cs_ctf_name}}'},
-    round_length   => {{cs_round_length}},
-    flag_life_time => {{cs_flag_life_time}},
-    flags    => {secret => '{{cs_flags_secret}}'},
-    disable_irrelevant_services => {{cs_disable_irrelevant_services}},
+    base_url => '{{ cs_base_url }}',
+    time     => [{{ cs_time }}],
+    admin          => {auth => '{{ cs_admin_auth }}'},
+    ctf            => {name => '{{ cs_ctf_name }}'},
+    round_length   => {{ cs_round_length }},
+    flag_life_time => {{ cs_flag_life_time }},
+    flags    => {secret => '{{ cs_flags_secret }}'},
+    disable_irrelevant_services => {{ cs_disable_irrelevant_services }},
     checkers => {
-      hostname => {{cs_checkers_hostname_cb}}
+      hostname => {{ cs_checkers_hostname_cb }}
     },
     links => [{name => '', ref => ''}],
-    static => ['{{cs_static_path}}']
+    static => ['{{ cs_static_path }}']
   },
-  teams => [{{teams}}],
-  services => [{{services}}],
-  queues => {{queues}}
+  teams => [{{ teams }}],
+  services => [{{ services }}],
+  queues => {{ queues }}
 }
