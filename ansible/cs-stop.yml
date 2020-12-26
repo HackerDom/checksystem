@@ -1,14 +1,3 @@
-- hosts: master
-  tasks:
-  - name: stop manager
-    systemd: name=cs.manager state=stopped
-  - name: stop worker
-    systemd: name=cs.worker-default state=stopped
-  - name: stop web
-    systemd: name=cs.web state=stopped
-  - name: stop watcher
-    systemd: name=cs.watcher state=stopped
-
 - hosts: flags
   tasks:
   - name: stop web flags
@@ -19,3 +8,14 @@
   - name: stop checkers
     systemd: name="cs.worker-checkers@{{ item }}" state=stopped
     with_sequence: count={{ cs_worker_instance }}
+
+- hosts: master
+  tasks:
+  - name: stop manager
+    systemd: name=cs.manager state=stopped
+  - name: stop worker
+    systemd: name=cs.worker-default state=stopped
+  - name: stop watcher
+    systemd: name=cs.watcher state=stopped
+  - name: stop web
+    systemd: name=cs.web state=stopped

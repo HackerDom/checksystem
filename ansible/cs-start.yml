@@ -1,11 +1,11 @@
 - hosts: master
   tasks:
+  - name: start web
+    systemd: name=cs.web state=started
   - name: start manager
     systemd: name=cs.manager state=started
   - name: start worker
     systemd: name=cs.worker-default state=started
-  - name: start web
-    systemd: name=cs.web state=started
   - name: start watcher
     systemd: name=cs.watcher state=started
 
