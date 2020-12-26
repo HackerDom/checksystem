@@ -9,7 +9,7 @@ sub generate {
 
   my $scoreboard = $db->query('
     select
-      t.name, s1.n - s.n as d, s.*, s1.services as old_services, s1.score as old_score
+      t.host, t.name, s1.n - s.n as d, s.*, s1.services as old_services, s1.score as old_score
     from scoreboard as s
     join teams as t on s.team_id = t.id
     join (
@@ -62,7 +62,7 @@ sub generate_for_team {
   my $round      = $db->query('select max(round) from scores')->array->[0];
   my $scoreboard = $db->query(
     q{
-    select t.name, s.*
+    select t.host, t.name, s.*
     from scoreboard as s
     join teams as t on s.team_id = t.id
     where team_id = $1 order by round desc

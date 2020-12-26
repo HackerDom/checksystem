@@ -29,9 +29,7 @@
             <div class="team_name"><a href="/team/<%== $team->{team_id} %>">
               <%= $team->{name} %></a>
             </div>
-            % if (current_route eq 'admin_index') {
-              <div class="team_server"><%== $team->{host} %></div>
-            % }
+            <div class="team_server"><%== $team->{host} %></div>
           </td>
           <td class="score"><%== $team->{score} %></td>
           % for my $service (@{$team->{services}}) {
