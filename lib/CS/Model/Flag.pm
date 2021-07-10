@@ -21,39 +21,36 @@ sub accept {
   my ($self, $team_id, $flag_data, $cb) = @_;
   my $app = $self->app;
 
-  Mojo::IOLoop->delay(
-    sub {
-      unless ($self->validate($flag_data)) {
-        return $cb->({ok => 0, error => "[$flag_data] Denied: invalid flag"});
-      }
+  unless ($self->validate($flag_data)) {
+    Mojo::IOLoop->next_tick(sub {
+      $cb->({ok => 0, error => "[$flag_data] Denied: invalid flag"});
+    });
+    Mojo::IOLoop->one_tick unless Mojo::IOLoop->is_running;
+    return;
+  }
 
-      $app->pg->db->query(
-        'select row_to_json(accept_flag(?, ?, ?)) as r',
-        $team_id, $flag_data, $app->config->{cs}{flag_life_time},
-        shift->begin
-      );
-    },
-    sub {
-      my ($d, undef, $result) = @_;
-      my ($ok, $msg, $round, $victim_id, $service_id, $amount) =
-        @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4 f5 f6/};
+  $app->pg->db->query_p(
+    'select row_to_json(accept_flag(?, ?, ?)) as r',
+    $team_id, $flag_data, $app->config->{cs}{flag_life_time}
+  )->then(sub {
+    my $result = shift;
 
-      unless ($ok) {
-        return $cb->({ok => 0, error => "[$flag_data] $msg"});
-      }
+    my ($ok, $msg, $round, $victim_id, $service_id, $amount) =
+      @{$result->expand->hash->{r}}{qw/f1 f2 f3 f4 f5 f6/};
 
-      my $data = {round => $round, service_id => $service_id, team_id => $team_id, victim_id => $victim_id};
-      $app->pg->pubsub->json('flag')->notify(flag => $data);
-
-      $msg = "[$flag_data] Accepted. $amount flag points";
-      return $cb->({ok => 1, message => $msg});
+    unless ($ok) {
+      return $cb->({ok => 0, error => "[$flag_data] $msg"});
     }
-    )->catch(
-    sub {
-      $app->log->error("[flags] Error while accept: $_[0]");
-      return $cb->({ok => 0, error => 'Please try again later'});
-    }
-    )->wait;
+
+    my $data = {round => $round, service_id => $service_id, team_id => $team_id, victim_id => $victim_id};
+    $app->pg->pubsub->json('flag')->notify(flag => $data);
+
+    $msg = "[$flag_data] Accepted. $amount flag points";
+    $cb->({ok => 1, message => $msg});
+  })->catch(sub {
+    $app->log->error("[flags] Error while accept: $_[0]");
+    return $cb->({ok => 0, error => 'Please try again later'});
+  })->wait;
 }
 
 sub validate {

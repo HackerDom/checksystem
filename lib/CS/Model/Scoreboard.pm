@@ -9,7 +9,7 @@ sub generate {
 
   my $scoreboard = $db->query('
     select
-      t.host, t.name, s1.n - s.n as d, s.*, s1.services as old_services, s1.score as old_score
+      t.host, t.network, t.name, s1.n - s.n as d, s.*, s1.services as old_services, s1.score as old_score
     from scoreboard as s
     join teams as t on s.team_id = t.id
     join (

@@ -79,7 +79,7 @@ sub startup {
   $admin->get('/view/:team_id/:service_id')->to('admin#view')->name('admin_view');
 
   # Minion Admin
-  $app->plugin('Minion::Admin' => {route => $admin->route('/minion')});
+  $app->plugin('Minion::Admin' => {route => $admin->any('/minion')});
 
   $app->hook(
     before_dispatch => sub {

@@ -18,12 +18,12 @@ services:
       - POSTGRES_PASSWORD
       - TEST_ONLINE
   pg:
-    image: "postgres:12"
+    image: "postgres"
     volumes:
-      - "dbdata:/var/lib/postgresql/data"
+      - "cs_pg_data:/var/lib/postgresql/data"
       - "./create_db.sql:/docker-entrypoint-initdb.d/create_db.sql"
     environment:
       - POSTGRES_PASSWORD
 
 volumes:
-  dbdata:
+  cs_pg_data:

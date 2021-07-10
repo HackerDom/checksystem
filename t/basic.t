@@ -87,10 +87,10 @@ $db->select(runs => '*', {service_id => 4, team_id => 1})->expand->hashes->map(
   }
 );
 
-# SLA
+diag('SLA after #1');
 is $db->query('select count(*) from sla')->array->[0], 12, 'right sla';
 
-# FP
+diag('FP after #1');
 is $db->query('select count(*) from flag_points')->array->[0], 12, 'right fp';
 
 # Flags (only for service up1)
@@ -129,6 +129,7 @@ if ($value->{round} == 1) {
 my ($data, $flag_data);
 my $flag_cb = sub { $data = $_[0] };
 
+diag('Flags after #2');
 $db->update('services', {ts_start => \"now() + interval '10 minutes'", ts_end => undef}, {name => 'up2'});
 $flag_data = $db->select(flags => 'data', {team_id => 1, service_id => 4, ack => 'true'})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
@@ -156,7 +157,7 @@ $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
 like $data->{error}, qr/you already submitted this flag/, 'right error';
 
-# SLA
+diag('SLA after #2');
 is $db->query('select count(*) from sla')->array->[0], 24, 'right sla';
 $data = $db->select(sla => '*', {team_id => 1, service_id => 1, round => 1})->hash; # down1
 is $data->{successed}, 0, 'right sla';
@@ -171,18 +172,17 @@ $data = $db->select(sla => '*', {team_id => 1, service_id => 4, round => 1})->ha
 is $data->{successed}, 0, 'right sla';
 is $data->{failed},    0, 'right sla';
 
-# FP
+diag('FP after #2');
 is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
 $db->query('select * from flag_points where round = 1')->hashes->map(sub { is $_->{amount}, 1, 'right fp' });
 
 diag('New round #3');
-
 $manager->start_round;
 is $manager->round, 3, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 $app->model('score')->update;
 
-# SLA
+diag('SLA after #3');
 is $db->query('select count(*) from sla')->array->[0], 36, 'right sla';
 
 $data = $db->select(sla => '*', {team_id => 1, service_id => 1, round => 2})->hash; # down1
@@ -198,7 +198,7 @@ $data = $db->select(sla => '*', {team_id => 1, service_id => 4, round => 2})->ha
 is $data->{successed}, 1, 'right sla';
 is $data->{failed},    0, 'right sla';
 
-# FP
+diag('FP after #3');
 is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';
 
 $app->model('score')->update(3);
