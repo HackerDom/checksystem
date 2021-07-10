@@ -15,7 +15,9 @@ jobs:
       - name: install psql
         run: apt-get update && apt-get install -y --no-install-recommends postgresql-client
       - name: create db
-        run: psql -U postgres -c 'create database cs_test;'
+        env:
+          PGPASSWORD: postgres
+        run: psql -h postgres -U postgres -c 'create database cs_test;'
       - name: install dependencies
         run: cpanm -n --installdeps .
       - name: run tests
