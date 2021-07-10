@@ -20,6 +20,12 @@ jobs:
         run: psql -h postgres -U postgres -c 'create database cs_test;'
       - name: install dependencies
         run: cpanm -n --installdeps .
+      - name: perl version
+        run: perl -v
+      - name: postgresq version
+        env:
+          PGPASSWORD: postgres
+        run: psql -h postgres -U postgres -c 'select version();'
       - name: run tests
         env:
           TEST_ONLINE: postgresql://postgres:postgres@postgres:5432/cs_test
