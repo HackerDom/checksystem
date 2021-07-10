@@ -1,0 +1,26 @@
+name: test
+on: [push]
+jobs:
+  perl:
+    runs-on: ubuntu-latest
+    container:
+      image: perl:5.34
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v2
+      - name: perl version
+        run: perl -V
+      - name: postgres version
+        run: pg_config --version
+      - name: install dependencies
+        run: cpanm -n --installdeps .
+      - name: create db
+        run: psql -U postgres -c 'create database cs_test;'
+      - name: run tests
+        env:
+          TEST_ONLINE: postgresql://postgres:postgres@postgres:5432/cs_test
+        run: prove -lv t
