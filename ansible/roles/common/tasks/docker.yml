@@ -1,0 +1,40 @@
+- name: remove old docker packages
+  apt:
+    name:
+      - docker
+      - docker-engine
+      - docker.io
+      - containerd
+      - runc
+    state: absent
+
+- name: apt keys
+  apt_key: url=https://download.docker.com/linux/{{ ansible_distribution|lower }}/gpg
+
+- name: docker repo
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable"
+    filename: docker
+
+- name: ensure docker packages
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: latest
+    update_cache: yes
+
+- name: pip
+  apt:
+    name:
+      - python3-pip
+      - python3-setuptools
+    install_recommends: no
+
+- name: docker modules for python
+  pip:
+    name:
+      - docker
+      - docker-compose
+    executable: pip3

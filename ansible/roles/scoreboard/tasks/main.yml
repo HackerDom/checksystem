@@ -5,10 +5,10 @@
 
 - name: npm install
   command:
-    cmd: docker run --rm -v {{ cs_scoreboard_dir }}/scoreboard:/home/build -w /home/build node:current-alpine -- /usr/local/bin/npm install
+    cmd: docker run --rm -v {{ cs_scoreboard_dir }}/scoreboard:/home/build -w /home/build node:latest -- /usr/local/bin/npm install
     chdir: "{{ cs_scoreboard_dir }}"
 
 - name: npm build
   command:
-    cmd: docker run --rm -v {{ cs_scoreboard_dir }}/scoreboard:/home/build -w /home/build node:current-alpine -- /usr/local/bin/npm run build
+    cmd: docker run --rm -v {{ cs_scoreboard_dir }}/scoreboard:/home/build -w /home/build node:latest -- /usr/local/bin/npm run build
     chdir: "{{ cs_scoreboard_dir }}"
