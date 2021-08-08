@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+
+- targets:
+{% for item in groups['cs'] %}
+  - {{ hostvars[item]['private_ip'] }}:9100
+{% endfor %}

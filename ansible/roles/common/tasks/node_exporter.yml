@@ -1,0 +1,21 @@
+- name: node_exporter catalog
+  file:
+    path: /root/node_exporter
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+
+- name: docker compose
+  copy:
+    src: node-compose.yml
+    dest: /root/node_exporter/docker-compose.yml
+    mode: 0644
+    owner: root
+    group: root
+
+- name: ensure compose running
+  docker_compose:
+    project_src: /root/node_exporter
+    state: present
+    restarted: yes

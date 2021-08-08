@@ -2,6 +2,11 @@
   roles:
     - common
 
+- hosts: monitoring
+  roles:
+    - role: monitoring
+      tags: monitoring
+
 - hosts: db
   roles:
     - db

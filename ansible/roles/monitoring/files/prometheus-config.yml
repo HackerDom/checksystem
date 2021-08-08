@@ -1,0 +1,20 @@
+global:
+  evaluation_interval: 15s
+  scrape_interval: 15s
+  scrape_timeout: 10s
+
+scrape_configs:
+  - job_name: prometheus
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+        - 127.0.0.1:9090
+
+  - job_name: node
+    file_sd_configs:
+      - files:
+        - /etc/prometheus/servers.yml
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: host
+        regex: '(.*):.*'

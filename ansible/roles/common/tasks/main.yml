@@ -63,3 +63,10 @@
 
 - name: docker
   include_tasks: docker.yml
+
+- name: node_exporter
+  include_tasks:
+    file: node_exporter.yml
+    apply:
+      tags: node_exporter
+  tags: node_exporter

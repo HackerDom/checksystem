@@ -1,0 +1,19 @@
+version: "2.4"
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    volumes:
+      - "/root/monitoring/etc/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "/root/monitoring/etc/servers.yml:/etc/prometheus/servers.yml"
+      - "/root/monitoring/data/prom:/prometheus"
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    volumes:
+      - "/root/monitoring/data/grafana:/var/lib/grafana"
+    ports:
+      - "0.0.0.0:3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD

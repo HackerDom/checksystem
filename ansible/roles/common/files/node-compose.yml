@@ -1,0 +1,12 @@
+version: "2.4"
+
+services:
+  node_exporter:
+    image: prom/node-exporter:latest
+    command:
+      - "--path.rootfs=/host"
+    restart: unless-stopped
+    network_mode: host
+    pid: host
+    volumes:
+      - "/:/host:ro,rslave"
