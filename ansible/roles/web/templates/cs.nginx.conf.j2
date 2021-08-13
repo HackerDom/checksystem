@@ -64,4 +64,8 @@ server {
   location /data {
     alias /var/www;
   }
+
+  location = /basic_status {
+    stub_status;
+  }
 }

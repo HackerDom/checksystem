@@ -6,7 +6,6 @@ services:
     restart: unless-stopped
     volumes:
       - "/root/monitoring/etc/prometheus.yml:/etc/prometheus/prometheus.yml"
-      - "/root/monitoring/etc/servers.yml:/etc/prometheus/servers.yml"
       - "/root/monitoring/data/prom:/prometheus"
   grafana:
     image: grafana/grafana:latest
@@ -17,3 +16,7 @@ services:
       - "0.0.0.0:3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    restart: unless-stopped
+    command: "-nginx.scrape-uri=http://{{ hostvars['cs-master']['private_ip'] }}/basic_status"

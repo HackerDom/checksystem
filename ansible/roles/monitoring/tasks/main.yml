@@ -12,17 +12,6 @@
     - { path: "/root/monitoring/data/prom", mode: "0777" }
     - { path: "/root/monitoring/data/grafana", mode: "0777" }
 
-- name: files
-  copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest  }}"
-    mode: 0644
-    owner: root
-    group: root
-  with_items:
-    - { src: "docker-compose.yml", dest: "/root/monitoring/docker-compose.yml" }
-    - { src: "prometheus-config.yml", dest: "/root/monitoring/etc/prometheus.yml" }
-
 - name: templates
   template:
     src: "{{ item.src }}"
@@ -31,7 +20,8 @@
     owner: root
     group: root
   with_items:
-    - { src: "prometheus-servers.j2", dest: "/root/monitoring/etc/servers.yml" }
+    - { src: "docker-compose.yml.j2", dest: "/root/monitoring/docker-compose.yml" }
+    - { src: "prometheus-config.yml.j2", dest: "/root/monitoring/etc/prometheus.yml" }
     - { src: ".env.j2", dest: "/root/monitoring/.env" }
 
 - name: ensure compose running
