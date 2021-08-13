@@ -24,8 +24,21 @@
     group: root
     mode: 0700
 
+- name: nginx data catalog
+  file:
+    path: /var/www
+    state: directory
+    owner: nginx
+    group: root
+    mode: 0755
+
 - name: nginx config
-  template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: 0644
   notify:
     - restart nginx
   tags: update
@@ -38,7 +51,12 @@
     - restart nginx
 
 - name: nginx cs config
-  template: src=cs.nginx.conf.j2 dest=/etc/nginx/conf.d/cs.conf
+  template:
+    src: cs.nginx.conf.j2
+    dest: /etc/nginx/conf.d/cs.conf
+    owner: root
+    group: root
+    mode: 0644
   notify:
     - restart nginx
   tags: update

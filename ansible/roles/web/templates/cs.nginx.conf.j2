@@ -27,6 +27,13 @@ map $request_uri $do_not_cache {
 
 server {
   listen {{cs_nginx_listen}};
+
+  {% if 'https' == cs_base_url|urlsplit('scheme') -%}
+  listen 443 ssl;
+  ssl_certificate /etc/letsencrypt/live/{{ cs_base_url|urlsplit('hostname') }}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/{{ cs_base_url|urlsplit('hostname') }}/privkey.pem;
+  {% endif %}
+
   access_log /var/log/nginx/cs.access.log cs;
 
   gzip on;
