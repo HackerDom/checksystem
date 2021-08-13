@@ -1,6 +1,6 @@
 # {{ ansible_managed }}
 
-{ hypnotoad => {listen => ['http://{{ cs_hypnotoad_listen }}'], workers => {{ cs_hypnotoad_workers }}, accepts => {{ cs_hypnotoad_accepts }}},
+{ hypnotoad => {listen => ['http://{{ cs_hypnotoad_listen }}'], workers => {{ cs_hypnotoad_workers }}, accepts => {{ cs_hypnotoad_accepts }}, keep_alive_timeout => {{ cs_hypnotoad_keep_alive_timeout }}},
   pg        => {uri    => 'postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}:{{ pg_cs_port }}/cs'},
   cs        => {
     base_url => '{{ cs_base_url }}',

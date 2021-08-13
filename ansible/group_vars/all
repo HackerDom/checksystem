@@ -22,6 +22,7 @@ cs_hypnotoad_listen: 127.0.0.1:8080
 cs_hypnotoad_flags_listen: 127.0.0.1:8080
 cs_hypnotoad_workers: 4
 cs_hypnotoad_accepts: 1024
+cs_hypnotoad_keep_alive_timeout: 100
 cs_nginx_workers: 1
 cs_nginx_upstream_keepalive: 32
 cs_nginx_listen: 80
