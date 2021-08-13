@@ -21,3 +21,8 @@ scrape_configs:
     static_configs:
       - targets:
           - nginx-exporter:9113
+
+  - job_name: postgres
+    static_configs:
+      - targets:
+          - postgres-exporter:9187

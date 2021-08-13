@@ -20,3 +20,8 @@ services:
     image: nginx/nginx-prometheus-exporter:latest
     restart: unless-stopped
     command: "-nginx.scrape-uri=http://{{ hostvars['cs-master']['private_ip'] }}/basic_status"
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}:{{ pg_cs_port }}/{{ pg_cs_db }}?sslmode=disable"
