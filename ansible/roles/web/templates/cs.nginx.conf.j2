@@ -38,7 +38,9 @@ server {
 
   gzip on;
   gzip_types text/plain text/css application/javascript application/json;
-  client_max_body_size 50m;
+
+  client_max_body_size 24m;
+  client_body_buffer_size 8m;
 
   proxy_http_version 1.1;
 
