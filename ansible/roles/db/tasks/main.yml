@@ -10,7 +10,7 @@
   tags: install
 
 - name: pg install
-  apt: name=postgresql-12 state=latest update_cache=yes
+  apt: name=postgresql-13 state=latest update_cache=yes
   tags: install
 
 - name: pg user
@@ -38,14 +38,14 @@
   changed_when: "'CREATE EXTENSION' in r.stdout"
 
 - name: pg config
-  template: src=pg_cs.conf.j2 dest=/etc/postgresql/12/main/conf.d/cs.conf
+  template: src=pg_cs.conf.j2 dest=/etc/postgresql/13/main/conf.d/cs.conf
   notify:
     - restart postgresql
   tags: install
 
 - name: pg_hba config
   lineinfile:
-    path: /etc/postgresql/12/main/pg_hba.conf
+    path: /etc/postgresql/13/main/pg_hba.conf
     insertafter: '^# IPv4 local connections:'
     regexp: '^host\tcs'
     line: "host\tcs\tcs\t0.0.0.0/0\tmd5"
