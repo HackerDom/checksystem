@@ -43,4 +43,37 @@ sub put {
   $do->();
 }
 
+sub list {
+  my $c = shift;
+
+  my $token = $c->req->headers->header('X-Team-Token') // '';
+  return $c->render(json => {status => \0, msg => 'Invalid token'}, status => 400)
+    unless my $team_id = $c->app->tokens->{$token};
+
+  return $c->render(json => {status => \0, msg => 'Invalid service_id'}, status => 400)
+    unless my $service = $c->app->services->{$c->param('service_id')};
+
+  my $config = $c->config->{cs};
+
+  my $r = $c->pg->db->query('select max(round) from scoreboard')->array->[0];
+
+  my $where = {
+    service_id => $service->{id},
+    team_id    => {'!=', $team_id},
+    round      => {'>', $r - $config->{flag_life_time}}
+  };
+  my $flags = $c->pg->db->select(flags => ['public_id', 'team_id'] => $where);
+  my $flag_ids = $flags->hashes->reduce(sub {
+    my $team = $c->app->teams->{$b->{team_id}};
+    $a->{$b->{team_id}}{host} = $c->model('util')->get_service_host($team, $service);
+    push @{$a->{$b->{team_id}}{flag_ids}}, $b->{public_id};
+    $a;
+  }, {});
+
+  $c->render(json => {
+    flag_id_description => $service->{public_flag_description},
+    flag_ids => $flag_ids
+  });
+}
+
 1;

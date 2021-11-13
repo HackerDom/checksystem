@@ -24,6 +24,17 @@ sub get_active_services {
   })->hashes->reduce(sub { $a->{$b->{id}}++; $a }, {});
 }
 
+sub get_service_host {
+  my ($self, $team, $service) = @_;
+
+  my $host = $team->{host};
+  if (my $cb = $self->app->config->{cs}{checkers}{hostname}) {
+    $host = $cb->($team, $service)
+  }
+
+  return $host;
+}
+
 sub game_time {
   my $self = shift;
 

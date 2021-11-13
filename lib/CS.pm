@@ -67,10 +67,13 @@ sub startup {
 
   # Flags
   $r->put('/flags')->to('flags#put')->name('flags');
+  $r->get('/flag_ids')->to('flags#list')->name('flag_ids');
 
   # API
   $r->websocket('/api/events')->to('api#events')->name('api_events');
   $r->get('/api/info')->to('api#info')->name('api_info');
+  $r->get('/teams')->to('api#teams')->name('teams');
+  $r->get('/services')->to('api#services')->name('services');
 
   # Admin
   my $admin = $r->under('/admin')->to('admin#auth');
@@ -97,6 +100,7 @@ sub init {
 
   if ($ENV{CS_DEBUG}) {
     $app->teams($db->select('teams')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
+    $app->tokens($db->select(teams => '*', {token => {'!=', undef}})->hashes->reduce(sub { $a->{$b->{token}} = $b->{id}; $a }, {}));
     $app->services($db->select('services')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
     return;
   }

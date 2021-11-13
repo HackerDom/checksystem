@@ -53,8 +53,7 @@ sub check {
   }
 
   my $cmd;
-  my $host = $team->{host};
-  if (my $cb = $job->app->config->{cs}{checkers}{hostname}) { $host = $cb->($team, $service) }
+  my $host = $job->app->model('util')->get_service_host($team, $service);
 
   for (@{c(qw/check put_get get2/)->shuffle}) {
     if ($_ eq 'check') {

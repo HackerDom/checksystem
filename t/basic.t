@@ -225,6 +225,25 @@ $t->get_ok('/api/info')
   ->json_has('/teams/1/network')
   ->json_has('/teams/1/tags');
 
+$t->get_ok('/teams')
+  ->json_has('/1')
+  ->json_is('/1/id', '1')
+  ->json_is('/1/name', 'team1')
+  ->json_is('/1/network', '127.0.1.0/24');
+
+$t->get_ok('/services')
+  ->json_is('/1', 'down1')
+  ->json_is('/2', 'down2')
+  ->json_is('/3', 'up1')
+  ->json_is('/4', 'up2');
+
+$t->get_ok('/flag_ids?service_id=3' => {'X-Team-Token' => $app->teams->{1}{token}})
+  ->json_is('/flag_id_description', $app->services->{3}{public_flag_description})
+  ->json_has('/flag_ids/2/flag_ids/0')
+  ->json_has('/flag_ids/2/host')
+  ->json_has('/flag_ids/3/flag_ids/0')
+  ->json_has('/flag_ids/3/host');
+
 $t->get_ok('/scoreboard.json')
   ->json_has('/round')
   ->json_has('/scoreboard')
