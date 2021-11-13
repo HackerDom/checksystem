@@ -41,6 +41,7 @@ create index on service_activity_log (round);
 create table flags (
   data       text primary key,
   id         text not null,
+  public_id  text,
   round      integer not null references rounds(n),
   ts         timestamptz not null default now(),
   team_id    integer not null references teams(id),

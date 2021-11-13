@@ -72,10 +72,10 @@ $db->select(runs => '*', {service_id => 3, team_id => 1})->expand->hashes->map(
     is $_->{status}, 101, 'right status';
     is $_->{stdout}, '',  'right stdout';
     for my $step (qw/check put get_1/) {
-      is $_->{result}{$step}{stderr},    '',  'right stderr';
-      is $_->{result}{$step}{stdout},    911, 'right stdout';
-      is $_->{result}{$step}{exception}, '',  'right exception';
-      is $_->{result}{$step}{timeout},   0,   'right timeout';
+      is $_->{result}{$step}{stderr},    '',                                             'right stderr';
+      is $_->{result}{$step}{stdout},    '{"public_flag_id":"911","password":"sEcr3t"}', 'right stdout';
+      is $_->{result}{$step}{exception}, '',                                             'right exception';
+      is $_->{result}{$step}{timeout},   0,                                               'right timeout';
     }
     is keys %{$_->{result}{get_2}}, 0, 'right get_2';
   }
@@ -106,9 +106,10 @@ is $db->query('select count(*) from flag_points')->array->[0], 12, 'right fp';
 is $db->query('select count(*) from flags where ack = true')->array->[0], 3, 'right numbers of flags';
 $db->query('select * from flags where ack = true')->hashes->map(
   sub {
-    is $_->{round},  1,                'right round';
-    is $_->{id},     911,              'right id';
-    like $_->{data}, qr/[A-Z\d]{31}=/, 'right flag';
+    is $_->{round},     1,                                              'right round';
+    is $_->{id},        '{"public_flag_id":"911","password":"sEcr3t"}', 'right id';
+    is $_->{public_id}, '911',                                          'right public id';
+    like $_->{data},    qr/[A-Z\d]{31}=/,                               'right flag';
   }
 );
 

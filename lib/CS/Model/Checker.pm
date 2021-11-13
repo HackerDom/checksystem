@@ -77,8 +77,14 @@ sub check {
       return $self->_finish($job, $result, $db) if $result->{put}{slow} || $result->{put}{exit_code} != 101;
 
       $flag_row = {ack => 'true'};
-      (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
-      $flag_row->{id} = $flag->{id} = $result->{put}{fid} = $id if $id;
+      (my $new_id = $result->{put}{stdout}) =~ s/\r?\n$//;
+      if ($new_id) {
+        $flag_row->{id} = $flag->{id} = $new_id;
+        if (my $new_json_id = j($new_id)) {
+          $flag_row->{public_id} = $new_json_id->{public_flag_id} if ref $new_json_id eq 'HASH';
+        }
+      }
+
       $db->update(flags => $flag_row => {data => $flag->{data}});
 
       $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
