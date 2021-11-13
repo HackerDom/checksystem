@@ -142,7 +142,8 @@ declare
 
   attacker_pos smallint;
   victim_pos   smallint;
-  amount_max   smallint;
+  amount_max   float8;
+  teams_count  smallint;
 
   service_active boolean;
 begin
@@ -151,9 +152,9 @@ begin
   if not found then return row(false, 'Denied: no such flag'); end if;
   if team_id = flag.team_id then return row(false, 'Denied: flag is your own'); end if;
 
-  select now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')
-  from services where id = flag.service_id into service_active;
-  if not service_active then return row(false, 'Denied: service inactive'); end if;
+  -- select now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')
+  -- from services where id = flag.service_id into service_active;
+  -- if not service_active then return row(false, 'Denied: service inactive'); end if;
 
   perform * from stolen_flags as sf where sf.data = flag_data and sf.team_id = accept_flag.team_id;
   if found then return row(false, 'Denied: you already submitted this flag'); end if;
@@ -163,11 +164,14 @@ begin
 
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = accept_flag.team_id into attacker_pos;
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = flag.team_id into victim_pos;
-  select count(*) from teams into amount_max;
+  select count(*) from teams into teams_count;
+  select flag_base_amount into amount_max
+  from service_activity_log as sal
+  where sal.service_id = flag.service_id and sal.round = flag.round;
 
   amount = case when attacker_pos >= victim_pos
     then amount_max
-    else exp(ln(amount_max) * (victim_pos - amount_max) / (attacker_pos - amount_max))
+    else amount_max * (1 - ((victim_pos - attacker_pos) / (teams_count + 1)))
   end;
 
   select max(n) into round from rounds;
@@ -182,3 +186,10 @@ $$ language plpgsql;
 drop function if exists accept_flag(integer, text, integer);
 drop table if exists rounds, monitor, scores, teams, vulns, services, service_activity_log, flags,
   stolen_flags, runs, sla, flag_points, scoreboard, bots;
+
+
+
+-- create index on stolen_flags (round);
+-- create index on flags (round, service_id);
+-- create index on service_activity_log (service_id, phase);
+-- create index on flags (service_id);
