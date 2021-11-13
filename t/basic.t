@@ -24,6 +24,8 @@ is $up1->{vulns}, '1:1:2', 'right vulns';
 is $up1->{public_flag_description}, 'user profile', 'right flag description in db';
 is $app->services->{3}{public_flag_description}, 'user profile', 'right flag description in app';
 
+is_deeply $app->teams->{1}{tags}, ['edu', 'online', 'Russia'], 'right tags for team';
+
 my $manager = CS::Command::manager->new(app => $app);
 
 diag('New round #1');
@@ -219,7 +221,8 @@ $t->get_ok('/api/info')
   ->json_has('/teams/1/id')
   ->json_has('/teams/1/name')
   ->json_has('/teams/1/host')
-  ->json_has('/teams/1/network');
+  ->json_has('/teams/1/network')
+  ->json_has('/teams/1/tags');
 
 $t->get_ok('/scoreboard.json')
   ->json_has('/round')
