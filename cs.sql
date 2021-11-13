@@ -8,11 +8,12 @@ create table teams (
 );
 
 create table services (
-  id       serial primary key,
-  name     text not null unique,
-  vulns    text not null,
-  ts_start timestamptz,
-  ts_end   timestamptz
+  id                      serial primary key,
+  name                    text not null unique,
+  vulns                   text not null,
+  ts_start                timestamptz,
+  ts_end                  timestamptz,
+  public_flag_description text
 );
 
 create table vulns (

@@ -18,17 +18,27 @@ has status2name => sub {
   return {map { $_->[1] => $_->[0] } @{$_[0]->statuses}};
 };
 
-sub vulns {
+sub info {
   my ($self, $service) = @_;
 
-  my $info = $self->_run([$service->{path}, 'info'], $service->{timeout});
-  return (1, '1') unless $info->{exit_code} == 101;
+  my $result = {vulns => {count => 1, distribution => '1'}, public_flag_description => undef};
 
+  my $info = $self->_run([$service->{path}, 'info'], $service->{timeout});
+  return $result unless $info->{exit_code} == 101;
+
+  # vulns
   $info->{stdout} =~ /^vulns:(.*)$/m;
   my $vulns = trim($1 // '');
-  return (1, '1') unless $vulns =~ /^[0-9:]+$/;
+  if ($vulns =~ /^[0-9:]+$/) {
+    $result->{vulns}{count} = 0 + split(/:/, $vulns);
+    $result->{vulns}{distribution} = $vulns;
+  }
 
-  return (0 + split(/:/, $vulns), $vulns);
+  # flag description
+  $info->{stdout} =~ /^public_flag_description:(.*)$/m;
+  $result->{public_flag_description} = trim($1) if $1;
+
+  return $result;
 }
 
 sub check {

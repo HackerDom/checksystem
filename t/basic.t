@@ -13,9 +13,16 @@ my $t   = Test::Mojo->new('CS');
 my $app = $t->app;
 my $db  = $app->pg->db;
 
+diag('Init');
+
 $app->commands->run('reset_db');
 $app->commands->run('init_db');
 $app->init;
+
+my $up1 = $db->select(services => '*', {name => 'up1'})->hash;
+is $up1->{vulns}, '1:1:2', 'right vulns';
+is $up1->{public_flag_description}, 'user profile', 'right flag description in db';
+is $app->services->{3}{public_flag_description}, 'user profile', 'right flag description in app';
 
 my $manager = CS::Command::manager->new(app => $app);
 
