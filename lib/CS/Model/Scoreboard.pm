@@ -20,7 +20,7 @@ sub generate {
 
   my $services = $db->query('
     select s.id, name, active, extract(epoch from ts_end - now()) as disable_interval
-    from service_activity as l join services as s on l.service_id = s.id
+    from service_activity as sa join services as s on sa.service_id = s.id
     where round = ?
   ', $round)->hashes->reduce(sub {
       $a->{$b->{id}} = {name => $b->{name}, active => $b->{active}, disable_interval => $b->{disable_interval}};

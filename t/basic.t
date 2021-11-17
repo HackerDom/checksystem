@@ -161,7 +161,7 @@ $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 1, 'right status';
 my $stolen_flag = $db->select(stolen_flags => undef, {team_id => 2})->hash;
 is $stolen_flag->{data}, $flag_data, 'right flag';
-is $stolen_flag->{amount}, 3, 'right amount';
+is $stolen_flag->{amount}, $app->config->{cs}{scoring}{start_flag_price}, 'right amount';
 
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
@@ -196,9 +196,9 @@ diag('Flags after #3');
 $flag_data = $db->select(flags => 'data', {team_id => 1, ack => 'true', round => 2})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 1, 'right status';
-my $stolen_flag = $db->select(stolen_flags => undef, {team_id => 2, round => 3})->hash;
+$stolen_flag = $db->select(stolen_flags => undef, {team_id => 2, round => 3})->hash;
 is $stolen_flag->{data}, $flag_data, 'right flag';
-is $stolen_flag->{amount}, 3, 'right amount';
+ok $stolen_flag->{amount} > $app->config->{cs}{scoring}{start_flag_price}, 'right amount';
 
 diag('SLA after #3');
 is $db->query('select count(*) from sla')->array->[0], 36, 'right sla';

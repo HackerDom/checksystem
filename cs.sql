@@ -147,7 +147,8 @@ declare
 
   attacker_pos smallint;
   victim_pos   smallint;
-  amount_max   smallint;
+  amount_max   float8;
+  teams_count  smallint;
 
   service_active boolean;
 begin
@@ -168,11 +169,15 @@ begin
 
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = accept_flag.team_id into attacker_pos;
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = flag.team_id into victim_pos;
-  select count(*) from teams into amount_max;
+
+  select count(*) from teams into teams_count;
+  select flag_base_amount into amount_max
+  from service_activity as sa
+  where sa.service_id = flag.service_id and sa.round = flag.round;
 
   amount = case when attacker_pos >= victim_pos
     then amount_max
-    else exp(ln(amount_max) * (victim_pos - amount_max) / (attacker_pos - amount_max))
+    else amount_max * (1 - ((victim_pos - attacker_pos) / (teams_count + 1)))
   end;
 
   select max(n) into round from rounds;
