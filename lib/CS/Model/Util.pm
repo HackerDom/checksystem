@@ -69,9 +69,13 @@ sub update_service_phases {
 
         $new_phase = $submissions >= $scoring->{cooling_submissions_limit} ? 'DYING' : 'COOLING_DOWN';
 
-        my $start_amount = $cooling_phase->{flag_base_amount};
-        $new_base_amount = $start_amount +
-          $submissions * ($scoring->{dying_flag_price} - $start_amount) / $scoring->{cooling_submissions_limit};
+        if ($new_phase eq 'DYING') {
+          $new_base_amount = $scoring->{dying_flag_price};
+        } else {
+          my $start_amount = $cooling_phase->{flag_base_amount};
+          $new_base_amount = $start_amount +
+            $submissions * ($scoring->{dying_flag_price} - $start_amount) / $scoring->{cooling_submissions_limit};
+        }
       } elsif ($prev_phase eq 'DYING') {
         my $current_dying_rounds = $db->query(q{
           select count(*)

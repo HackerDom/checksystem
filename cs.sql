@@ -177,7 +177,7 @@ begin
 
   amount = case when attacker_pos >= victim_pos
     then amount_max
-    else amount_max * (1 - ((victim_pos - attacker_pos) / (teams_count + 1)))
+    else amount_max ^ (1 - ((victim_pos - attacker_pos) / (teams_count - 1)))
   end;
 
   select max(n) into round from rounds;
