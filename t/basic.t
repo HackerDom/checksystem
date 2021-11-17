@@ -192,6 +192,14 @@ is $manager->round, 3, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 $app->model('score')->update;
 
+diag('Flags after #3');
+$flag_data = $db->select(flags => 'data', {team_id => 1, ack => 'true', round => 2})->hash->{data};
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
+is $data->{ok}, 1, 'right status';
+my $stolen_flag = $db->select(stolen_flags => undef, {team_id => 2, round => 3})->hash;
+is $stolen_flag->{data}, $flag_data, 'right flag';
+is $stolen_flag->{amount}, 3, 'right amount';
+
 diag('SLA after #3');
 is $db->query('select count(*) from sla')->array->[0], 36, 'right sla';
 
@@ -211,7 +219,13 @@ is $data->{failed},    0, 'right sla';
 diag('FP after #3');
 is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';
 
-$app->model('score')->update(3);
+diag('New round #4');
+$manager->start_round;
+is $manager->round, 4, 'right round';
+$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
+$app->model('score')->update;
+
+$app->model('score')->update(4);
 
 # API
 $t->get_ok('/api/info')

@@ -28,15 +28,18 @@ create table rounds (
   ts timestamptz not null default now()
 );
 
-create table service_activity_log (
-  id         serial primary key,
-  ts         timestamptz not null default now(),
-  round      integer not null references rounds(n),
-  service_id integer not null references services(id),
-  active     boolean not null,
+create type service_phase as enum ('NOT_RELEASED', 'HEATING', 'COOLING_DOWN', 'DYING', 'REMOVED');
+create table service_activity (
+  id               serial primary key,
+  ts               timestamptz not null default now(),
+  round            integer not null references rounds(n),
+  service_id       integer not null references services(id),
+  active           boolean not null,
+  flag_base_amount float8 not null default 0,
+  phase            service_phase not null,
   unique (round, service_id)
 );
-create index on service_activity_log (round);
+create index on service_activity (service_id, phase);
 
 create table flags (
   data       text primary key,
@@ -182,5 +185,6 @@ end;
 $$ language plpgsql;
 -- 1 down
 drop function if exists accept_flag(integer, text, integer);
-drop table if exists rounds, monitor, scores, teams, vulns, services, service_activity_log, flags,
+drop table if exists rounds, monitor, scores, teams, vulns, services, service_activity, flags,
   stolen_flags, runs, sla, flag_points, scoreboard, bots;
+drop type if exists service_phase;

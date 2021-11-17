@@ -47,10 +47,10 @@ sub run {
 
   # Scores
   $db->insert(rounds => {n => 0});
-  $db->query('
-    insert into service_activity_log (round, service_id, active)
-    select 0, id, false from services
-  ');
+  $db->query(q{
+    insert into service_activity (round, service_id, active, phase)
+    select 0, id, false, 'NOT_RELEASED' from services
+  });
   $db->query('
     insert into flag_points (round, team_id, service_id, amount)
     select 0, teams.id, services.id, 1 from teams cross join services
