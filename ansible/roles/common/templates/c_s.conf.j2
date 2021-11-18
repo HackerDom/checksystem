@@ -14,6 +14,7 @@
     checkers => {
       hostname => {{ cs_checkers_hostname_cb }}
     },
+    scoring => { {{ cs_scoring }} },
     links => [{name => '', ref => ''}],
     static => ['{{ cs_static_path }}']
   },
