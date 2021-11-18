@@ -49,7 +49,7 @@ sub start_round {
   $app->log->debug("Start new round #$round");
 
   my $status = $self->get_monitor_status;
-  my $active_services = $app->model('util')->ensure_active_services;
+  my $active_services = $app->model('util')->update_service_phases($round);
 
   my $check_round = max($round - $app->config->{cs}{flag_life_time}, $init_round // 1);
   my $flags = $db->query(

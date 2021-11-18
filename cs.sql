@@ -28,15 +28,18 @@ create table rounds (
   ts timestamptz not null default now()
 );
 
-create table service_activity_log (
-  id         serial primary key,
-  ts         timestamptz not null default now(),
-  round      integer not null references rounds(n),
-  service_id integer not null references services(id),
-  active     boolean not null,
+create type service_phase as enum ('NOT_RELEASED', 'HEATING', 'COOLING_DOWN', 'DYING', 'REMOVED');
+create table service_activity (
+  id               serial primary key,
+  ts               timestamptz not null default now(),
+  round            integer not null references rounds(n),
+  service_id       integer not null references services(id),
+  active           boolean not null,
+  flag_base_amount float8 not null default 0,
+  phase            service_phase not null,
   unique (round, service_id)
 );
-create index on service_activity_log (round);
+create index on service_activity (service_id, phase);
 
 create table flags (
   data       text primary key,
@@ -144,7 +147,8 @@ declare
 
   attacker_pos smallint;
   victim_pos   smallint;
-  amount_max   smallint;
+  amount_max   float8;
+  teams_count  smallint;
 
   service_active boolean;
 begin
@@ -165,11 +169,15 @@ begin
 
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = accept_flag.team_id into attacker_pos;
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = flag.team_id into victim_pos;
-  select count(*) from teams into amount_max;
+
+  select count(*) from teams into teams_count;
+  select flag_base_amount into amount_max
+  from service_activity as sa
+  where sa.service_id = flag.service_id and sa.round = flag.round;
 
   amount = case when attacker_pos >= victim_pos
     then amount_max
-    else exp(ln(amount_max) * (victim_pos - amount_max) / (attacker_pos - amount_max))
+    else amount_max ^ (1 - ((victim_pos - attacker_pos) / (teams_count - 1)))
   end;
 
   select max(n) into round from rounds;
@@ -182,5 +190,6 @@ end;
 $$ language plpgsql;
 -- 1 down
 drop function if exists accept_flag(integer, text, integer);
-drop table if exists rounds, monitor, scores, teams, vulns, services, service_activity_log, flags,
+drop table if exists rounds, monitor, scores, teams, vulns, services, service_activity, flags,
   stolen_flags, runs, sla, flag_points, scoreboard, bots;
+drop type if exists service_phase;
