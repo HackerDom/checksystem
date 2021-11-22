@@ -184,7 +184,7 @@ is $data->{failed},    0, 'right sla';
 
 diag('FP after #2');
 is $db->query('select count(*) from flag_points')->array->[0], 24, 'right fp';
-$db->query('select * from flag_points where round = 1')->hashes->map(sub { is $_->{amount}, 1, 'right fp' });
+$db->query('select * from flag_points where round = 1')->hashes->map(sub { is $_->{amount}, 0, 'right fp' });
 
 diag('New round #3');
 $manager->start_round;
