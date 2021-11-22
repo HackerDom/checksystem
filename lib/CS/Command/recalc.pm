@@ -54,15 +54,15 @@ sub run {
 
   my $rounds = $db->select(rounds_origin => 'max(n)')->array->[0];
   for my $r (1 .. $rounds) {
+    $app->log->info("Start round $r");
     $db->insert('rounds', {n => \'(select max(n)+1 from rounds)'});
-    $app->log->info("Recalc round $r");
 
-    my $active_services = $app->model('util')->update_service_phases($r);
+    $app->model('util')->update_service_phases($r);
+    $app->log->info("Service phases updated");
 
     # post flags
     my $flags = $db->select('stolen_flags_origin', ['team_id', 'data'], {round => $r})->hashes;
-    $app->log->info("Stolen flags: " . (0 + @$flags));
-
+    $app->log->info("Start post flags: " . (0 + @$flags));
     if (@$flags) {
       my $post = Mojo::Promise->map({concurrency => 8}, sub {
 
@@ -78,6 +78,7 @@ sub run {
     }
 
     # calc scores
+    $app->log->info("Calc scoreboard");
     $app->model('score')->update($r);
   }
 }
