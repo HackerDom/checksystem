@@ -14,9 +14,9 @@ sub update_service_phases {
   my $active_services = $db->query(q{
     insert into service_activity (round, service_id, phase, active)
     select
-      ?, id, 'NOT_RELEASED',
-      now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')
-    from services
+      $1, service_id, 'NOT_RELEASED', active
+    from service_activity_log
+    where round = $1
     returning service_id, active
   }, $r)->hashes->reduce(sub { $a->{$b->{service_id}} = $b->{active}; $a }, {});
 
