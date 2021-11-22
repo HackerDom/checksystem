@@ -54,7 +54,7 @@ create table flags (
   expired    boolean not null default false,
   unique (round, team_id, service_id)
 );
-create index on flags (expired);
+create index on flags (expired, service_id);
 
 create table stolen_flags (
   data    text not null references flags(data),

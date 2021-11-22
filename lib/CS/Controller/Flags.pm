@@ -53,16 +53,23 @@ sub list {
   return $c->render(json => {status => \0, msg => 'Invalid service_id'}, status => 400)
     unless my $service = $c->app->services->{$c->param('service_id')};
 
-  my $where = {
-    service_id => $service->{id},
-    team_id    => {'!=', $team_id},
-    -not_bool  => 'expired'
-  };
-  my $flags = $c->pg->db->select(flags => ['public_id', 'team_id'] => $where);
+  my $flags = $c->pg->db->query(q{
+    select
+      t.id,
+      array_agg(public_id) filter (where public_id is not null) as flag_ids
+    from (
+      select * from flags
+      where
+        service_id = ? and team_id != ? and
+        public_id is not null and not expired
+    ) as f
+    right join teams as t on t.id = f.team_id
+    group by t.id
+  }, $service->{id}, $team_id);
   my $flag_ids = $flags->hashes->reduce(sub {
-    my $team = $c->app->teams->{$b->{team_id}};
-    $a->{$b->{team_id}}{host} = $c->model('util')->get_service_host($team, $service);
-    push @{$a->{$b->{team_id}}{flag_ids}}, $b->{public_id};
+    my $team = $c->app->teams->{$b->{id}};
+    $a->{$b->{id}}{host} = $c->model('util')->get_service_host($team, $service);
+    $a->{$b->{id}}{flag_ids} = $b->{flag_ids} // [];
     $a;
   }, {});
 
