@@ -27,8 +27,7 @@ sub check {
         next;
       }
 
-      my $address = $team->{host};
-      if (my $cb = $app->config->{cs}{checkers}{hostname}) { $address = $cb->($team, $service) }
+      my $address = $app->model('util')->get_service_host($team, $service);
 
       Mojo::IOLoop->client(
         {address => $address, port => $port, timeout => 10} => sub {

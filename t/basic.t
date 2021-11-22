@@ -13,9 +13,18 @@ my $t   = Test::Mojo->new('CS');
 my $app = $t->app;
 my $db  = $app->pg->db;
 
+diag('Init');
+
 $app->commands->run('reset_db');
 $app->commands->run('init_db');
 $app->init;
+
+my $up1 = $db->select(services => '*', {name => 'up1'})->hash;
+is $up1->{vulns}, '1:1:2', 'right vulns';
+is $up1->{public_flag_description}, 'user profile', 'right flag description in db';
+is $app->services->{3}{public_flag_description}, 'user profile', 'right flag description in app';
+
+is_deeply $app->teams->{1}{tags}, ['edu', 'online', 'Russia'], 'right tags for team';
 
 my $manager = CS::Command::manager->new(app => $app);
 
@@ -63,10 +72,10 @@ $db->select(runs => '*', {service_id => 3, team_id => 1})->expand->hashes->map(
     is $_->{status}, 101, 'right status';
     is $_->{stdout}, '',  'right stdout';
     for my $step (qw/check put get_1/) {
-      is $_->{result}{$step}{stderr},    '',  'right stderr';
-      is $_->{result}{$step}{stdout},    911, 'right stdout';
-      is $_->{result}{$step}{exception}, '',  'right exception';
-      is $_->{result}{$step}{timeout},   0,   'right timeout';
+      is $_->{result}{$step}{stderr},    '',                                             'right stderr';
+      is $_->{result}{$step}{stdout},    '{"public_flag_id":"911","password":"sEcr3t"}', 'right stdout';
+      is $_->{result}{$step}{exception}, '',                                             'right exception';
+      is $_->{result}{$step}{timeout},   0,                                               'right timeout';
     }
     is keys %{$_->{result}{get_2}}, 0, 'right get_2';
   }
@@ -97,9 +106,10 @@ is $db->query('select count(*) from flag_points')->array->[0], 12, 'right fp';
 is $db->query('select count(*) from flags where ack = true')->array->[0], 3, 'right numbers of flags';
 $db->query('select * from flags where ack = true')->hashes->map(
   sub {
-    is $_->{round},  1,                'right round';
-    is $_->{id},     911,              'right id';
-    like $_->{data}, qr/[A-Z\d]{31}=/, 'right flag';
+    is $_->{round},     1,                                              'right round';
+    is $_->{id},        '{"public_flag_id":"911","password":"sEcr3t"}', 'right id';
+    is $_->{public_id}, '911',                                          'right public id';
+    like $_->{data},    qr/[A-Z\d]{31}=/,                               'right flag';
   }
 );
 
@@ -151,7 +161,7 @@ $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 1, 'right status';
 my $stolen_flag = $db->select(stolen_flags => undef, {team_id => 2})->hash;
 is $stolen_flag->{data}, $flag_data, 'right flag';
-is $stolen_flag->{amount}, 3, 'right amount';
+is $stolen_flag->{amount}, $app->config->{cs}{scoring}{start_flag_price}, 'right amount';
 
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
@@ -182,6 +192,14 @@ is $manager->round, 3, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
 $app->model('score')->update;
 
+diag('Flags after #3');
+$flag_data = $db->select(flags => 'data', {team_id => 1, ack => 'true', round => 2})->hash->{data};
+$app->model('flag')->accept(2, $flag_data, $flag_cb);
+is $data->{ok}, 1, 'right status';
+$stolen_flag = $db->select(stolen_flags => undef, {team_id => 2, round => 3})->hash;
+is $stolen_flag->{data}, $flag_data, 'right flag';
+ok $stolen_flag->{amount} > $app->config->{cs}{scoring}{start_flag_price}, 'right amount';
+
 diag('SLA after #3');
 is $db->query('select count(*) from sla')->array->[0], 36, 'right sla';
 
@@ -201,7 +219,13 @@ is $data->{failed},    0, 'right sla';
 diag('FP after #3');
 is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';
 
-$app->model('score')->update(3);
+diag('New round #4');
+$manager->start_round;
+is $manager->round, 4, 'right round';
+$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
+$app->model('score')->update;
+
+$app->model('score')->update(4);
 
 # API
 $t->get_ok('/api/info')
@@ -212,7 +236,27 @@ $t->get_ok('/api/info')
   ->json_has('/teams/1/id')
   ->json_has('/teams/1/name')
   ->json_has('/teams/1/host')
-  ->json_has('/teams/1/network');
+  ->json_has('/teams/1/network')
+  ->json_has('/teams/1/tags');
+
+$t->get_ok('/teams')
+  ->json_has('/1')
+  ->json_is('/1/id', '1')
+  ->json_is('/1/name', 'team1')
+  ->json_is('/1/network', '127.0.1.0/24');
+
+$t->get_ok('/services')
+  ->json_is('/1', 'down1')
+  ->json_is('/2', 'down2')
+  ->json_is('/3', 'up1')
+  ->json_is('/4', 'up2');
+
+$t->get_ok('/flag_ids?service_id=3' => {'X-Team-Token' => $app->teams->{1}{token}})
+  ->json_is('/flag_id_description', $app->services->{3}{public_flag_description})
+  ->json_has('/flag_ids/2/flag_ids/0')
+  ->json_has('/flag_ids/2/host')
+  ->json_has('/flag_ids/3/flag_ids/0')
+  ->json_has('/flag_ids/3/host');
 
 $t->get_ok('/scoreboard.json')
   ->json_has('/round')

@@ -14,16 +14,20 @@ sub run {
 
   # Services
   for my $service (@{$app->config->{services}}) {
-    my ($n, $vulns) = $app->model('checker')->vulns($service);
+    my $service_info = $app->model('checker')->info($service);
 
-    my $service_data = {name => $service->{name}, vulns => $vulns};
+    my $service_data = {
+      name => $service->{name},
+      vulns => $service_info->{vulns}{distribution},
+      public_flag_description => $service_info->{public_flag_description}
+    };
     if (my $active = $service->{active}) {
       $service_data->{ts_start} = $active->[0];
       $service_data->{ts_end} = $active->[1];
     }
     my $service_id = $db->insert(services => $service_data, {returning => 'id'})->hash->{id};
 
-    $db->insert(vulns => {service_id => $service_id, n => $_}) for 1 .. $n;
+    $db->insert(vulns => {service_id => $service_id, n => $_}) for 1 .. $service_info->{vulns}{count};
   }
 
   # Bots
@@ -43,10 +47,10 @@ sub run {
 
   # Scores
   $db->insert(rounds => {n => 0});
-  $db->query('
-    insert into service_activity_log (round, service_id, active)
-    select 0, id, false from services
-  ');
+  $db->query(q{
+    insert into service_activity (round, service_id, active, phase)
+    select 0, id, false, 'NOT_RELEASED' from services
+  });
   $db->query('
     insert into flag_points (round, team_id, service_id, amount)
     select 0, teams.id, services.id, 1 from teams cross join services

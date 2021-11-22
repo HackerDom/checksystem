@@ -90,28 +90,14 @@ SQL
 SQL
   my $fb = $c->_tablify($db->query($sql));
 
-  # Irrelevant services
-  $sql = <<SQL;
-  select
-    (select name from services where id = service_id) as service,
-    (select name from teams where id = sf.team_id) as team,
-    count(*)
-  from stolen_flags as sf join flags as f using(data)
-  group by service_id, sf.team_id
-  having count(*) >= 100
-  order by 1, 3 desc
-SQL
-  my $irrelevant_cervices = $c->_tablify($db->query($sql));
-
   $c->render(
     now => scalar(localtime),
     game_status => $game_status,
     tables => [
-      {name => 'Installed flags',     data => $installed_flags},
-      {name => 'Stolen flags',        data => $stolen_flags},
-      {name => 'First bloods',        data => $fb},
-      {name => 'Irrelevant services', data => $irrelevant_cervices},
-      {name => 'Services',            data => $services}
+      {name => 'Installed flags', data => $installed_flags},
+      {name => 'Stolen flags',    data => $stolen_flags},
+      {name => 'First bloods',    data => $fb},
+      {name => 'Services',        data => $services}
     ]
   );
 }

@@ -55,4 +55,28 @@ sub events {
   $c->send({json => {type => 'state', value => $data}});
 }
 
+sub teams {
+  my $c = shift;
+
+  my $teams = dclone $c->app->teams;
+
+  for my $team (values %$teams) {
+    delete $team->{$_} for (qw/token bot host/);
+  }
+
+  $c->render(json => $teams);
+}
+
+sub services {
+  my $c = shift;
+
+  my $services = {};
+
+  for (values %{$c->app->services}) {
+    $services->{$_->{id}} = $_->{name};
+  }
+
+  $c->render(json => $services);
+}
+
 1;

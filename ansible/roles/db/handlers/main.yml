@@ -1,4 +1,4 @@
 - name: restart postgresql
   systemd:
-    name: postgresql@13-main
+    name: postgresql@14-main
     state: restarted

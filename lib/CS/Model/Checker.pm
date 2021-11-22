@@ -18,17 +18,27 @@ has status2name => sub {
   return {map { $_->[1] => $_->[0] } @{$_[0]->statuses}};
 };
 
-sub vulns {
+sub info {
   my ($self, $service) = @_;
 
-  my $info = $self->_run([$service->{path}, 'info'], $service->{timeout});
-  return (1, '1') unless $info->{exit_code} == 101;
+  my $result = {vulns => {count => 1, distribution => '1'}, public_flag_description => undef};
 
+  my $info = $self->_run([$service->{path}, 'info'], $service->{timeout});
+  return $result unless $info->{exit_code} == 101;
+
+  # vulns
   $info->{stdout} =~ /^vulns:(.*)$/m;
   my $vulns = trim($1 // '');
-  return (1, '1') unless $vulns =~ /^[0-9:]+$/;
+  if ($vulns =~ /^[0-9:]+$/) {
+    $result->{vulns}{count} = 0 + split(/:/, $vulns);
+    $result->{vulns}{distribution} = $vulns;
+  }
 
-  return (0 + split(/:/, $vulns), $vulns);
+  # flag description
+  $info->{stdout} =~ /^public_flag_description:(.*)$/m;
+  $result->{public_flag_description} = trim($1) if $1;
+
+  return $result;
 }
 
 sub check {
@@ -43,8 +53,7 @@ sub check {
   }
 
   my $cmd;
-  my $host = $team->{host};
-  if (my $cb = $job->app->config->{cs}{checkers}{hostname}) { $host = $cb->($team, $service) }
+  my $host = $job->app->model('util')->get_service_host($team, $service);
 
   for (@{c(qw/check put_get get2/)->shuffle}) {
     if ($_ eq 'check') {
@@ -67,8 +76,14 @@ sub check {
       return $self->_finish($job, $result, $db) if $result->{put}{slow} || $result->{put}{exit_code} != 101;
 
       $flag_row = {ack => 'true'};
-      (my $id = $result->{put}{stdout}) =~ s/\r?\n$//;
-      $flag_row->{id} = $flag->{id} = $result->{put}{fid} = $id if $id;
+      (my $new_id = $result->{put}{stdout}) =~ s/\r?\n$//;
+      if ($new_id) {
+        $flag_row->{id} = $flag->{id} = $new_id;
+        if (my $new_json_id = j($new_id)) {
+          $flag_row->{public_id} = $new_json_id->{public_flag_id} if ref $new_json_id eq 'HASH';
+        }
+      }
+
       $db->update(flags => $flag_row => {data => $flag->{data}});
 
       $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
