@@ -154,7 +154,7 @@ like $data->{error}, qr/invalid flag/, 'right error';
 $flag_data = $db->select(flags => 'data', {team_id => 2, ack => 'true'})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
-like $data->{error}, qr/flag is your own/, 'right error';
+like $data->{error}, qr/invalid flag/, 'right error';
 
 $flag_data = $db->select(flags => 'data', {team_id => 1, ack => 'true'})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
