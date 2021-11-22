@@ -71,6 +71,14 @@ sub update_service_phases {
 
         if ($new_phase eq 'DYING') {
           $new_base_amount = $scoring->{dying_flag_price};
+
+          # start dying timer
+          my $interval = $scoring->{dying_rounds} * $app->config->{cs}{round_length};
+          $db->query(q{
+            update services
+            set ts_end = now() + (interval '1 seconds' * $2::integer)
+            where id = $1 and ts_end is null
+          }, $service->{id}, $interval);
         } else {
           my $start_amount = $cooling_phase->{flag_base_amount};
           $new_base_amount = $start_amount +
@@ -85,12 +93,6 @@ sub update_service_phases {
 
         $new_phase = $current_dying_rounds < $scoring->{dying_rounds} ? 'DYING' : 'REMOVED';
         $new_base_amount = $new_phase eq 'REMOVED' ? 0 : $scoring->{dying_flag_price};
-
-        # actualy remove service
-        if ($new_phase eq 'REMOVED') {
-          $active_services->{$service->{id}} = undef;
-          $db->update(services => {ts_end => \'now()'}, {id => $service->{id}, ts_end => undef});
-        }
       } elsif ($prev_phase eq 'REMOVED') {
         $new_phase = 'REMOVED';
         $new_base_amount = 0;
