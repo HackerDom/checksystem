@@ -53,14 +53,10 @@ sub list {
   return $c->render(json => {status => \0, msg => 'Invalid service_id'}, status => 400)
     unless my $service = $c->app->services->{$c->param('service_id')};
 
-  my $config = $c->config->{cs};
-
-  my $r = $c->pg->db->query('select max(round) from scoreboard')->array->[0];
-
   my $where = {
     service_id => $service->{id},
     team_id    => {'!=', $team_id},
-    round      => {'>', $r - $config->{flag_life_time}}
+    -not_bool  => 'expired'
   };
   my $flags = $c->pg->db->select(flags => ['public_id', 'team_id'] => $where);
   my $flag_ids = $flags->hashes->reduce(sub {

@@ -30,8 +30,7 @@ sub accept {
   }
 
   $app->pg->db->query_p(
-    'select row_to_json(accept_flag(?, ?, ?)) as r',
-    $team_id, $flag_data, $app->config->{cs}{flag_life_time}
+    'select row_to_json(accept_flag(?, ?)) as r', $team_id, $flag_data
   )->then(sub {
     my $result = shift;
 

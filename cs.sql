@@ -51,8 +51,10 @@ create table flags (
   service_id integer not null references services(id),
   vuln_id    integer not null references vulns(id),
   ack        boolean not null default false,
+  expired    boolean not null default false,
   unique (round, team_id, service_id)
 );
+create index on flags (expired);
 
 create table stolen_flags (
   data    text not null references flags(data),
@@ -138,7 +140,7 @@ create table scoreboard (
 create index on scoreboard (round);
 create index on scoreboard (team_id);
 
-create function accept_flag(team_id integer, flag_data text, flag_life_time integer) returns record as $$
+create function accept_flag(team_id integer, flag_data text) returns record as $$
 <<my>>
 declare
   flag   flags%rowtype;
@@ -155,6 +157,9 @@ begin
   select * from flags where data = flag_data into flag;
 
   if not found then return row(false, 'Denied: no such flag'); end if;
+
+  if flag.expired then return row(false, 'Denied: flag is too old'); end if;
+
   if team_id = flag.team_id then return row(false, 'Denied: flag is your own'); end if;
 
   select now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')
@@ -165,8 +170,6 @@ begin
   if found then return row(false, 'Denied: you already submitted this flag'); end if;
 
   select max(s.round) into round from scoreboard as s;
-  if flag.round <= round - flag_life_time then return row(false, 'Denied: flag is too old'); end if;
-
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = accept_flag.team_id into attacker_pos;
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = flag.team_id into victim_pos;
 
@@ -189,7 +192,7 @@ begin
 end;
 $$ language plpgsql;
 -- 1 down
-drop function if exists accept_flag(integer, text, integer);
+drop function if exists accept_flag(integer, text);
 drop table if exists rounds, monitor, scores, teams, vulns, services, service_activity, flags,
   stolen_flags, runs, sla, flag_points, scoreboard, bots;
 drop type if exists service_phase;
