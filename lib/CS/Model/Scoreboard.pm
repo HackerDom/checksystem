@@ -43,7 +43,14 @@ sub generate {
       $a
     }, {});
 
-  return {scoreboard => $scoreboard->to_array, round => $round, services => $services};
+  my ($game_status) = $self->app->model('util')->game_status;
+
+  return {
+    scoreboard  => $scoreboard->to_array,
+    round       => $round,
+    services    => $services,
+    game_status => $game_status
+  };
 }
 
 sub generate_history {
