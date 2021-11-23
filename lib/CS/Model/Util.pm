@@ -140,6 +140,20 @@ sub game_time {
   return {start => $result->{start}, end => $result->{end}};
 }
 
+sub game_duration {
+  my $self = shift;
+
+  my $time = $self->app->config->{cs}{time};
+  my $range = join ',', map "'[$_->[0], $_->[1]]'", @$time;
+
+  my $duration = $self->app->pg->db->query(qq{
+    select extract(epoch from sum(upper(range)-lower(range)))
+    from (select unnest(array[$range]::tstzrange[]) as range) as tmp
+  })->array->[0];
+
+  return $duration / $self->app->config->{cs}{round_length};
+}
+
 sub game_status {
   my $self = shift;
 

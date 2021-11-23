@@ -17,4 +17,6 @@ my $game_time = $u->game_time;
 ok $game_time->{start} > 0, 'right game time';
 ok $game_time->{end} > 0, 'right game time';
 
+ok $u->game_duration > 0, 'rigth game duration';
+
 done_testing;

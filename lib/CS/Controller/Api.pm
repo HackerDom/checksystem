@@ -6,7 +6,10 @@ use Sereal::Dclone 'dclone';
 sub info {
   my $c = shift;
 
-  my $info = {};
+  my $info = {
+    contestName => $c->config->{cs}{ctf}{name},
+    roundsCount => int($c->model('util')->game_duration)
+  };
   for (values %{$c->app->teams}) {
     my $team = dclone $_;
     delete $team->{$_} for (qw/token bot/);
