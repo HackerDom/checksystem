@@ -50,10 +50,10 @@ sub start_round {
   my $status = $self->get_monitor_status;
   my $active_services = $app->model('util')->update_service_phases($round);
 
-  my $check_round = max($round - $app->config->{cs}{flag_life_time}, $init_round // 1);
+  my $check_round = max($round - $app->config->{cs}{flag_life_time}, ($init_round // 1) - 1);
   $db->query(q{
     update flags set expired = true
-    where expired = false and round < ?
+    where expired = false and round <= ?
   }, $check_round);
 
   my $flags = $db->query(q{
