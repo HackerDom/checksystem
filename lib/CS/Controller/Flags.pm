@@ -51,7 +51,7 @@ sub list {
     unless my $team_id = $c->app->tokens->{$token};
 
   return $c->render(json => {status => \0, msg => 'Invalid service_id'}, status => 400)
-    unless my $service = $c->app->services->{$c->param('service_id')};
+    unless my $service = $c->app->services->{$c->param('service_id') // $c->param('service')};
 
   my $flags = $c->pg->db->query(q{
     select
