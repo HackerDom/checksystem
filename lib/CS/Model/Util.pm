@@ -166,6 +166,7 @@ sub game_status {
     with tmp as (
       select *, (select max(n) from rounds where ts < lower(range)) as r
       from (select unnest(array[$range]::tstzrange[]) as range) as tmp
+      where lower(range) <= now()
     )
     select
       bool_or(now() <@ range) as live,
