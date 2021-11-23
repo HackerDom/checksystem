@@ -157,7 +157,7 @@ begin
   select * from flags where data = flag_data into flag;
 
   if not found then return row(false, 'Denied: no such flag'); end if;
-  if team_id = flag.team_id then return row(false, 'Denied: invalid flag'); end if;
+  if team_id = flag.team_id then return row(false, 'Denied: invalid or own flag'); end if;
   if flag.expired then return row(false, 'Denied: flag is too old'); end if;
 
   select now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')

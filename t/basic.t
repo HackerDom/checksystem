@@ -149,12 +149,12 @@ $db->update('services', {ts_start => undef, ts_end => undef}, {name => 'up2'});
 
 $app->model('flag')->accept(2, 'flag', $flag_cb);
 is $data->{ok}, 0, 'right status';
-like $data->{error}, qr/invalid flag/, 'right error';
+like $data->{error}, qr/invalid or own flag/, 'right error';
 
 $flag_data = $db->select(flags => 'data', {team_id => 2, ack => 'true'})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $flag_cb);
 is $data->{ok}, 0, 'right status';
-like $data->{error}, qr/invalid flag/, 'right error';
+like $data->{error}, qr/invalid or own flag/, 'right error';
 
 $flag_data = $db->select(flags => 'data', {team_id => 1, ack => 'true'})->hash->{data};
 $app->model('flag')->accept(2, $flag_data, $flag_cb);

@@ -23,7 +23,7 @@ sub accept {
 
   unless ($self->validate($flag_data)) {
     Mojo::IOLoop->next_tick(sub {
-      $cb->({ok => 0, error => "[$flag_data] Denied: invalid flag"});
+      $cb->({ok => 0, error => "[$flag_data] Denied: invalid or own flag"});
     });
     Mojo::IOLoop->one_tick unless Mojo::IOLoop->is_running;
     return;
