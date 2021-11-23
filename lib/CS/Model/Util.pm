@@ -110,10 +110,10 @@ sub get_active_services {
   my $self = shift;
 
   return $self->app->pg->db->query(q{
-    select id
+    select id, name
     from services
     where now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')
-  })->hashes->reduce(sub { $a->{$b->{id}}++; $a }, {});
+  })->hashes->reduce(sub { $a->{$b->{id}} = $b->{name}; $a }, {});
 }
 
 sub get_service_host {

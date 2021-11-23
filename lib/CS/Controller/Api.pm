@@ -61,11 +61,14 @@ sub events {
 sub teams {
   my $c = shift;
 
-  my $teams = dclone $c->app->teams;
-
-  for my $team (values %$teams) {
-    delete $team->{$_} for (qw/token bot host/);
-  }
+  my $teams = $c->pg->db->query('select id, name, network from teams')->hashes->reduce(sub {
+    $a->{$b->{id}} = {
+      id      => $b->{id},
+      name    => $b->{name},
+      network => $b->{network}
+    };
+    $a
+  }, {});
 
   $c->render(json => $teams);
 }
@@ -73,13 +76,7 @@ sub teams {
 sub services {
   my $c = shift;
 
-  my $services = {};
-
-  for (values %{$c->app->services}) {
-    $services->{$_->{id}} = $_->{name};
-  }
-
-  $c->render(json => $services);
+  $c->render(json => $c->model('util')->get_active_services);
 }
 
 1;
