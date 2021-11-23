@@ -13,7 +13,7 @@ services:
     volumes:
       - "/root/monitoring/data/grafana:/var/lib/grafana"
     ports:
-      - "0.0.0.0:3000:3000"
+      - "{{ private_ip }}:3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD
   nginx-exporter:

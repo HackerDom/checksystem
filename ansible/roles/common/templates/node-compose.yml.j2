@@ -5,6 +5,7 @@ services:
     image: prom/node-exporter:latest
     command:
       - "--path.rootfs=/host"
+      - "--web.listen-address={{ private_ip }}:9100"
     restart: unless-stopped
     network_mode: host
     pid: host
