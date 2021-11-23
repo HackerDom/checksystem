@@ -133,9 +133,11 @@ sub game_time {
   my $time = $self->app->config->{cs}{time};
   my ($start, $end) = ($time->[0][0], $time->[-1][1]);
 
-  my $result = $self->app->pg->db->query('
-    select extract(epoch from ?::timestamptz) as start, extract(epoch from ?::timestamptz) as end
-  ', $start, $end)->hash;
+  my $result = $self->app->pg->db->query(q{
+    select
+      extract(epoch from ?::timestamptz)::float8 as start,
+      extract(epoch from ?::timestamptz)::float8 as end
+  }, $start, $end)->hash;
 
   return {start => $result->{start}, end => $result->{end}};
 }

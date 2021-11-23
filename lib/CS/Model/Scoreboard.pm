@@ -21,14 +21,14 @@ sub generate {
   my $services = $db->query('
     select
       s.id, name, active,
-      extract(epoch from ts_end - now()) as disable_interval,
+      extract(epoch from ts_end - now())::float8 as disable_interval,
       phase, flag_base_amount,
       extract(epoch from (
         select now() - ts
         from service_activity
         where phase = sa.phase and service_id = s.id
         order by round limit 1
-      )) as phase_duration
+      ))::float8 as phase_duration
     from service_activity as sa join services as s on sa.service_id = s.id
     where round = ?
   ', $round)->hashes->reduce(sub {
