@@ -19,11 +19,27 @@ sub generate {
     ->expand->hashes;
 
   my $services = $db->query('
-    select s.id, name, active, extract(epoch from ts_end - now()) as disable_interval
+    select
+      s.id, name, active,
+      extract(epoch from ts_end - now()) as disable_interval,
+      phase, flag_base_amount,
+      extract(epoch from (
+        select now() - ts
+        from service_activity
+        where phase = sa.phase and service_id = s.id
+        order by round limit 1
+      )) as phase_duration
     from service_activity as sa join services as s on sa.service_id = s.id
     where round = ?
   ', $round)->hashes->reduce(sub {
-      $a->{$b->{id}} = {name => $b->{name}, active => $b->{active}, disable_interval => $b->{disable_interval}};
+      $a->{$b->{id}} = {
+        name => $b->{name},
+        active => $b->{active},
+        disable_interval => $b->{disable_interval},
+        phase => $b->{phase},
+        phase_duration => $b->{phase_duration},
+        flag_base_amount => $b->{flag_base_amount}
+      };
       $a
     }, {});
 
