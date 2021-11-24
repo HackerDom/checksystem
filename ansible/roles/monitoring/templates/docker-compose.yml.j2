@@ -23,5 +23,8 @@ services:
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
     restart: unless-stopped
+    volumes:
+      - "/root/monitoring/etc/queries.yaml:/queries.yaml"
     environment:
       DATA_SOURCE_NAME: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}:{{ pg_cs_port }}/{{ pg_cs_db }}?sslmode=disable"
+      PG_EXPORTER_EXTEND_QUERY_PATH: "/queries.yaml"
