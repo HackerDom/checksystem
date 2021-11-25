@@ -73,7 +73,7 @@ sub update_service_phases {
           $new_base_amount = $scoring->{dying_flag_price};
 
           # start dying timer
-          my $interval = $scoring->{dying_rounds} * $app->config->{cs}{round_length};
+          my $interval = $scoring->{dying_rounds} * $app->config->{cs}{round_length} - $app->config->{cs}{round_length} / 2;
           $db->query(q{
             update services
             set ts_end = now() + (interval '1 seconds' * $2::integer)
