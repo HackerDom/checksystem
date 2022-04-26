@@ -45,17 +45,26 @@ sub start_round {
   my $round = $db->insert('rounds', {n => \'(select max(n)+1 from rounds)'}, {returning => 'n'})->hash->{n};
   $self->round($round);
   $app->minion->enqueue(scoreboard => [] => {delay => 10});
-  $app->minion->enqueue('update_irrelevant_services') if $app->config->{cs}{disable_irrelevant_services};
   $app->log->debug("Start new round #$round");
 
   my $status = $self->get_monitor_status;
-  my $active_services = $app->model('util')->ensure_active_services;
+  my $active_services = $app->model('util')->update_service_phases($round);
 
-  my $check_round = max($round - $app->config->{cs}{flag_life_time}, $init_round // 1);
-  my $flags = $db->query(
-    "select team_id, vuln_id, json_agg(json_build_object('id', id, 'data', data)) as flags
-    from flags where ack = true and round >= ? group by team_id, vuln_id", $check_round
-  )->expand->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{vuln_id}} = $b->{flags}; $a; }, {});
+  my $check_round = $round - $app->config->{cs}{flag_life_time};
+  if ($init_round && $init_round > 1) {
+    $check_round = max($check_round, $init_round - 1);
+  }
+  $db->query(q{
+    update flags set expired = true
+    where expired = false and round <= ?
+  }, $check_round);
+
+  my $flags = $db->query(q{
+    select team_id, vuln_id, json_agg(json_build_object('id', id, 'data', data)) as flags
+    from flags
+    where ack = true and expired = false
+    group by team_id, vuln_id
+  })->expand->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{vuln_id}} = $b->{flags}; $a; }, {});
 
   for my $team (values %{$app->teams}) {
     for my $service (values %{$app->services}) {
@@ -80,8 +89,7 @@ sub start_round {
       my $old_flag = c(@{$flags->{$team_id}{$vuln_id}})->shuffle->first;
 
       my $queue_config = $app->config->{queues};
-      my $queue        = $queue_config->{$team->{name}}{$service->{name}} //
-        $queue_config->{'*'}{$service->{name}} // 'checker';
+      my $queue        = $queue_config->{$team->{name}}{$service->{name}} // $queue_config->{'*'}{$service->{name}} // 'checker';
 
       $app->minion->enqueue(
         check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}], {queue => $queue}

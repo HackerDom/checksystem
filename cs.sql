@@ -8,11 +8,12 @@ create table teams (
 );
 
 create table services (
-  id       serial primary key,
-  name     text not null unique,
-  vulns    text not null,
-  ts_start timestamptz,
-  ts_end   timestamptz
+  id                      serial primary key,
+  name                    text not null unique,
+  vulns                   text not null,
+  ts_start                timestamptz,
+  ts_end                  timestamptz,
+  public_flag_description text
 );
 
 create table vulns (
@@ -27,27 +28,33 @@ create table rounds (
   ts timestamptz not null default now()
 );
 
-create table service_activity_log (
-  id         serial primary key,
-  ts         timestamptz not null default now(),
-  round      integer not null references rounds(n),
-  service_id integer not null references services(id),
-  active     boolean not null,
+create type service_phase as enum ('NOT_RELEASED', 'HEATING', 'COOLING_DOWN', 'DYING', 'REMOVED');
+create table service_activity (
+  id               serial primary key,
+  ts               timestamptz not null default now(),
+  round            integer not null references rounds(n),
+  service_id       integer not null references services(id),
+  active           boolean not null,
+  flag_base_amount float8 not null default 0,
+  phase            service_phase not null,
   unique (round, service_id)
 );
-create index on service_activity_log (round);
+create index on service_activity (service_id, phase);
 
 create table flags (
   data       text primary key,
   id         text not null,
+  public_id  text,
   round      integer not null references rounds(n),
   ts         timestamptz not null default now(),
   team_id    integer not null references teams(id),
   service_id integer not null references services(id),
   vuln_id    integer not null references vulns(id),
   ack        boolean not null default false,
+  expired    boolean not null default false,
   unique (round, team_id, service_id)
 );
+create index on flags (expired, service_id);
 
 create table stolen_flags (
   data    text not null references flags(data),
@@ -133,7 +140,7 @@ create table scoreboard (
 create index on scoreboard (round);
 create index on scoreboard (team_id);
 
-create function accept_flag(team_id integer, flag_data text, flag_life_time integer) returns record as $$
+create function accept_flag(team_id integer, flag_data text) returns record as $$
 <<my>>
 declare
   flag   flags%rowtype;
@@ -142,14 +149,16 @@ declare
 
   attacker_pos smallint;
   victim_pos   smallint;
-  amount_max   smallint;
+  amount_max   float8;
+  teams_count  smallint;
 
   service_active boolean;
 begin
   select * from flags where data = flag_data into flag;
 
   if not found then return row(false, 'Denied: no such flag'); end if;
-  if team_id = flag.team_id then return row(false, 'Denied: flag is your own'); end if;
+  if team_id = flag.team_id then return row(false, 'Denied: invalid or own flag'); end if;
+  if flag.expired then return row(false, 'Denied: flag is too old'); end if;
 
   select now() between coalesce(ts_start, '-infinity') and coalesce(ts_end, 'infinity')
   from services where id = flag.service_id into service_active;
@@ -159,15 +168,17 @@ begin
   if found then return row(false, 'Denied: you already submitted this flag'); end if;
 
   select max(s.round) into round from scoreboard as s;
-  if flag.round <= round - flag_life_time then return row(false, 'Denied: flag is too old'); end if;
-
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = accept_flag.team_id into attacker_pos;
   select n from scoreboard as s where s.round = my.round - 1 and s.team_id = flag.team_id into victim_pos;
-  select count(*) from teams into amount_max;
+
+  select count(*) from teams into teams_count;
+  select flag_base_amount into amount_max
+  from service_activity as sa
+  where sa.service_id = flag.service_id and sa.round = flag.round;
 
   amount = case when attacker_pos >= victim_pos
     then amount_max
-    else exp(ln(amount_max) * (victim_pos - amount_max) / (attacker_pos - amount_max))
+    else amount_max ^ (1 - ((victim_pos - attacker_pos) / (teams_count - 1)))
   end;
 
   select max(n) into round from rounds;
@@ -179,6 +190,7 @@ begin
 end;
 $$ language plpgsql;
 -- 1 down
-drop function if exists accept_flag(integer, text, integer);
-drop table if exists rounds, monitor, scores, teams, vulns, services, service_activity_log, flags,
+drop function if exists accept_flag(integer, text);
+drop table if exists rounds, monitor, scores, teams, vulns, services, service_activity, flags,
   stolen_flags, runs, sla, flag_points, scoreboard, bots;
+drop type if exists service_phase;

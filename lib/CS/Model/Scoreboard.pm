@@ -19,15 +19,38 @@ sub generate {
     ->expand->hashes;
 
   my $services = $db->query('
-    select s.id, name, active, extract(epoch from ts_end - now()) as disable_interval
-    from service_activity_log as l join services as s on l.service_id = s.id
+    select
+      s.id, name, active,
+      extract(epoch from ts_end - now())::float8 as disable_interval,
+      phase, flag_base_amount,
+      extract(epoch from (
+        select now() - ts
+        from service_activity
+        where phase = sa.phase and service_id = s.id
+        order by round limit 1
+      ))::float8 as phase_duration
+    from service_activity as sa join services as s on sa.service_id = s.id
     where round = ?
   ', $round)->hashes->reduce(sub {
-      $a->{$b->{id}} = {name => $b->{name}, active => $b->{active}, disable_interval => $b->{disable_interval}};
+      $a->{$b->{id}} = {
+        name => $b->{name},
+        active => $b->{active},
+        disable_interval => $b->{disable_interval},
+        phase => $b->{phase},
+        phase_duration => $b->{phase_duration},
+        flag_base_amount => $b->{flag_base_amount}
+      };
       $a
     }, {});
 
-  return {scoreboard => $scoreboard->to_array, round => $round, services => $services};
+  my ($game_status) = $self->app->model('util')->game_status;
+
+  return {
+    scoreboard  => $scoreboard->to_array,
+    round       => $round,
+    services    => $services,
+    game_status => $game_status
+  };
 }
 
 sub generate_history {

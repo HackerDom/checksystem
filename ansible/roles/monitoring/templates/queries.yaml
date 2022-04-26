@@ -1,0 +1,62 @@
+cs_round:
+  query: select max(n) as n from rounds
+  metrics:
+    - n:
+        usage: COUNTER
+        description: Current round
+cs_scoreboard:
+  query: |
+    select t.name as team, s.score
+    from
+      scoreboard as s
+      join teams as t on s.team_id = t.id
+    where s.round = (select max(round) from scoreboard)
+  metrics:
+    - team:
+        usage: LABEL
+    - score:
+        usage: GAUGE
+        description: Game score
+cs_flags:
+  query: |
+    select
+      'installed' as type, count(*) as total from flags where ack = true
+    union select
+      'stolen' as type, count(*) as total from stolen_flags
+  metrics:
+    - type:
+        usage: LABEL
+    - total:
+        usage: COUNTER
+        description: Total flags
+cs:
+  query: |
+    select team_id, service_id, sla, fp, flags, sflags
+    from scores
+    where round = (select max(round) from scores)
+  metrics:
+    - team_id:
+        usage: LABEL
+    - service_id:
+        usage: LABEL
+    - sla:
+        usage: GAUGE
+    - fp:
+        usage: GAUGE
+    - flags:
+        usage: GAUGE
+    - sflags:
+        usage: GAUGE
+
+cs_services:
+  query: |
+    select service_id, round, active, phase, flag_base_amount
+    from service_activity
+    where round = (select max(round) from service_activity)
+  metrics:
+    - service_id:
+        usage: LABEL
+    - phase:
+        usage: LABEL
+    - flag_base_amount:
+        usage: GAUGE

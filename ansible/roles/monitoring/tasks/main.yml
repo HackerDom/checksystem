@@ -23,6 +23,7 @@
     - { src: "docker-compose.yml.j2", dest: "/root/monitoring/docker-compose.yml" }
     - { src: "prometheus-config.yml.j2", dest: "/root/monitoring/etc/prometheus.yml" }
     - { src: ".env.j2", dest: "/root/monitoring/.env" }
+    - { src: "queries.yaml", dest: "/root/monitoring/etc/queries.yaml" }
 
 - name: ensure compose running
   docker_compose:

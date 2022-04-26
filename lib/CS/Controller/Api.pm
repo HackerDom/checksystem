@@ -6,7 +6,10 @@ use Sereal::Dclone 'dclone';
 sub info {
   my $c = shift;
 
-  my $info = {};
+  my $info = {
+    contestName => $c->config->{cs}{ctf}{name},
+    roundsCount => int($c->model('util')->game_duration)
+  };
   for (values %{$c->app->teams}) {
     my $team = dclone $_;
     delete $team->{$_} for (qw/token bot/);
@@ -53,6 +56,27 @@ sub events {
 
   my $data = $c->model('scoreboard')->generate;
   $c->send({json => {type => 'state', value => $data}});
+}
+
+sub teams {
+  my $c = shift;
+
+  my $teams = $c->pg->db->query('select id, name, network from teams')->hashes->reduce(sub {
+    $a->{$b->{id}} = {
+      id      => $b->{id},
+      name    => $b->{name},
+      network => $b->{network}
+    };
+    $a
+  }, {});
+
+  $c->render(json => $teams);
+}
+
+sub services {
+  my $c = shift;
+
+  $c->render(json => $c->model('util')->get_active_services);
 }
 
 1;

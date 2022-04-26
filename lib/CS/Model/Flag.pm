@@ -23,15 +23,14 @@ sub accept {
 
   unless ($self->validate($flag_data)) {
     Mojo::IOLoop->next_tick(sub {
-      $cb->({ok => 0, error => "[$flag_data] Denied: invalid flag"});
+      $cb->({ok => 0, error => "[$flag_data] Denied: invalid or own flag"});
     });
     Mojo::IOLoop->one_tick unless Mojo::IOLoop->is_running;
     return;
   }
 
   $app->pg->db->query_p(
-    'select row_to_json(accept_flag(?, ?, ?)) as r',
-    $team_id, $flag_data, $app->config->{cs}{flag_life_time}
+    'select row_to_json(accept_flag(?, ?)) as r', $team_id, $flag_data
   )->then(sub {
     my $result = shift;
 

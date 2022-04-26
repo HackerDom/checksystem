@@ -16,7 +16,6 @@
     - manager
     - web
     - watcher
-    - scoreboard
 
 - hosts: flags
   roles:

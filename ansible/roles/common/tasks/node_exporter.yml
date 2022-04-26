@@ -7,8 +7,8 @@
     group: root
 
 - name: docker compose
-  copy:
-    src: node-compose.yml
+  template:
+    src: node-compose.yml.j2
     dest: /root/node_exporter/docker-compose.yml
     mode: 0644
     owner: root
