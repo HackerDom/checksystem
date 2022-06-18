@@ -1,0 +1,78 @@
+name: CI
+
+on: [push]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: perl
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: install psql
+        run: apt-get update && apt-get install -y --no-install-recommends postgresql-client
+
+      - name: create db
+        env:
+          PGPASSWORD: postgres
+        run: psql -h postgres -U postgres -c 'create database cs_test;'
+
+      - name: install dependencies
+        run: cpanm -n --installdeps .
+
+      - name: perl version
+        run: perl -v
+
+      - name: postgresq version
+        env:
+          PGPASSWORD: postgres
+        run: psql -h postgres -U postgres -c 'select version();'
+
+      - name: run tests
+        env:
+          TEST_ONLINE: postgresql://postgres:postgres@postgres:5432/cs_test
+        run: prove -lv t
+
+  build_and_push:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: login to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: root
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: extract metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: build and push image to registry
+        uses: docker/build-push-action@v3
+        with:
+          file: docker/Dockerfile
+          context: .
+          cache-from: type=gha
+          pull: true
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
