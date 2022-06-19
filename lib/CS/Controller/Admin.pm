@@ -16,7 +16,7 @@ sub auth {
   $auth =~ s/^Basic\s//;
   my $line = b64_decode $auth;
 
-  return 1 if $line eq $c->config->{cs}{admin}{auth};
+  return 1 if $line eq $c->config->{cs}{admin_auth};
 
   $c->res->headers->www_authenticate('Basic');
   $c->render(text => 'Authentication required!', status => 401);
@@ -28,7 +28,7 @@ sub info {
   my $db = $c->pg->db;
 
   # Game status
-  my $time = $c->config->{cs}{time};
+  my $time = $c->config->{cs}{time} // [];
   my $range = join ',', map "'[$_->[0], $_->[1]]'", @$time;
   my $sql = <<"SQL";
     with tmp as (

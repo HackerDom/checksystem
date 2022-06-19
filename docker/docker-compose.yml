@@ -16,7 +16,7 @@ services:
       - "../:/app"
     environment:
       - POSTGRES_PASSWORD
-      - TEST_ONLINE
+      - POSTGRES_URI
   pg:
     image: "postgres"
     volumes:

@@ -13,7 +13,7 @@
       <div class="container">
         <div class="navbar-header">
           <a class="navbar-brand" href="<%= url_for(current_route =~ /admin/ ? 'admin_index' : 'index') %>">
-            <%= app->config->{cs}{ctf}{name} %>
+            <%= app->ctf_name %>
           </a>
         </div>
         <div class="navbar-collapse collapse">

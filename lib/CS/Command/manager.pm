@@ -12,20 +12,19 @@ sub run {
   my $self = shift;
   my $app  = $self->app;
 
-  my $start = $app->model('util')->game_time->{start};
-  my $round_length = $app->config->{cs}{round_length};
+  my $start = $app->model('util')->game_time->{start} // 0;
 
   my $sleep;
   if (time < $start) { $sleep = $start - time }
   else {
     my $round_start =
-      $round_length + $app->pg->db->select(rounds => 'extract(epoch from max(ts))')->array->[0];
+      $app->round_length + $app->pg->db->select(rounds => 'extract(epoch from max(ts))')->array->[0];
     $sleep = time > $round_start ? 0 : $round_start - time;
   }
 
   Mojo::IOLoop->timer(
     $sleep => sub {
-      Mojo::IOLoop->recurring($round_length => sub { $self->start_round });
+      Mojo::IOLoop->recurring($app->round_length => sub { $self->start_round });
       $self->start_round;
     }
   );
@@ -50,7 +49,7 @@ sub start_round {
   my $status = $self->get_monitor_status;
   my $active_services = $app->model('util')->update_service_phases($round);
 
-  my $check_round = $round - $app->config->{cs}{flag_life_time};
+  my $check_round = $round - $app->flag_life_time;
   if ($init_round && $init_round > 1) {
     $check_round = max($check_round, $init_round - 1);
   }

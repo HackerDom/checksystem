@@ -41,7 +41,7 @@ jobs:
 
       - name: run tests
         env:
-          TEST_ONLINE: postgresql://postgres:postgres@postgres:5432/cs_test
+          POSTGRES_URI: postgresql://postgres:postgres@postgres:5432/cs_test
         run: prove -lv t
 
   build_and_push:

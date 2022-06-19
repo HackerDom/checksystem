@@ -138,7 +138,7 @@ sub _next_round_start {
   my ($self, $db, $round) = @_;
 
   return $db->query('select extract(epoch from ts + ?::interval - now()) from rounds where n = ?',
-    $self->app->config->{cs}{round_length}, $round)->array->[0];
+    $self->app->round_length, $round)->array->[0];
 }
 
 sub _run {

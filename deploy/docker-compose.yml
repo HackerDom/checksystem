@@ -1,0 +1,103 @@
+version: "2.4"
+
+x-cs: &cs-common
+  image: ghcr.io/hackerdom/checksystem:master
+  cpu_shares: 1024
+  init: true
+  restart: unless-stopped
+  volumes:
+    - "./cs.conf:/app/cs.conf"
+  environment:
+    - POSTGRES_USER
+    - POSTGRES_PASSWORD
+    - POSTGRES_DB
+    - POSTGRES_URI
+    - MOJO_CONFIG=/app/cs.conf
+
+services:
+  cs-manager:
+    <<: *cs-common
+    depends_on:
+      - init
+    command:
+      - /bin/bash
+      - -xc
+      - >-
+        while true; do
+          perl script/cs check_db
+          if [[ $$? == 0 ]]; then break; fi
+          sleep 2
+        done &&
+        perl script/cs manager
+
+  cs-web:
+    <<: *cs-common
+    depends_on:
+      - init
+    ports:
+      - "80:8080"
+    command:
+      - /bin/bash
+      - -xc
+      - >-
+        while true; do
+          perl script/cs check_db
+          if [[ $$? == 0 ]]; then break; fi
+          sleep 2
+        done &&
+        hypnotoad -f script/cs
+
+  cs-workers:
+    <<: *cs-common
+    depends_on:
+      - init
+    scale: 4
+    command:
+    - /bin/bash
+    - -xc
+    - >-
+      while true; do
+        perl script/cs check_db
+        if [[ $$? == 0 ]]; then break; fi
+        sleep 2
+      done &&
+      perl script/cs minion worker -q default -j 64
+
+  init:
+    <<: *cs-common
+    restart: "no"
+    depends_on:
+      - pg
+    command:
+      - /bin/bash
+      - -xc
+      - >-
+        while true; do
+          perl script/cs check_db
+          if [[ $$? == 0 ]]; then break; fi
+
+          perl script/cs init_db
+          if [[ $$? == 0 ]]; then break; fi
+
+          sleep 2
+        done
+
+  pg:
+    image: postgres
+    cpu_shares: 1024
+    volumes:
+      - "cs_pg_data:/var/lib/postgresql/data"
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    command:
+      - -c
+      - shared_buffers=4GB
+      - -c
+      - work_mem=8MB
+      - -c
+      - max_connections=1024
+
+volumes:
+  cs_pg_data:
