@@ -21,6 +21,7 @@ sub startup {
   if (my $static = $app->config->{cs}{static}) {
     push @{$app->static->paths}, @$static;
   }
+  push @{$app->static->paths}, $ENV{CS_STATIC} if $ENV{CS_STATIC};
 
   my $pg_uri = $ENV{POSTGRES_URI} // $app->config->{postgres_uri};
   $app->plugin(Minion => {Pg => $pg_uri});

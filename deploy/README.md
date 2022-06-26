@@ -23,4 +23,4 @@ MOJO_LISTEN=http://0.0.0.0:8080
 
 Don't forget about the checkers for the game. You must extend [Dockerfile](Dockerfile) with you CTF's specific checkers and their denendencies. Also don't forget to add execute permission (`chmod +x`) to [main files](../CONFIGURE.md#services) of the checkers.
 
-And then start the checksystem via `docker compose up -d` and use web interface at `http://localhost`.
+And then start the checksystem via `docker compose up -d` and use web interface at `http://localhost`. By default, this deployment uses a [modern scoreboard](https://github.com/HackerDom/ctf-scoreboard-client) and you can still use original scoreboard at `http://localhost/board`.
