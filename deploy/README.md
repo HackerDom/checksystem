@@ -11,7 +11,7 @@ We believe that the CTF competition for about **30 teams** and **10 services** c
 
 You need a node with a fresh GNU/Linux (for example Debian or Ubuntu) and a fresh version of [docker engine](https://docs.docker.com/engine/install/) and [docker compose](https://docs.docker.com/compose/install/).
 
-Copy the [docker-compose.yml](docker-compose.yml) file on your node and create files `cs.conf` (by looking at the [example](../cs.conf.example) in the repo and at the [CONFIGURE.md](../CONFIGURE.md)) and `.env` like this:
+Copy the [docker-compose.yml](docker-compose.yml) and example of [Dockerfile](Dockerfile) files on your node and create files `cs.conf` (by looking at the [example](../cs.conf.example) in the repo and at the [CONFIGURE.md](../CONFIGURE.md)) and `.env` like this:
 
 ```bash
 POSTGRES_USER=postgres
@@ -21,5 +21,6 @@ POSTGRES_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pg/${POSTGRES_DB
 MOJO_LISTEN=http://0.0.0.0:8080
 ```
 
+Don't forget about the checkers for the game. You must extend [Dockerfile](Dockerfile) with you CTF's specific checkers and their denendencies. Also don't forget to add execute permission (`chmod +x`) to [main files](../CONFIGURE.md#services) of the checkers.
 
 And then start the checksystem via `docker compose up -d` and use web interface at `http://localhost`.

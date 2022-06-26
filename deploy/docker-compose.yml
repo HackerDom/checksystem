@@ -1,7 +1,8 @@
 version: "2.4"
 
 x-cs: &cs-common
-  image: ghcr.io/hackerdom/checksystem:master
+  build: .
+  image: checksystem:latest
   cpu_shares: 1024
   init: true
   restart: unless-stopped

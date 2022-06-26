@@ -1,8 +1,10 @@
+# Intro
+
 Config file for the checksystem is a just [Perl file](https://docs.mojolicious.org/Mojolicious/Plugin/Config) which returning a hash object. See details at .
 
 You can found example at [cs.conf.example](cs.conf.example).
 
-Available options in config file:
+# Available options:
 
 - `hypnotoad`: this hash describe the settings about hypnotoad web server. You can read details in the [official documentation](https://docs.mojolicious.org/Mojo/Server/Hypnotoad).
 - `postgres_uri`: [connection string](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) for postgres database. You can override this option by `POSTGRES_URI` environmental variable.
@@ -15,6 +17,24 @@ Available options in config file:
 - `cs.ctf_name`: a name of the CTF, displayed in the scoreboard. Default vaule is `CTF`.
 - `cs.admin_auth`: a basic auth creadentials of admin page (which can be accessed by `/admin` route).
 - `cs.scoring`: this hash object describe the settings about the [scoring](https://docs.google.com/document/d/1uU9f38UpxdsMeuAsM5TAnp_i4T-DhM-Ur9JOxUeTc8M/preview#heading=h.xdi2syovqugn).
-- `teams`: a list of the teams.
-- `services`: a list of the services.
+- `teams`: a list of the [teams](#teams).
+- `services`: a list of the [services](#services).
 - `queues`: an advanced settings about mapping checkers and workers.
+
+## teams
+
+- `name`:
+- `network`:
+- `host`:
+- `logo`:
+- `token`:
+- `tags`:
+
+## services
+
+Available attributes of the service's hash:
+
+- `name`: a name of the service.
+- `path`: a path (absolute or relative to the root catalog of this project) to the service's main executable file.
+- `timeout`: an amount in seconds of checker's timeout. The service will have the status `down` in the current round if there is a timeout. An actual timeout for current stage (`check`, `put`, `get`) in the round is calculated as miniumum of the `timeout` from config and time prior to the start of the next round.
+- `tcp_port`: a main tcp port of the service.
