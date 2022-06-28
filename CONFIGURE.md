@@ -1,8 +1,6 @@
 # Intro
 
-Config file for the checksystem is a just [Perl file](https://docs.mojolicious.org/Mojolicious/Plugin/Config) which returning a hash object. See details at .
-
-You can found example at [cs.conf.example](cs.conf.example).
+Config file for the checksystem is a just [Perl file](https://docs.mojolicious.org/Mojolicious/Plugin/Config) which returning a hash object. You can found example at [cs.conf.example](cs.conf.example).
 
 # Available options:
 
@@ -13,7 +11,7 @@ You can found example at [cs.conf.example](cs.conf.example).
 - `cs.round_length`: length of round in seconds. Default value is `60`
 - `cs.flag_life_time`: time of flag's life in rounds. Doesn't persist after any breaks in the game. Default value is `15`.
 - `cs.flags_secret`: secret key for HMAC in flag's data.
-- `cs.checkers.hostname`: an optional callback function to detect a address of vuln's service which passed to the checkers.
+- `cs.checkers.hostname`: an optional callback function to detect an address of vuln's service which passed to the checkers.
 - `cs.ctf_name`: a name of the CTF, displayed in the scoreboard. Default vaule is `CTF`.
 - `cs.admin_auth`: a basic auth creadentials of admin page (which can be accessed by `/admin` route).
 - `cs.scoring`: this hash object describe the settings about the [scoring](https://docs.google.com/document/d/1uU9f38UpxdsMeuAsM5TAnp_i4T-DhM-Ur9JOxUeTc8M/preview#heading=h.xdi2syovqugn).

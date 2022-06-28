@@ -1,4 +1,4 @@
-# checksystem
+# Checksystem
 
 It's a scalable competition platform for attack-defense [CTF](https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)).
 
@@ -51,7 +51,7 @@ The checker must check the general functionality of the service at `host`.
 
 ##### PUT
 
-The checker must put the `flag` to the service at `host` by `id`. If exit code is 101 then checker should print to `STDOUT` a `JSON object` with `public_flag_id` field wich will be accessible to the teams. You can add any additional fields to the object. This `JSON object` will pass to the `GET` mode in the future.
+The checker must put the `flag` to the service at `host` by `id`. If exit code is 101 then checker should print to `STDOUT` a `JSON object` with `public_flag_id` field wich will be accessible to the teams. You can add any additional fields to the object. This `JSON object` will be passed to the `GET` mode in the future.
 
 ##### GET
 
