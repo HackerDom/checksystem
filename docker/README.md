@@ -1,1 +1,1 @@
-Only for develompent
+These files are used only for development.

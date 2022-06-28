@@ -1,5 +1,5 @@
 % layout 'default';
-% title '[admin] ' . app->config->{cs}{ctf}{name};
+% title '[admin] ' . app->ctf_name;
 
 % content_for r => begin
   Round <%= $round %>

@@ -73,7 +73,7 @@ sub update_service_phases {
           $new_base_amount = $scoring->{dying_flag_price};
 
           # start dying timer
-          my $interval = $scoring->{dying_rounds} * $app->config->{cs}{round_length} - $app->config->{cs}{round_length} / 2;
+          my $interval = $scoring->{dying_rounds} * $app->round_length - $app->round_length / 2;
           $db->query(q{
             update services
             set ts_end = now() + (interval '1 seconds' * $2::integer)
@@ -130,7 +130,7 @@ sub get_service_host {
 sub game_time {
   my $self = shift;
 
-  my $time = $self->app->config->{cs}{time};
+  my $time = $self->app->config->{cs}{time} // [];
   my ($start, $end) = ($time->[0][0], $time->[-1][1]);
 
   my $result = $self->app->pg->db->query(q{
@@ -145,21 +145,24 @@ sub game_time {
 sub game_duration {
   my $self = shift;
 
-  my $time = $self->app->config->{cs}{time};
+  my $time = $self->app->config->{cs}{time} // [];
   my $range = join ',', map "'[$_->[0], $_->[1]]'", @$time;
 
   my $duration = $self->app->pg->db->query(qq{
     select extract(epoch from sum(upper(range)-lower(range)))
     from (select unnest(array[$range]::tstzrange[]) as range) as tmp
-  })->array->[0];
+  })->array->[0] // 0;
 
-  return $duration / $self->app->config->{cs}{round_length};
+  return $duration / $self->app->round_length;
 }
 
 sub game_status {
   my $self = shift;
 
+  my $db = $self->app->pg->db;
   my $time = $self->app->config->{cs}{time};
+
+  return (1, $db->select(rounds => 'max(n)')->array->[0]) unless $time;
 
   my $range = join ',', map "'[$_->[0], $_->[1]]'", @$time;
   my $sql = <<"SQL";
@@ -175,7 +178,7 @@ sub game_status {
       max(r) + 1 as round
     from tmp
 SQL
-  my $result = $self->app->pg->db->query($sql)->hash;
+  my $result = $db->query($sql)->hash;
 
   return -1 if $result->{finish};
   return 0  if $result->{before};

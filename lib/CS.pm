@@ -5,6 +5,11 @@ use Mojo::Pg;
 
 has [qw/teams services vulns bots tokens/] => sub { {} };
 
+has ctf_name => sub { shift->config->{cs}{ctf_name} // 'CTF' };
+
+has round_length   => sub { shift->config->{cs}{round_length} // 60 };
+has flag_life_time => sub { shift->config->{cs}{flag_life_time} // 15 };
+
 sub startup {
   my $app = shift;
 
@@ -16,8 +21,9 @@ sub startup {
   if (my $static = $app->config->{cs}{static}) {
     push @{$app->static->paths}, @$static;
   }
+  push @{$app->static->paths}, $ENV{CS_STATIC} if $ENV{CS_STATIC};
 
-  my $pg_uri = $ENV{TEST_ONLINE} // $app->config->{pg}{uri};
+  my $pg_uri = $ENV{POSTGRES_URI} // $app->config->{postgres_uri};
   $app->plugin(Minion => {Pg => $pg_uri});
   $app->helper(
     pg => sub {

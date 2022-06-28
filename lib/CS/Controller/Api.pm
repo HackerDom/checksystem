@@ -7,7 +7,7 @@ sub info {
   my $c = shift;
 
   my $info = {
-    contestName => $c->config->{cs}{ctf}{name},
+    contestName => $c->app->ctf_name,
     roundsCount => int($c->model('util')->game_duration)
   };
   for (values %{$c->app->teams}) {

@@ -1,15 +1,25 @@
-{ hypnotoad => {listen => ['http://127.0.0.1:8080'], workers => 8},
-  pg        => {uri    => 'postgresql://cs:qwer@127.0.0.1:5432/cs'},
-  cs        => {
+{ hypnotoad    => {listen => ['http://127.0.0.1:8080'], workers => 8},
+  postgres_uri => 'postgresql://cs:qwer@127.0.0.1:5432/cs'},
+  cs           => {
     base_url => 'https://example.com:8080/',
     time     => [['2017-01-18 17:00:00', '2015-04-18 17:15:00'], ['2015-04-18 17:20:00', '2020-04-18 17:25:00']],
-    admin          => {auth => 'root:qwer'},
-    ctf            => {name => 'RuCTF 2015'},
+    admin_auth     => 'root:qwer',
+    ctf_name       => 'RuCTF 2015',
     round_length   => 8,
     flag_life_time => 15,
-    flags    => {secret => 'ohKai2eepi'},
+    flags_secret   => 'ohKai2eepi',
     checkers => {
       hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}" }
+    },
+    scoring => {
+      start_flag_price => 10,
+      heating_speed    => 1/12,
+      max_flag_price   => 30,
+      cooling_down     => 1/2,
+      heating_flags_limit       => 1,
+      cooling_submissions_limit => 1,
+      dying_rounds     => 120,
+      dying_flag_price => 1
     },
     links => [{name => 'Visualization', ref => '/viz'}],
     static => ['/path/to/add/static']

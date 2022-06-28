@@ -12,7 +12,7 @@ sub create {
 
   my $id   = join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3);
   my $data = random_regex('[A-Z0-9]{21}');
-  my $sign = uc substr hmac_sha1_hex($data, $self->app->config->{cs}{flags}{secret}), 0, 10;
+  my $sign = uc substr hmac_sha1_hex($data, $self->app->config->{cs}{flags_secret}), 0, 10;
 
   return {id => $id, data => "${data}${sign}="};
 }
@@ -56,8 +56,9 @@ sub validate {
   my ($self, $flag) = @_;
 
   return undef unless $flag =~ /^$format$/;
+
   my $data = substr $flag, 0, 21;
-  my $sign = uc substr hmac_sha1_hex($data, $self->app->config->{cs}{flags}{secret}), 0, 10;
+  my $sign = uc substr hmac_sha1_hex($data, $self->app->config->{cs}{flags_secret}), 0, 10;
   return $sign eq substr $flag, 21, 10;
 }
 
