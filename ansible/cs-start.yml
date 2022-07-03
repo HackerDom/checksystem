@@ -1,21 +1,84 @@
 - hosts: master
   tasks:
-  - name: start web
-    systemd: name=cs.web state=started
-  - name: start manager
-    systemd: name=cs.manager state=started
-  - name: start worker
-    systemd: name=cs.worker-default state=started
-  - name: start watcher
-    systemd: name=cs.watcher state=started
+    - name: start web
+      docker_container:
+        name: cs_web
+        image: "{{ cs_docker_image }}"
+        command: "hypnotoad -f script/cs"
+        init: true
+        container_default_behavior: no_defaults
+        restart_policy: unless-stopped
+        detach: yes
+        published_ports:
+          - "{{ cs_hypnotoad_listen.split(':') | last }}:{{ cs_hypnotoad_listen.split(':') | last }}"
+        env:
+          POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"
+
+    - name: start manager
+      docker_container:
+        name: cs_manager
+        image: "{{ cs_docker_image }}"
+        command: "perl script/cs manager"
+        init: true
+        container_default_behavior: no_defaults
+        restart_policy: unless-stopped
+        detach: yes
+        env:
+          POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"
+
+    - name: start default worker
+      docker_container:
+        name: cs_default_worker
+        image: "{{ cs_docker_image }}"
+        command: "perl script/cs minion worker -q default -j {{ cs_worker_default_jobs }}"
+        init: true
+        container_default_behavior: no_defaults
+        restart_policy: unless-stopped
+        detach: yes
+        env:
+          POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"
+
+    - name: start watcher
+      docker_container:
+        name: cs_watcher
+        image: "{{ cs_docker_image }}"
+        command: "perl script/cs watcher"
+        init: true
+        container_default_behavior: no_defaults
+        restart_policy: unless-stopped
+        detach: yes
+        ulimits:
+          - "nofile:{{ cs_limit_nofile }}"
+        env:
+          POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"
 
 - hosts: flags
   tasks:
-  - name: start web flags
-    systemd: name=cs.web state=started
+    - name: start web flags
+      docker_container:
+        name: cs_web_flags
+        image: "{{ cs_docker_image }}"
+        command: "hypnotoad -f script/cs"
+        init: true
+        container_default_behavior: no_defaults
+        restart_policy: unless-stopped
+        detach: yes
+        published_ports:
+          - "{{ cs_hypnotoad_flags_listen.split(':') | last }}:{{ cs_hypnotoad_flags_listen.split(':') | last }}"
+        env:
+          POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"
 
 - hosts: checkers
   tasks:
-  - name: start checkers
-    systemd: name="cs.worker-checkers@{{ item }}" state=started
-    with_sequence: count={{ cs_worker_instance }}
+    - name: start checkers
+      docker_container:
+        name: "cs_checker_worker_{{ item }}"
+        image: "{{ cs_docker_image }}"
+        command: "perl script/cs minion worker -q default {{ cs_worker_checkers_queues }} -j {{ cs_worker_checkers_jobs }}"
+        init: true
+        container_default_behavior: no_defaults
+        restart_policy: unless-stopped
+        detach: yes
+        env:
+          POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"
+      with_sequence: count={{ cs_worker_instance }}

@@ -10,17 +10,3 @@
 - hosts: db
   roles:
     - db
-
-- hosts: master
-  roles:
-    - manager
-    - web
-    - watcher
-
-- hosts: flags
-  roles:
-    - flags
-
-- hosts: checkers, master
-  roles:
-    - checkers

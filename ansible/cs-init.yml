@@ -1,11 +1,22 @@
 - hosts: master
   tasks:
-  - name: reset db
-    command: ./script/cs reset_db chdir="{{ cs_dir }}"
-    become: yes
-    become_user: "{{ cs_user }}"
-
-  - name: init db
-    command: ./script/cs init_db chdir="{{ cs_dir }}"
-    become: yes
-    become_user: "{{ cs_user }}"
+    - name: reset db
+      docker_container:
+        name: cs_reset_db
+        image: "{{ cs_docker_image }}"
+        command: "perl script/cs reset_db"
+        container_default_behavior: no_defaults
+        restart_policy: "no"
+        detach: "no"
+        env:
+          POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"
+    - name: init db
+      docker_container:
+        name: cs_init_db
+        image: "{{ cs_docker_image }}"
+        command: "perl script/cs init_db"
+        container_default_behavior: no_defaults
+        restart_policy: "no"
+        detach: "no"
+        env:
+          POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"

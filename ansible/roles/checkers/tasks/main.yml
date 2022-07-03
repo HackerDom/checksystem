@@ -1,5 +1,0 @@
-- name: systemd config
-  template: src=cs.worker-checkers@.service.j2 dest=/etc/systemd/system/cs.worker-checkers@.service
-  notify:
-    - reload systemd
-  tags: update

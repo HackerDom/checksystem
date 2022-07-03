@@ -1,6 +1,5 @@
 cs_user: cs
-cs_dir:  /home/cs/checksystem
-cs_scoreboard_dir: /home/cs/ctf-scoreboard-client
+cs_docker_image: ghcr.io/hackerdom/checksystem:master
 
 pg_cs_user: cs
 pg_cs_pass: qwer
@@ -20,34 +19,8 @@ cs_worker_instance: 1
 
 cs_hypnotoad_listen: 127.0.0.1:8080
 cs_hypnotoad_flags_listen: 127.0.0.1:8080
-cs_hypnotoad_workers: 4
-cs_hypnotoad_accepts: 1024
-cs_hypnotoad_keep_alive_timeout: 100
 cs_nginx_workers: 1
 cs_nginx_upstream_keepalive: 32
 cs_nginx_listen: 80
-cs_static_path: /home/cs/logos
 
 cs_base_url: https://example.com:8080/
-cs_admin_auth: root:qwer
-cs_ctf_name: RuCTF 2008
-cs_flags_secret: ohKai2eepi
-cs_round_length: 35
-cs_flag_life_time: 15
-cs_time: "['2017-11-30 02:00:00', '2017-12-03 14:00:00']"
-
-cs_checkers_hostname_cb: |
-  sub { my ($team, $service) = @_; $team->{host} }
-
-teams: |
-  {name => 'team1', network => '127.0.1.0/24', host => '127.0.1.3', logo => 'http://example.com', token => 'private', country => 'Russia'},
-  {name => 'team2', network => '127.0.2.0/24', host => '127.0.2.3', logo => 'http://example.com', token => 'private', country => 'USA'},
-  {name => 'team3', network => '127.0.3.0/24', host => '127.0.3.3', logo => 'http://example.com', token => 'private', country => 'Russia'},
-
-services: |
-  {name => 'down',    path => 't/checkers/down.pl',    timeout => 1, tcp_port => 80},
-  {name => 'up',      path => 't/checkers/up.pl',      timeout => 1, tcp_port => 8080},
-  {name => 'timeout', path => 't/checkers/timeout.pl', timeout => 1, tcp_port => 80}
-
-queues: |
-  {}

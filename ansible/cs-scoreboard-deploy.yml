@@ -1,3 +1,0 @@
-- hosts: master
-  roles:
-    - scoreboard
