@@ -127,6 +127,18 @@ sub get_service_host {
   return $host;
 }
 
+sub get_service_ip {
+  my ($self, $team, $service) = @_;
+
+  my $ip = $team->{host};
+
+  if ($team->{ip_prefix} && $service->{ip_suffix}) {
+    $ip = "$team->{ip_prefix}$service->{ip_suffix}";
+  }
+
+  return $ip;
+}
+
 sub game_time {
   my $self = shift;
 

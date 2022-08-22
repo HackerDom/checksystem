@@ -27,7 +27,7 @@ sub check {
         next;
       }
 
-      my $address = $app->model('util')->get_service_host($team, $service);
+      my $address = $app->model('util')->get_service_ip($team, $service);
 
       Mojo::IOLoop->client(
         {address => $address, port => $port, timeout => 10} => sub {
