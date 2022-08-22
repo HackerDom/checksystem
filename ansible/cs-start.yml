@@ -10,7 +10,7 @@
         restart_policy: unless-stopped
         detach: yes
         published_ports:
-          - "{{ cs_hypnotoad_listen.split(':') | last }}:{{ cs_hypnotoad_listen.split(':') | last }}"
+          - "{{ private_ip }}:{{ cs_hypnotoad_listen.split(':') | last }}:{{ cs_hypnotoad_listen.split(':') | last }}"
         env:
           POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"
 
@@ -64,7 +64,7 @@
         restart_policy: unless-stopped
         detach: yes
         published_ports:
-          - "{{ cs_hypnotoad_flags_listen.split(':') | last }}:{{ cs_hypnotoad_flags_listen.split(':') | last }}"
+          - "{{ private_ip }}:{{ cs_hypnotoad_flags_listen.split(':') | last }}:{{ cs_hypnotoad_flags_listen.split(':') | last }}"
         env:
           POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"
 

@@ -7,6 +7,10 @@
     - role: monitoring
       tags: monitoring
 
+- hosts: master
+  roles:
+    - web
+
 - hosts: db
   roles:
     - db

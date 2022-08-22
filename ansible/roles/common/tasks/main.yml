@@ -29,3 +29,5 @@
   docker_image:
     name: "{{ cs_docker_image }}"
     source: pull
+    force_source: yes
+  tags: update
