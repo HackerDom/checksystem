@@ -15,7 +15,7 @@ sub create {
   my $data = sprintf('TEAM%03d_', $team_id) . random_regex('[A-Z0-9]{22}');
   my $sign = uc substr hmac_sha1_hex($data, $self->app->config->{cs}{flags_secret}), 0, 10;
 
-  return {id => $id, data => "${data}${sign}="};
+  return {id => $id, data => "${data}${sign}"};
 }
 
 sub accept {
