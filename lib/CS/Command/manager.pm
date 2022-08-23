@@ -84,7 +84,7 @@ sub start_round {
         }
       }
 
-      my $flag     = $app->model('flag')->create;
+      my $flag     = $app->model('flag')->create($team_id);
       my $old_flag = c(@{$flags->{$team_id}{$vuln_id}})->shuffle->first;
 
       my $queue_config = $app->config->{queues};

@@ -5,13 +5,14 @@ use Digest::SHA 'hmac_sha1_hex';
 use String::Random 'random_regex';
 use Time::HiRes 'time';
 
-my $format = '[A-Z0-9]{31}=';
+my $format = 'TEAM\d{3}_[A-Z0-9]{32}';
 
 sub create {
-  my $self = shift;
+  my ($self, $team_id) = @_;
 
   my $id   = join('-', map random_regex('[a-z0-9]{4}'), 1 .. 3);
-  my $data = random_regex('[A-Z0-9]{21}');
+
+  my $data = sprintf('TEAM%03d_', $team_id) . random_regex('[A-Z0-9]{22}');
   my $sign = uc substr hmac_sha1_hex($data, $self->app->config->{cs}{flags_secret}), 0, 10;
 
   return {id => $id, data => "${data}${sign}="};
@@ -57,9 +58,9 @@ sub validate {
 
   return undef unless $flag =~ /^$format$/;
 
-  my $data = substr $flag, 0, 21;
+  my $data = substr $flag, 0, -10;
   my $sign = uc substr hmac_sha1_hex($data, $self->app->config->{cs}{flags_secret}), 0, 10;
-  return $sign eq substr $flag, 21, 10;
+  return $sign eq substr $flag, -10;
 }
 
 1;
