@@ -109,7 +109,7 @@ $db->query('select * from flags where ack = true')->hashes->map(
     is $_->{round},     1,                                              'right round';
     is $_->{id},        '{"public_flag_id":"911","password":"sEcr3t"}', 'right id';
     is $_->{public_id}, '911',                                          'right public id';
-    like $_->{data},    qr/[A-Z\d]{31}=/,                               'right flag';
+    like $_->{data},    qr/TEAM\d{3}_[A-Z0-9]{32}/,                     'right flag';
   }
 );
 
