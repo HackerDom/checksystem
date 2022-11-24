@@ -1,5 +1,5 @@
 { hypnotoad    => {listen => ['http://127.0.0.1:8080'], workers => 8},
-  postgres_uri => 'postgresql://cs:qwer@127.0.0.1:5432/cs'},
+  postgres_uri => {'postgresql://cs:qwer@127.0.0.1:5432/cs'},
   cs           => {
     base_url => 'https://example.com:8080/',
     time     => [['2017-01-18 17:00:00', '2015-04-18 17:15:00'], ['2015-04-18 17:20:00', '2020-04-18 17:25:00']],
