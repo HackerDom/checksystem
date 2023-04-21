@@ -80,6 +80,7 @@
 
 #scoreboard th.service_name {
   padding-left: 10px;
+  white-space: nowrap;
 }
 
 .team .team_info .team_name {
