@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious';
 
 use Mojo::Pg;
 
-has [qw/teams services vulns bots tokens/] => sub { {} };
+has [qw/teams services vulns tokens/] => sub { {} };
 
 has ctf_name => sub { shift->config->{cs}{ctf_name} // 'CTF' };
 
@@ -125,9 +125,6 @@ sub init {
     for my $n (0 .. $#vulns) { push @$vulns, $n + 1 for 1 .. $vulns[$n] }
     $app->services->{$service->{id}} = {%$_, %$service, vulns => $vulns};
   }
-
-  my $bots = $db->select('bots')->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{service_id}} = $b; $a }, {});
-  $app->bots($bots);
 
   my $vulns =
     $db->select('vulns')->hashes->reduce(sub { $a->{$b->{service_id}}{$b->{n}} = $b->{id}; $a }, {});

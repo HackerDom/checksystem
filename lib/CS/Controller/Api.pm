@@ -12,7 +12,7 @@ sub info {
   };
   for (values %{$c->app->teams}) {
     my $team = dclone $_;
-    delete $team->{$_} for (qw/token bot/);
+    delete $team->{token};
     $info->{teams}{$_->{id}} = $team;
   }
   $info->{services}{$_->{id}} = $_->{name} for values %{$c->app->services};

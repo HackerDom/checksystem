@@ -46,12 +46,6 @@ sub check {
   my $result = {vuln => $vuln};
   my $db = $job->app->pg->db;
 
-  if (my $bot_info = $job->app->bots->{$team->{id}}) {
-    my $bot = $bot_info->{$service->{id}} // {sla => 0, attack => 1, defense => 0};
-    my $r = $self->_run_bot($db, $bot, $team, $service, $flag, $vuln, $round);
-    return $self->_finish($job, {%$result, %$r}, $db);
-  }
-
   my $cmd;
   my $host = $job->app->model('util')->get_service_host($team, $service);
 
@@ -177,61 +171,6 @@ sub _run {
   }
 
   $result->{ts} = scalar(localtime);
-  return $result;
-}
-
-sub _run_bot {
-  my ($self, $db, $bot, $team, $service, $flag, $vuln, $round) = @_;
-  my $app    = $self->app;
-  my $result = {};
-
-  my $exit_code = rand() < $bot->{sla} ? 101 : 104;
-  for my $command (qw/check put get_1 get_2/) {
-    $result->{$command} = {
-      command   => dumper($bot),
-      elapsed   => 0,
-      exception => undef,
-      exit      => {value => 0, code => 0, signal => 0, coredump => 0},
-      stderr    => '',
-      stdout    => '',
-      timeout   => 0,
-      ts        => scalar(localtime),
-      exit_code => $exit_code
-    };
-  }
-
-  return $result unless $exit_code == 101;
-
-  my $flag_row = {
-    data       => $flag->{data},
-    id         => $flag->{id},
-    round      => $round,
-    team_id    => $team->{id},
-    service_id => $service->{id},
-    vuln_id    => $vuln->{id},
-    ack        => 'true'
-  };
-  $db->insert(flags => $flag_row);
-
-  my $game_time = $app->model('util')->game_time;
-  my $now       = time;
-  my $current   = ($now - $game_time->{start}) / ($game_time->{end} - $game_time->{start});
-  return $result unless $bot->{attack} < $current;
-
-  # Hack
-  my $flags = $db->query('
-    select data from flags
-    where
-      service_id = $1 and round between $3 - 3 and $3 and ack = true and
-      team_id in (
-        select team_id from bots
-        where service_id = $1 and team_id != $2 and defense > $4
-      )
-    ', $service->{id}, $team->{id}, $round, $current)->arrays;
-  for my $flag (@$flags) {
-    $app->model('flag')->accept($team->{id}, $flag->[0], sub { });
-  }
-
   return $result;
 }
 

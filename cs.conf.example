@@ -27,8 +27,7 @@
   teams => [
     { name    => 'team1',
       network => '127.0.1.0/24',
-      host    => '127.0.1.5',
-      bot     => [{sla => 0.66, attack => 0.3, defense => 0.4}]
+      host    => '127.0.1.5'
     },
     {name => 'team2', network => '127.0.2.0/24', host => '127.0.2.3'},
     {name => 'team3', network => '127.0.3.0/24', host => '127.0.3.3'}
