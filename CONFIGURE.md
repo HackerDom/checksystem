@@ -17,7 +17,6 @@ Config file for the checksystem is a just [Perl file](https://docs.mojolicious.o
 - `cs.scoring`: this hash object describe the settings about the [scoring](https://docs.google.com/document/d/1uU9f38UpxdsMeuAsM5TAnp_i4T-DhM-Ur9JOxUeTc8M/preview#heading=h.xdi2syovqugn).
 - `teams`: a list of the [teams](#teams).
 - `services`: a list of the [services](#services).
-- `queues`: an advanced settings about mapping checkers and workers.
 
 ## teams
 
