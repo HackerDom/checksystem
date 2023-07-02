@@ -4,7 +4,8 @@ create table teams (
   name    text not null unique,
   network cidr not null,
   host    text not null,
-  token   text unique
+  token   text unique,
+  details jsonb not null default '{}'
 );
 
 create table services (

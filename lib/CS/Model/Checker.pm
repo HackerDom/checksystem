@@ -42,9 +42,11 @@ sub info {
 }
 
 sub check {
-  my ($self, $job, $round, $team, $service, $flag, $old_flag, $vuln) = @_;
+  my ($self, $job, $round, $team_id, $service, $flag, $old_flag, $vuln) = @_;
   my $result = {vuln => $vuln};
   my $db = $job->app->pg->db;
+
+  my $team = $db->select('teams', undef, {id => $team_id})->expand->hash;
 
   my $cmd;
   my $host = $job->app->model('util')->get_service_host($team, $service);
@@ -59,7 +61,7 @@ sub check {
         data       => $flag->{data},
         id         => $flag->{id},
         round      => $round,
-        team_id    => $team->{id},
+        team_id    => $team_id,
         service_id => $service->{id},
         vuln_id    => $vuln->{id}
       };
@@ -98,7 +100,7 @@ sub check {
 sub _finish {
   my ($self, $job, $result, $db) = @_;
 
-  my ($round, $team, $service, $flag, undef, $vuln) = @{$job->args};
+  my ($round, $team_id, $service, $flag, undef, $vuln) = @{$job->args};
   my ($stdout, $status) = ('');
 
   # Prepare result for runs
@@ -118,7 +120,7 @@ sub _finish {
 
   my $run = {
     round      => $round,
-    team_id    => $team->{id},
+    team_id    => $team_id,
     service_id => $service->{id},
     vuln_id    => $vuln->{id},
     status     => $status,

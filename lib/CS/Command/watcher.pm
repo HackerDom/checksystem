@@ -18,8 +18,9 @@ sub check {
   my $db  = $app->pg->db;
 
   my $active_services = $app->model('util')->get_active_services;
+  my $teams = $db->select('teams')->expand->hashes;
 
-  for my $team (values %{$app->teams}) {
+  for my $team (@$teams) {
     for my $service (values %{$app->services}) {
       next unless my $port = $service->{tcp_port};
 

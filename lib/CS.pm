@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious';
 
 use Mojo::Pg;
 
-has [qw/teams services vulns tokens/] => sub { {} };
+has [qw/services vulns/] => sub { {} };
 
 has ctf_name => sub { shift->config->{cs}{ctf_name} // 'CTF' };
 
@@ -104,17 +104,8 @@ sub init {
   my $db  = $app->pg->db;
 
   if ($ENV{CS_DEBUG}) {
-    $app->teams($db->select('teams')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
-    $app->tokens($db->select(teams => '*', {token => {'!=', undef}})->hashes->reduce(sub { $a->{$b->{token}} = $b->{id}; $a }, {}));
     $app->services($db->select('services')->hashes->reduce(sub { $a->{$b->{id}} = $b; $a }, {}));
     return;
-  }
-
-  my $teams = $db->select('teams')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});
-  for (@{$app->config->{teams}}) {
-    next unless my $team = $teams->{$_->{name}};
-    $app->teams->{$team->{id}} = {%$_, %$team};
-    $app->tokens->{$team->{token}} = $team->{id} if $team->{token};
   }
 
   my $services = $db->select('services')->hashes->reduce(sub { $a->{$b->{name}} = $b; $a }, {});

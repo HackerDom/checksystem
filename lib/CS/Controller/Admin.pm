@@ -108,7 +108,7 @@ sub view {
   my $c  = shift;
   my $db = $c->pg->db;
 
-  my $team    = $c->app->teams->{$c->param('team_id')};
+  my $team    = $c->param('team_id') eq '*' ? {} : $db->select('teams', undef, {id => $c->param('team_id')})->expand->hash;
   my $service = $c->app->services->{$c->param('service_id')};
 
   return $c->reply->not_found
@@ -140,7 +140,7 @@ sub view {
     (team_id = $1 or $1 is null) and (service_id = $2 or $2 is null) and (status = $3 or $3 is null)
     order by round desc limit $4 offset $5', $team->{id}, $service->{id}, $status, $limit, $offset
   )->expand->hashes->to_array;
-  $c->render(view => $view, page => $page, max => $max);
+  $c->render(view => $view, page => $page, max => $max, team_name => $team->{name} // '*');
 }
 
 sub _tablify {

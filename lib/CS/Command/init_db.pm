@@ -9,7 +9,14 @@ sub run {
 
   # Teams
   for my $team (@{$app->config->{teams}}) {
-    $db->insert(teams => {%{$team}{qw/name network host token/}});
+    my $values = {
+      name    => delete $team->{name},
+      network => delete $team->{network},
+      host    => delete $team->{host},
+      token   => delete $team->{token}
+    };
+    my $details = {details => {-json => $team}};
+    $db->insert(teams => {%$values, %$details});
   }
 
   # Services

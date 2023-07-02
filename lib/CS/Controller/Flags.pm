@@ -15,7 +15,7 @@ sub put {
 
   my $token = $c->req->headers->header('X-Team-Token') // '';
   return $c->render(json => {status => \0, msg => "Invalid token '$token'"}, status => 400)
-    unless my $team_id = $c->app->tokens->{$token};
+    unless my $team = $c->pg->db->select('teams', ['id'], {token => $token})->hash;
 
   my $flags = $c->req->json // [];
   my $results = [];
@@ -31,7 +31,7 @@ sub put {
     }
 
     $c->model('flag')->accept(
-      $team_id, $flag,
+      $team->{id}, $flag,
       sub {
         my $msg = $_[0]->{ok} ? $_[0]->{message} : $_[0]->{error};
         push @$results, {flag => $flag, status => \$_[0]->{ok}, msg => $msg};
@@ -48,7 +48,7 @@ sub list {
 
   my $token = $c->req->headers->header('X-Team-Token') // '';
   return $c->render(json => {status => \0, msg => 'Invalid token'}, status => 400)
-    unless my $team_id = $c->app->tokens->{$token};
+    unless my $team = $c->pg->db->select('teams', ['id'], {token => $token})->hash;
 
   return $c->render(json => {status => \0, msg => 'Invalid service_id'}, status => 400)
     unless my $service = $c->app->services->{$c->param('service_id') // $c->param('service')};
@@ -56,6 +56,13 @@ sub list {
   my $flags = $c->pg->db->query(q{
     select
       t.id,
+      json_build_object(
+        'id', t.id,
+        'name', name,
+        'network', network,
+        'host', host,
+        'details', details
+      ) as team,
       array_agg(public_id) filter (where public_id is not null) as flag_ids
     from (
       select * from flags
@@ -65,10 +72,9 @@ sub list {
     ) as f
     right join teams as t on t.id = f.team_id
     group by t.id
-  }, $service->{id}, $team_id);
-  my $flag_ids = $flags->hashes->reduce(sub {
-    my $team = $c->app->teams->{$b->{id}};
-    $a->{$b->{id}}{host} = $c->model('util')->get_service_host($team, $service);
+  }, $service->{id}, $team->{id});
+  my $flag_ids = $flags->expand->hashes->reduce(sub {
+    $a->{$b->{id}}{host} = $c->model('util')->get_service_host($b->{team}, $service);
     $a->{$b->{id}}{flag_ids} = $b->{flag_ids} // [];
     $a;
   }, {});

@@ -132,8 +132,8 @@ sub get_service_ip {
 
   my $ip = $team->{host};
 
-  if ($team->{ip_prefix} && $service->{ip_suffix}) {
-    $ip = "$team->{ip_prefix}$service->{ip_suffix}";
+  if ($team->{details}{ip_prefix} && $service->{ip_suffix}) {
+    $ip = "$team->{details}{ip_prefix}$service->{ip_suffix}";
   }
 
   return $ip;

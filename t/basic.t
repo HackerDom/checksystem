@@ -24,7 +24,8 @@ is $up1->{vulns}, '1:1:2', 'right vulns';
 is $up1->{public_flag_description}, 'user profile', 'right flag description in db';
 is $app->services->{3}{public_flag_description}, 'user profile', 'right flag description in app';
 
-is_deeply $app->teams->{1}{tags}, ['edu', 'online', 'Russia'], 'right tags for team';
+my $team1 = $db->select('teams', undef, {id => 1})->expand->hash;
+is_deeply $team1->{details}{tags}, ['edu', 'online', 'Russia'], 'right tags for team';
 
 my $manager = CS::Command::manager->new(app => $app);
 
@@ -251,7 +252,7 @@ $t->get_ok('/services')
   ->json_is('/3', 'up1')
   ->json_is('/4', 'up2');
 
-$t->get_ok('/flag_ids?service_id=3' => {'X-Team-Token' => $app->teams->{1}{token}})
+$t->get_ok('/flag_ids?service_id=3' => {'X-Team-Token' => $team1->{token}})
   ->json_is('/flag_id_description', $app->services->{3}{public_flag_description})
   ->json_has('/flag_ids/2/flag_ids/0')
   ->json_has('/flag_ids/2/host')
