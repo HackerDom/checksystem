@@ -36,7 +36,7 @@ $db->update('services', {ts_start => \"now() + interval '10 minutes'", ts_end =>
 
 $manager->start_round;
 is $manager->round, 1, 'right round';
-$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
+$app->minion->perform_jobs({queues => ['default', 'checker']});
 $app->model('score')->update;
 
 # Runs (3 avtive services * 3 teams)
@@ -120,7 +120,7 @@ $db->update('services', {ts_start => undef, ts_end => undef}, {name => 'up2'});
 diag('New round #2');
 $manager->start_round;
 is $manager->round, 2, 'right round';
-$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
+$app->minion->perform_jobs({queues => ['default', 'checker']});
 $app->model('score')->update;
 
 my $value = $app->model('scoreboard')->generate;
@@ -190,7 +190,7 @@ $db->query('select * from flag_points where round = 1')->hashes->map(sub { is $_
 diag('New round #3');
 $manager->start_round;
 is $manager->round, 3, 'right round';
-$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
+$app->minion->perform_jobs({queues => ['default', 'checker']});
 $app->model('score')->update;
 
 diag('Flags after #3');
@@ -223,10 +223,22 @@ is $db->query('select count(*) from flag_points')->array->[0], 36, 'right fp';
 diag('New round #4');
 $manager->start_round;
 is $manager->round, 4, 'right round';
-$app->minion->perform_jobs({queues => ['default', 'checker', 'checker-1', 'checker-2']});
+$app->minion->perform_jobs({queues => ['default', 'checker']});
 $app->model('score')->update;
 
-$app->model('score')->update(4);
+# New team
+$app->commands->run(
+  'add_team',
+  '{"name":"new team","network":"127.0.8.0/24","host":"127.0.1.8","token":"new_token","tags":["edu"]}'
+);
+
+diag('New round #5');
+$manager->start_round;
+is $manager->round, 5, 'right round';
+$app->minion->perform_jobs({queues => ['default', 'checker']});
+$app->model('score')->update;
+
+$app->model('score')->update(5);
 
 # API
 $t->get_ok('/api/info')
@@ -244,7 +256,10 @@ $t->get_ok('/teams')
   ->json_has('/1')
   ->json_is('/1/id', '1')
   ->json_is('/1/name', 'team1')
-  ->json_is('/1/network', '127.0.1.0/24');
+  ->json_is('/1/network', '127.0.1.0/24')
+  ->json_has('/4')
+  ->json_is('/4/id', '4')
+  ->json_is('/4/name', 'new team');
 
 $t->get_ok('/services')
   ->json_is('/1', 'down1')

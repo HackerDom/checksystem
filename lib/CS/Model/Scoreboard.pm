@@ -12,7 +12,7 @@ sub generate {
       t.host, t.network, t.name, t.details, s1.n - s.n as d, s.*, s1.services as old_services, s1.score as old_score
     from scoreboard as s
     join teams as t on s.team_id = t.id
-    join (
+    left join (
       select * from scoreboard where round = case when $1-1<0 then 0 else $1-1 end
     ) as s1 using (team_id)
     where s.round = $1 order by n limit $2', $round, $limit)
