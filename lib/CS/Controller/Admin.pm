@@ -2,6 +2,7 @@ package CS::Controller::Admin;
 use Mojo::Base 'Mojolicious::Controller';
 
 use List::Util 'all';
+use Mojo::JSON 'j';
 use Mojo::Util 'b64_decode', 'tablify';
 
 sub auth {
@@ -21,6 +22,20 @@ sub auth {
   $c->res->headers->www_authenticate('Basic');
   $c->render(text => 'Authentication required!', status => 401);
   return undef;
+}
+
+sub add_team {
+  my $c = shift;
+
+  my $team_info = $c->req->json // {};
+  for my $field (qw/name network host token/) {
+    return $c->render(json => {status => 'FAIL', info => "Field '$field' is required"})
+      unless length $team_info->{$field};
+  }
+
+  eval { $c->app->commands->run(add_team => j($team_info)) };
+
+  $c->render(json => {status => $@ ? 'FAIL' : 'OK', info => $@ ? "$@" : ''});
 }
 
 sub info {

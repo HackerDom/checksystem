@@ -85,6 +85,7 @@ sub startup {
   $admin->get('/')->to('admin#index')->name('admin_index');
   $admin->get('/info')->to('admin#info')->name('admin_info');
   $admin->get('/view/:team_id/:service_id')->to('admin#view')->name('admin_view');
+  $admin->post('/teams')->to('admin#add_team');
 
   # Minion Admin
   $app->plugin('Minion::Admin' => {route => $admin->any('/minion')});
