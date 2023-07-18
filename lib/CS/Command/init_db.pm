@@ -24,8 +24,10 @@ sub run {
     my $service_info = $app->model('checker')->info($service);
 
     my $service_data = {
-      name => $service->{name},
-      vulns => $service_info->{vulns}{distribution},
+      name    => $service->{name},
+      timeout => $service->{timeout},
+      path    => $service->{path},
+      vulns   => $service_info->{vulns}{distribution},
       public_flag_description => $service_info->{public_flag_description}
     };
     if (my $active = $service->{active}) {

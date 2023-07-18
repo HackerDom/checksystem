@@ -14,6 +14,8 @@ create table services (
   vulns                   text not null,
   ts_start                timestamptz,
   ts_end                  timestamptz,
+  timeout                 float8,
+  path                    text,
   public_flag_description text
 );
 

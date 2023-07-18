@@ -39,7 +39,7 @@ is $manager->round, 1, 'right round';
 $app->minion->perform_jobs({queues => ['default', 'checker']});
 $app->model('score')->update;
 
-# Runs (3 avtive services * 3 teams)
+# Runs (3 active services * 3 teams)
 is $db->query('select count(*) from runs')->array->[0], 12, 'right numbers of runs';
 
 # Service down1

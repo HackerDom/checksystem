@@ -42,19 +42,22 @@ sub info {
 }
 
 sub check {
-  my ($self, $job, $round, $team_id, $service, $flag, $old_flag, $vuln) = @_;
+  my ($self, $job, $round, $team_id, $service_id, $flag, $old_flag, $vuln) = @_;
   my $result = {vuln => $vuln};
   my $db = $job->app->pg->db;
 
-  my $team = $db->select('teams', undef, {id => $team_id})->expand->hash;
+  my $team    = $db->select('teams', undef, {id => $team_id})->expand->hash;
+  my $service = $db->select('services', undef, {id => $service_id})->expand->hash;
 
   my $cmd;
   my $host = $job->app->model('util')->get_service_host($team, $service);
 
   for (@{c(qw/check put_get get2/)->shuffle}) {
+    my $timeout = min($service->{timeout}, $self->_next_round_start($db, $round));
+
     if ($_ eq 'check') {
       $cmd = [$service->{path}, 'check', $host];
-      $result->{check} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+      $result->{check} = $self->_run($cmd, $timeout);
       return $self->_finish($job, $result, $db) if $result->{check}{slow} || $result->{check}{exit_code} != 101;
     } elsif ($_ eq 'put_get') {
       my $flag_row = {
@@ -62,13 +65,13 @@ sub check {
         id         => $flag->{id},
         round      => $round,
         team_id    => $team_id,
-        service_id => $service->{id},
+        service_id => $service_id,
         vuln_id    => $vuln->{id}
       };
       $db->insert(flags => $flag_row);
 
       $cmd = [$service->{path}, 'put', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
-      $result->{put} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+      $result->{put} = $self->_run($cmd, $timeout);
       return $self->_finish($job, $result, $db) if $result->{put}{slow} || $result->{put}{exit_code} != 101;
 
       $flag_row = {ack => 'true'};
@@ -83,12 +86,12 @@ sub check {
       $db->update(flags => $flag_row => {data => $flag->{data}});
 
       $cmd = [$service->{path}, 'get', $host, $flag->{id}, $flag->{data}, $vuln->{n}];
-      $result->{get_1} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+      $result->{get_1} = $self->_run($cmd, $timeout);
       return $self->_finish($job, $result, $db) if $result->{get_1}{slow} || $result->{get_1}{exit_code} != 101;
     } elsif ($_ eq 'get2') {
       if ($old_flag) {
         $cmd = [$service->{path}, 'get', $host, $old_flag->{id}, $old_flag->{data}, $vuln->{n}];
-        $result->{get_2} = $self->_run($cmd, min($service->{timeout}, $self->_next_round_start($db, $round)));
+        $result->{get_2} = $self->_run($cmd, $timeout);
         return $self->_finish($job, $result, $db) if $result->{get_2}{slow} || $result->{get_2}{exit_code} != 101;;
       }
     }
@@ -100,7 +103,7 @@ sub check {
 sub _finish {
   my ($self, $job, $result, $db) = @_;
 
-  my ($round, $team_id, $service, $flag, undef, $vuln) = @{$job->args};
+  my ($round, $team_id, $service_id, $flag, undef, $vuln) = @{$job->args};
   my ($stdout, $status) = ('');
 
   # Prepare result for runs
@@ -121,7 +124,7 @@ sub _finish {
   my $run = {
     round      => $round,
     team_id    => $team_id,
-    service_id => $service->{id},
+    service_id => $service_id,
     vuln_id    => $vuln->{id},
     status     => $status,
     result     => j($result),
