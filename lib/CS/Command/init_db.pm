@@ -15,6 +15,7 @@ sub run {
       host    => delete $team->{host},
       token   => delete $team->{token}
     };
+    $values->{'id'} = delete $team->{id} if $team->{id};
     my $details = {details => {-json => $team}};
     $db->insert(teams => {%$values, %$details});
   }
