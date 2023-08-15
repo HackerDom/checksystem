@@ -9,7 +9,15 @@ sub run {
 
   # Teams
   for my $team (@{$app->config->{teams}}) {
-    $db->insert(teams => {%{$team}{qw/name network host token/}});
+    my $values = {
+      name    => delete $team->{name},
+      network => delete $team->{network},
+      host    => delete $team->{host},
+      token   => delete $team->{token}
+    };
+    $values->{'id'} = delete $team->{id} if $team->{id};
+    my $details = {details => {-json => $team}};
+    $db->insert(teams => {%$values, %$details});
   }
 
   # Services
@@ -17,8 +25,10 @@ sub run {
     my $service_info = $app->model('checker')->info($service);
 
     my $service_data = {
-      name => $service->{name},
-      vulns => $service_info->{vulns}{distribution},
+      name    => $service->{name},
+      timeout => $service->{timeout},
+      path    => $service->{path},
+      vulns   => $service_info->{vulns}{distribution},
       public_flag_description => $service_info->{public_flag_description}
     };
     if (my $active = $service->{active}) {

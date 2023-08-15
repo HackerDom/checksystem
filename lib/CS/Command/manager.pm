@@ -58,16 +58,17 @@ sub start_round {
     where expired = false and round <= ?
   }, $check_round);
 
-  my $flags = $db->query(q{
+  my $alive_flags = $db->query(q{
     select team_id, vuln_id, json_agg(json_build_object('id', id, 'data', data)) as flags
     from flags
     where ack = true and expired = false
     group by team_id, vuln_id
   })->expand->hashes->reduce(sub { $a->{$b->{team_id}}{$b->{vuln_id}} = $b->{flags}; $a; }, {});
 
-  for my $team (values %{$app->teams}) {
+  my $teams = $db->select('teams', ['id'])->arrays->flatten;
+  for my $team_id (@$teams) {
     for my $service (values %{$app->services}) {
-      my ($team_id, $service_id) = ($team->{id}, $service->{id});
+      my $service_id = $service->{id};
       my $n       = $service->{vulns}->[$round % @{$service->{vulns}}];
       my $vuln_id = $app->vulns->{$service_id}{$n};
 
@@ -85,10 +86,10 @@ sub start_round {
       }
 
       my $flag     = $app->model('flag')->create($team_id);
-      my $old_flag = c(@{$flags->{$team_id}{$vuln_id}})->shuffle->first;
+      my $old_flag = c(@{$alive_flags->{$team_id}{$vuln_id}})->shuffle->first;
 
       $app->minion->enqueue(
-        check => [$round, $team, $service, $flag, $old_flag, {n => $n, id => $vuln_id}]
+        check => [$round, $team_id, $service_id, $flag, $old_flag, {n => $n, id => $vuln_id}]
       );
     }
   }

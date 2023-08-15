@@ -10,10 +10,10 @@ sub info {
     contestName => $c->app->ctf_name,
     roundsCount => int($c->model('util')->game_duration)
   };
-  for (values %{$c->app->teams}) {
-    my $team = dclone $_;
-    delete $team->{token};
-    $info->{teams}{$_->{id}} = $team;
+
+  my $teams = $c->pg->db->select('teams', [qw/id name network host details/])->expand->hashes;
+  for my $team (@$teams) {
+    $info->{teams}{$team->{id}} = {%{$team->{details}}, %$team};
   }
   $info->{services}{$_->{id}} = $_->{name} for values %{$c->app->services};
 

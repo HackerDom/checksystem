@@ -4,7 +4,8 @@ create table teams (
   name    text not null unique,
   network cidr not null,
   host    text not null,
-  token   text unique
+  token   text unique,
+  details jsonb not null default '{}'
 );
 
 create table services (
@@ -13,6 +14,8 @@ create table services (
   vulns                   text not null,
   ts_start                timestamptz,
   ts_end                  timestamptz,
+  timeout                 float8,
+  path                    text,
   public_flag_description text
 );
 

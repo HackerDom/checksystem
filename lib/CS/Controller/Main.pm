@@ -5,7 +5,9 @@ sub index { $_[0]->render(%{$_[0]->model('scoreboard')->generate}) }
 
 sub team {
   my $c = shift;
-  return $c->reply->not_found unless my $team = $c->app->teams->{$c->param('team_id')};
+
+  my $team = $c->pg->db->select('teams', undef, {id => $c->param('team_id')})->expand->hash;
+  return $c->reply->not_found unless $team;
 
   $c->render(%{$c->model('scoreboard')->generate_for_team($team->{id})}, team => $team);
 }
@@ -34,12 +36,11 @@ sub t {
   my $c = shift;
 
   my $team_ip = $c->req->headers->header('X-Real-IP') // '127.0.0.1';
-  my $team = $c->pg->db->query("select id from teams where ? <<= network", $team_ip)->hash;
+  my $team = $c->pg->db->query("select id, token from teams where ? <<= network", $team_ip)->hash;
 
   return $c->reply->not_found unless $team;
 
-  my $token = $c->app->teams->{$team->{id}}->{token};
-  $token =~ /^(\d+)_/;
+  $team->{token} =~ /^(\d+)_/;
 
   $c->render(json => {team_id => $1});
 }
