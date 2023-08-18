@@ -89,7 +89,7 @@ sub start_round {
       my $old_flag = c(@{$alive_flags->{$team_id}{$vuln_id}})->shuffle->first;
 
       $app->minion->enqueue(
-        check => [$round, $team_id, $service_id, $flag, $old_flag, {n => $n, id => $vuln_id}]
+        check => [$round, $team_id, $service_id, $flag, $old_flag, {n => $n, id => $vuln_id}], {queue => 'checker'}
       );
     }
   }
