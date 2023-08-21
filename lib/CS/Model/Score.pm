@@ -8,7 +8,10 @@ sub update {
 
   my $db = $self->app->pg->db;
   my $tx = $db->begin;
-  return unless $db->query('select pg_try_advisory_xact_lock(1)')->array->[0];
+  unless ($db->query('select pg_try_advisory_xact_lock(1)')->array->[0]) {
+    $self->app->log->warn("Can't update scores, another update in action");
+    return;
+  }
 
   my $r = $db->select(scores => 'max(round) + 1')->array->[0] // 0;
   $round //= $db->select(rounds => 'max(n) - 1')->array->[0];
