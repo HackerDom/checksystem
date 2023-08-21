@@ -10,6 +10,8 @@ use Mojo::Util qw/dumper trim/;
 use Proc::Killfam;
 use Time::HiRes qw/gettimeofday tv_interval/;
 
+use constant MAX_OUTPUT_LENGTH = 100 * 1024;
+
 # Internal statuses
 # 110 -- checker error
 # 111 -- service was disabled in this round
@@ -117,6 +119,13 @@ sub _finish {
       ->last;
     $status = $result->{$state}{exit_code};
     $stdout = $result->{$state}{stdout} if $status != 101;
+  }
+
+  if (length $stdout > MAX_OUTPUT_LENGTH) {
+    $self->app->log->warn(
+      "Length of STDOUT for team_id:$team_id, ",
+      "service_id:$service_id, round:$round exceeds limit");
+    $stdout = substr($stdout, 0, MAX_OUTPUT_LENGTH) . "...";
   }
 
   $job->finish($result);
