@@ -10,7 +10,7 @@ use Mojo::Util qw/dumper trim/;
 use Proc::Killfam;
 use Time::HiRes qw/gettimeofday tv_interval/;
 
-use constant MAX_OUTPUT_LENGTH = 100 * 1024;
+use constant MAX_OUTPUT_LENGTH => 100 * 1024;
 
 # Internal statuses
 # 110 -- checker error
