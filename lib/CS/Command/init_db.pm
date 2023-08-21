@@ -51,6 +51,15 @@ sub run {
     insert into flag_points (round, team_id, service_id, amount)
     select 0, teams.id, services.id, 0 from teams cross join services
   ');
+  my $teams = $db->select('teams', ['id', 'details'])->expand->hashes;
+  for my $team (@$teams) {
+    for my $service_id (keys %{$team->{details}{initial_flag_points} // {}}) {
+      $db->query('
+        update flag_points set amount = ?
+        where round = 0 and team_id = ? and service_id = ?
+      ', $team->{details}{initial_flag_points}{$service_id}, $team->{id}, $service_id);
+    }
+  }
   $db->query('
     insert into sla (round, team_id, service_id, successed, failed)
     select 0, teams.id, services.id, 0, 0 from teams cross join services
