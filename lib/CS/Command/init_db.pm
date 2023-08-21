@@ -15,7 +15,7 @@ sub run {
       host    => delete $team->{host},
       token   => delete $team->{token}
     };
-    $values->{'id'} = delete $team->{id} if $team->{id};
+    $values->{id} = delete $team->{id} if $team->{id};
     my $details = {details => {-json => $team}};
     $db->insert(teams => {%$values, %$details});
   }
@@ -31,6 +31,7 @@ sub run {
       vulns   => $service_info->{vulns}{distribution},
       public_flag_description => $service_info->{public_flag_description}
     };
+    $service_data->{id} = $service->{id} if $service->{id};
     if (my $active = $service->{active}) {
       $service_data->{ts_start} = $active->[0];
       $service_data->{ts_end} = $active->[1];
