@@ -121,13 +121,6 @@ sub _finish {
     $stdout = $result->{$state}{stdout} if $status != 101;
   }
 
-  if (length $stdout > MAX_OUTPUT_LENGTH) {
-    $self->app->log->warn(
-      "Length of STDOUT for team_id:$team_id, ",
-      "service_id:$service_id, round:$round exceeds limit");
-    $stdout = substr($stdout, 0, MAX_OUTPUT_LENGTH) . "...";
-  }
-
   $job->finish($result);
 
   my $run = {
@@ -165,13 +158,21 @@ sub _run {
     $h = start $cmd, \undef, \$stdout, \$stderr, 'init', sub { chdir $path->dirname }, $t;
     $h->finish;
   };
+  $stdout //= '';
+  $stdout =~ s/\x00//g;
+
+  if (length $stdout > MAX_OUTPUT_LENGTH) {
+    $self->app->log->warn("Length of STDOUT for '@$cmd' exceeds limit");
+    $stdout = substr($stdout, 0, MAX_OUTPUT_LENGTH) . "...";
+  }
+
   my $result = {
     command   => "@$cmd",
     elapsed   => tv_interval($start),
     exception => $@,
     exit      => {value => $?, code => $? >> 8, signal => $? & 127, coredump => $? & 128},
     stderr => ($stderr // '') =~ s/\x00//gr,
-    stdout => ($stdout // '') =~ s/\x00//gr,
+    stdout => $stdout,
     timeout => 0
   };
   $result->{exit_code} = ($@ || all { $? >> 8 != $_ } (101, 102, 103, 104)) ? 110 : $? >> 8;
