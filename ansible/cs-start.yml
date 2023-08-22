@@ -64,7 +64,7 @@
         restart_policy: unless-stopped
         detach: yes
         published_ports:
-          - "{{ private_ip }}:{{ cs_hypnotoad_flags_listen.split(':') | last }}:{{ cs_hypnotoad_flags_listen.split(':') | last }}"
+          - "{{ private_ip }}:{{ cs_hypnotoad_flags_port }}:{{ cs_hypnotoad_flags_port }}"
         env:
           POSTGRES_URI: "postgresql://{{ pg_cs_user }}:{{ pg_cs_pass }}@{{ pg_cs_host }}/{{ pg_cs_db }}"
 

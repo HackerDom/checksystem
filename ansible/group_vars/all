@@ -18,7 +18,9 @@ cs_worker_checkers_queues: -q checker
 cs_worker_instance: 1
 
 cs_hypnotoad_listen: 127.0.0.1:8080
-cs_hypnotoad_flags_listen: 127.0.0.1:8080
+cs_hypnotoad_flags_listen:
+  - 127.0.0.1:8080
+cs_hypnotoad_flags_port: 8080
 cs_nginx_workers: 1
 cs_nginx_upstream_keepalive: 32
 cs_nginx_listen: 80

@@ -3,16 +3,18 @@ proxy_cache_path /var/cache/nginx/cs keys_zone=cs:10m max_size=512m inactive=300
 log_format cs '$remote_addr - $remote_user [$time_local] "$request" '
               '$status $body_bytes_sent "$http_referer" '
               '"$http_user_agent" "$http_x_forwarded_for" '
-              '$request_time $upstream_response_time $pipe';
+              '$request_time "$upstream_addr" $upstream_response_time';
 
 upstream cs {
-  server {{cs_hypnotoad_listen}};
-  keepalive {{cs_nginx_upstream_keepalive}};
+  server {{ cs_hypnotoad_listen }};
+  keepalive {{ cs_nginx_upstream_keepalive }};
 }
 
 upstream cs_flags {
-  server {{cs_hypnotoad_flags_listen}};
-  keepalive {{cs_nginx_upstream_keepalive}};
+  {% for server in cs_hypnotoad_flags_listen -%}
+  server {{ server }};
+  {% endfor -%}
+  keepalive {{ cs_nginx_upstream_keepalive }};
 }
 
 map $http_upgrade $connection_upgrade {
@@ -26,7 +28,7 @@ map $request_uri $do_not_cache {
 }
 
 server {
-  listen {{cs_nginx_listen}};
+  listen {{ cs_nginx_listen }};
 
   {% if 'https' == cs_base_url|urlsplit('scheme') -%}
   listen 443 ssl;
