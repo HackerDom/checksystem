@@ -74,7 +74,7 @@
       docker_container:
         name: "cs_checker_worker_{{ item }}"
         image: "{{ cs_docker_image }}"
-        command: "perl script/cs minion worker -q default {{ cs_worker_checkers_queues }} -j {{ cs_worker_checkers_jobs }}"
+        command: "perl script/cs minion worker {{ cs_worker_checkers_queues }} -j {{ cs_worker_checkers_jobs }}"
         init: true
         container_default_behavior: no_defaults
         restart_policy: unless-stopped
