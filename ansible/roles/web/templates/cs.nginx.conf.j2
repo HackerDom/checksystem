@@ -1,4 +1,5 @@
 proxy_cache_path /var/cache/nginx/cs keys_zone=cs:10m max_size=512m inactive=300s;
+proxy_cache_path /var/cache/nginx/cs_flag_ids keys_zone=cs_flag_ids:10m max_size=512m inactive=300s;
 
 log_format cs '$remote_addr - $remote_user [$time_local] "$request" '
               '$status $body_bytes_sent "$http_referer" '
@@ -60,7 +61,15 @@ server {
 
     proxy_cache cs;
     proxy_no_cache $do_not_cache;
-    proxy_cache_valid 10s;
+    proxy_cache_valid 15s;
+  }
+
+  location /flag_ids {
+    proxy_pass http://cs;
+
+    proxy_cache cs_flag_ids;
+    proxy_cache_valid 15s;
+    proxy_cache_key "$uri$is_args$args$http_x_team_token";
   }
 
   location /flags {
