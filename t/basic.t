@@ -315,4 +315,6 @@ $t->get_ok('/ctftime/scoreboard.json')
 
 $t->get_ok('/ctftime/fb.json');
 
+$t->get_ok('/admin/info');
+
 done_testing;

@@ -17,7 +17,10 @@ sub put {
   return $c->render(json => {status => \0, msg => "Invalid token '$token'"}, status => 400)
     unless my $team = $c->pg->db->select('teams', ['id'], {token => $token})->hash;
 
-  my $flags = $c->req->json // [];
+  my $flags = $c->req->json;
+  return $c->render(json => {status => \0, msg => 'Invalid format'}, status => 400)
+    unless ref $flags eq 'ARRAY';
+
   my $results = [];
 
   my $do;
