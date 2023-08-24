@@ -86,6 +86,18 @@ SQL
 SQL
   my $stolen_flags = $c->_tablify($db->query($sql));
 
+  # Hackers
+  $sql = <<SQL;
+  select
+    service_id, (select name from services where id = service_id) as service,
+    count(team_id) filter (where flags > 0) as hackers
+  from scores
+  where round = (select max(round) from scores)
+  group by service_id
+  order by 3 desc
+SQL
+  my $hackers = $c->_tablify($db->query($sql));
+
   # First bloods
   $sql = <<SQL;
   with tmp as (
@@ -112,7 +124,8 @@ SQL
       {name => 'Installed flags', data => $installed_flags},
       {name => 'Stolen flags',    data => $stolen_flags},
       {name => 'First bloods',    data => $fb},
-      {name => 'Services',        data => $services}
+      {name => 'Services',        data => $services},
+      {name => 'Hackers',         data => $hackers}
     ]
   );
 }
