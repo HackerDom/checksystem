@@ -7,13 +7,13 @@ log_format cs '$remote_addr - $remote_user [$time_local] "$request" '
               '$request_time "$upstream_addr" $upstream_response_time';
 
 upstream cs {
-  server {{ cs_hypnotoad_listen }};
+  server {{ cs_hypnotoad_listen }} max_fails=5 fail_timeout=5s;
   keepalive {{ cs_nginx_upstream_keepalive }};
 }
 
 upstream cs_flags {
   {% for server in cs_hypnotoad_flags_listen -%}
-  server {{ server }};
+  server {{ server }} max_fails=5 fail_timeout=5s;
   {% endfor -%}
   keepalive {{ cs_nginx_upstream_keepalive }};
 }
@@ -49,6 +49,8 @@ server {
 
   proxy_max_temp_file_size 0;
 
+  proxy_connect_timeout 5s;
+
   proxy_set_header X-Real-IP $remote_addr;
   proxy_set_header Host $http_host;
   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -74,6 +76,8 @@ server {
 
   location /flags {
     proxy_pass http://cs_flags;
+    proxy_next_upstream non_idempotent error timeout;
+    proxy_next_upstream_timeout 20ms;
   }
 
   location /data {
