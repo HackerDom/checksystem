@@ -62,7 +62,7 @@ services:
         if [[ $$? == 0 ]]; then break; fi
         sleep 2
       done &&
-      perl script/cs minion worker -q default -j 64
+      perl script/cs minion worker -q default -q checker -j 64
 
   init:
     <<: *cs-common
