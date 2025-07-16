@@ -10,7 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: perl
+      image: perl:5.40
     services:
       postgres:
         image: postgres

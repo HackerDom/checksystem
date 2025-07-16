@@ -1,4 +1,4 @@
-FROM perl
+FROM perl:5.40
 
 ADD cpanfile /
 
