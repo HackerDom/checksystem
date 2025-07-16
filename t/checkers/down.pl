@@ -1,4 +1,4 @@
 #!/usr/bin/perl
 
-print "some error!\n";
+print "some error 😉\n";
 exit 104;

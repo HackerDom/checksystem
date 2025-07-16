@@ -47,7 +47,7 @@ $db->select(runs => '*', {service_id => 1, team_id => 1})->expand->hashes->map(
   sub {
     is $_->{round},  1,               'right round';
     is $_->{status}, 104,             'right status';
-    is $_->{stdout}, "some error!\n", 'right stdout';
+    is $_->{stdout}, "some error 😉\n", 'right stdout';
   }
 );
 

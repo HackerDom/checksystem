@@ -158,8 +158,14 @@ sub _run {
     $h = start $cmd, \undef, \$stdout, \$stderr, 'init', sub { chdir $path->dirname }, $t;
     $h->finish;
   };
+
   $stdout //= '';
   $stdout =~ s/\x00//g;
+  utf8::decode $stdout;
+
+  $stderr //= '';
+  $stderr =~ s/\x00//g;
+  utf8::decode $stderr;
 
   if (length $stdout > MAX_OUTPUT_LENGTH) {
     $self->app->log->warn("Length of STDOUT for '@$cmd' exceeds limit");
@@ -171,7 +177,7 @@ sub _run {
     elapsed   => tv_interval($start),
     exception => $@,
     exit      => {value => $?, code => $? >> 8, signal => $? & 127, coredump => $? & 128},
-    stderr => ($stderr // '') =~ s/\x00//gr,
+    stderr => $stderr,
     stdout => $stdout,
     timeout => 0
   };
